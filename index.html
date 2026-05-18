@@ -993,6 +993,8 @@
         let isDragging = false;
         let mobileSlowActive = false;
         let mobileBombTriggered = false;
+        let mobileTargetX = null;
+        let mobileTargetY = null;
 
         function showOnlineSetup() {
             showScreen('screen-online-setup');
@@ -3284,6 +3286,24 @@
             // 毎フレーム入力を更新（ゲームパッド ＆ キーコンフィグ）
             updateInputState();
 
+            // スマホ用：最高速度制限（PCと対等）付きのドラッグ追従移動
+            if (gameState === 'BATTLE' && mobileTargetX !== null && mobileTargetY !== null) {
+                let diffX = mobileTargetX - player.x;
+                let diffY = mobileTargetY - player.y;
+                let distance = Math.hypot(diffX, diffY);
+                if (distance > 0.1) {
+                    let currentSpeed = player.speed; // 通常速度 player.speed (350)
+                    let maxMove = currentSpeed * dt;
+                    if (distance <= maxMove) {
+                        player.x = mobileTargetX;
+                        player.y = mobileTargetY;
+                    } else {
+                        player.x += (diffX / distance) * maxMove;
+                        player.y += (diffY / distance) * maxMove;
+                    }
+                }
+            }
+
             if (gameState === 'BATTLE') {
                 // オンライン対戦時、相手からキャスト情報（カード決定）が届いたらアクションフェーズを開始
                 if (isOnlineMode && battlePhase === 'PLANNING' && turnOwner === 'CPU' && receivedCastIds) {
@@ -4239,23 +4259,43 @@
                 document.body.classList.add('mobile-mode');
             }
 
+            // 【超重要】手札モーダル内でのタッチ操作が背後の自機移動ドラッグに吸い取られないようにイベント伝播を完全遮断！
+            const phaseMsg = document.getElementById('phaseMessage');
+            if (phaseMsg) {
+                const stopTouchPropagation = (e) => {
+                    e.stopPropagation(); // 背後の window.touchmove 等へのバブリングを完全防止！
+                };
+                // パッシブをtrueにしてスクロール動作を最高に軽くスムーズにする
+                phaseMsg.addEventListener('touchstart', stopTouchPropagation, { passive: true });
+                phaseMsg.addEventListener('touchmove', stopTouchPropagation, { passive: true });
+                phaseMsg.addEventListener('touchend', stopTouchPropagation, { passive: true });
+            }
+
             // 1. 自機のドラッグ（スライド）移動操作 (container全体で検知して前面UIとの干渉を完全に防ぐ)
             container.addEventListener('touchstart', (e) => {
                 // 開発者ツールなどのエミュレータ対策としてタッチ開始時にも強制付与
                 document.body.classList.add('mobile-mode');
 
                 if (!isGameRunning || gameState !== 'BATTLE') return;
+                // カード選択中（PLANNINGフェーズ）はドラッグ移動を行わない
+                if (battlePhase === 'PLANNING') return;
+
                 if (e.touches.length > 0) {
                     touchStartX = e.touches[0].clientX;
                     touchStartY = e.touches[0].clientY;
                     touchStartPlayerX = player.x;
                     touchStartPlayerY = player.y;
+                    mobileTargetX = player.x;
+                    mobileTargetY = player.y;
                     isDragging = true;
                 }
             }, { passive: false });
 
             container.addEventListener('touchmove', (e) => {
                 if (!isGameRunning || gameState !== 'BATTLE' || !isDragging) return;
+                // カード選択中（PLANNINGフェーズ）はドラッグ移動を行わない
+                if (battlePhase === 'PLANNING') return;
+
                 e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
 
                 if (e.touches.length > 0) {
@@ -4274,14 +4314,16 @@
                     const newX = touchStartPlayerX + deltaX * scaleX * sensitivity;
                     const newY = touchStartPlayerY + deltaY * scaleY * sensitivity;
 
-                    // 境畍線 boundaryY および画面端へのクランプ処理
-                    player.x = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, newX));
-                    player.y = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, newY));
+                    // 瞬間移動（ワープ）させず、目標座標 (mobileTargetX / Y) にセットしてupdateループ側で最高速度制限をかけます
+                    mobileTargetX = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, newX));
+                    mobileTargetY = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, newY));
                 }
             }, { passive: false });
 
             window.addEventListener('touchend', (e) => {
                 isDragging = false;
+                mobileTargetX = null;
+                mobileTargetY = null;
             }, { passive: false });
 
             // 2. スマホ用「スマート霊撃 (BOMB)」フローティングボタン (タップ即時反応の超レスポンス仕様)
