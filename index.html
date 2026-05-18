@@ -2273,6 +2273,7 @@
                 // 弾幕展開キャストキー
                 if (e.key === keyConfig.castSpell) {
                     let neededCount = turnCount >= 7 ? 2 : 1;
+                    neededCount = Math.min(neededCount, player.hand.length);
                     if (selectedPlayerCards.length === neededCount) {
                         e.preventDefault();
                         castSelectedSpells();
@@ -2395,6 +2396,7 @@
                         }
                         if ((btnY && !prevY) || (btnStart && !prevStart)) {
                             let neededCount = turnCount >= 7 ? 2 : 1;
+                            neededCount = Math.min(neededCount, player.hand.length);
                             if (selectedPlayerCards.length === neededCount) {
                                 castSelectedSpells();
                             }
@@ -2689,6 +2691,7 @@
 
         function selectPlayerCard(idx) {
             let neededCount = turnCount >= 7 ? 2 : 1;
+            neededCount = Math.min(neededCount, player.hand.length);
             let alreadyIdx = selectedPlayerCards.indexOf(idx);
             if (alreadyIdx !== -1) {
                 // 選択解除
@@ -2771,6 +2774,7 @@
 
             // 選択要件（T7以上なら2枚、それ以外なら1枚）を満たしているときのみ、決定ボタンを phaseMessage にふわっと表示
             let neededCount = turnCount >= 7 ? 2 : 1;
+            neededCount = Math.min(neededCount, player.hand.length);
             if (selectedPlayerCards.length === neededCount) {
                 const btnEl = document.createElement('button');
                 btnEl.className = 'cast-btn';
