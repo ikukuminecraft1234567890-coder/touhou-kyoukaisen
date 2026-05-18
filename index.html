@@ -135,7 +135,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 600px;
+            width: 75%;
             height: 100%;
             display: flex;
             justify-content: center;
@@ -722,6 +722,45 @@
                 padding: 9px !important;
                 font-size: 13px !important;
                 margin: 4px 0 !important;
+            }
+            
+            /* スマホ時のカード手札エリアとカードサイズの超スリム化・最適化 */
+            #phaseMessage {
+                padding: 12px 10px !important;
+                width: 95% !important;
+                max-width: 95% !important;
+            }
+            .hand-card-container {
+                gap: 6px !important;
+                margin-top: 10px !important;
+            }
+            .hand-card {
+                width: 76px !important;    /* 横幅を 110px から 76px にスリム化 */
+                height: 108px !important;  /* 高さを 150px から 108px にスリム化 */
+                padding: 6px !important;
+            }
+            .hand-card .card-name {
+                font-size: 9px !important;  /* フォントサイズを縮小 */
+                margin-top: 4px !important;
+                line-height: 1.2 !important;
+            }
+            .hand-card .card-stats {
+                font-size: 8px !important;
+                padding-top: 3px !important;
+            }
+            .hand-card .card-shortcut {
+                width: 14px !important;
+                height: 14px !important;
+                font-size: 9px !important;
+                top: -5px !important;
+                left: -5px !important;
+            }
+            /* 決定ボタン（弾幕展開ボタン）のスマホ最適化 */
+            .cast-btn {
+                width: 160px !important;
+                padding: 8px !important;
+                font-size: 13px !important;
+                margin-top: 10px !important;
             }
         }
     </style>
