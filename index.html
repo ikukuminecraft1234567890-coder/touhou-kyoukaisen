@@ -3290,20 +3290,26 @@
             // 毎フレーム入力を更新（ゲームパッド ＆ キーコンフィグ）
             updateInputState();
 
-            // スマホ用：最高速度制限（PCと対等）付きのドラッグ追従移動
+            // スマホ用：最高速度制限 ＆ 超滑らかイージング吸い付き物理
             if (gameState === 'BATTLE' && mobileTargetX !== null && mobileTargetY !== null) {
                 let diffX = mobileTargetX - player.x;
                 let diffY = mobileTargetY - player.y;
                 let distance = Math.hypot(diffX, diffY);
-                if (distance > 0.1) {
+                if (distance > 0.05) {
+                    let lerpFactor = 22; // 追従の滑らかさと応答性を極限まで高めた黄金比係数
+                    let moveX = diffX * lerpFactor * dt;
+                    let moveY = diffY * lerpFactor * dt;
+                    let moveDistance = Math.hypot(moveX, moveY);
+                    
                     let currentSpeed = player.speed; // 通常速度 player.speed (350)
                     let maxMove = currentSpeed * dt;
-                    if (distance <= maxMove) {
-                        player.x = mobileTargetX;
-                        player.y = mobileTargetY;
-                    } else {
+                    
+                    if (moveDistance > maxMove) {
                         player.x += (diffX / distance) * maxMove;
                         player.y += (diffY / distance) * maxMove;
+                    } else {
+                        player.x += moveX;
+                        player.y += moveY;
                     }
                 }
             }
@@ -4313,8 +4319,8 @@
                     const scaleX = PLAY_WIDTH / canvas.clientWidth;
                     const scaleY = canvas.height / canvas.clientHeight;
 
-                    // ドラッグ感度を1.15倍程度に高め、指の下に隠れず快適に操作できるように調整
-                    const sensitivity = 1.15;
+                    // ドラッグ感度を1.28倍に高め、もっさり感を完全に解消して指の動きに俊敏に追従させる
+                    const sensitivity = 1.28;
                     const newX = touchStartPlayerX + deltaX * scaleX * sensitivity;
                     const newY = touchStartPlayerY + deltaY * scaleY * sensitivity;
 
