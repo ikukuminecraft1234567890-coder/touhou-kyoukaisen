@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>東方境畍戦 - Touhou Kyoukaisen</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+JP:wght@400;700&display=swap"
@@ -604,12 +605,122 @@
             color: #ff3366;
             box-shadow: 0 0 10px rgba(255, 50, 100, 0.4);
         }
+
+        /* スマホ用タッチボタンのスタイリング */
+        #mobileControls {
+            display: none; /* デフォルトでは非表示 */
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            justify-content: space-around;
+            align-items: center;
+            gap: 15px;
+            z-index: 9999;
+            box-sizing: border-box;
+            pointer-events: none; /* 子要素ボタンのみクリック可能にする */
+        }
+
+        .mobile-btn {
+            pointer-events: auto; /* ボタンはタップ可能にする */
+            flex: 1;
+            padding: 14px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(15, 15, 30, 0.85);
+            border: 2px solid rgba(0, 255, 200, 0.4);
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 255, 200, 0.1);
+            text-align: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            transition: all 0.15s ease;
+        }
+
+        /* 各ボタンのアクティブ/選択時効果 */
+        .mobile-btn:active {
+            transform: scale(0.92);
+            background: rgba(0, 255, 200, 0.2);
+            border-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 200, 0.6);
+        }
+
+        .mobile-btn.active {
+            background: rgba(0, 255, 200, 0.35);
+            border-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 200, 0.8), inset 0 0 5px rgba(0, 255, 200, 0.3);
+            color: #00ffcc;
+        }
+
+        .mobile-btn.bomb-btn {
+            background: rgba(60, 10, 15, 0.85);
+            border-color: rgba(255, 50, 100, 0.5);
+            text-shadow: 0 0 5px rgba(255, 50, 100, 0.5);
+        }
+
+        .mobile-btn.bomb-btn:active {
+            background: rgba(255, 50, 100, 0.3);
+            border-color: #ff3366;
+            box-shadow: 0 0 15px rgba(255, 50, 100, 0.8);
+        }
+
+        .mobile-btn.cast-btn {
+            background: rgba(10, 50, 60, 0.85);
+            border-color: rgba(0, 200, 255, 0.5);
+        }
+
+        .mobile-btn.cast-btn:active {
+            background: rgba(0, 200, 255, 0.3);
+            border-color: #00ccff;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.8);
+        }
+
+        /* 横幅が狭いデバイス（スマホ）向けのメディアクエリ */
+        @media (max-width: 900px) {
+            #gameContainer {
+                width: 100% !important;
+                max-width: 480px; /* 縦長で綺麗にフィット */
+                aspect-ratio: 480 / 900;
+                margin: 0 auto;
+            }
+            #gameCanvas {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            #mobileControls {
+                display: flex !important; /* スマホではフレックス表示 */
+            }
+            /* タイトル画面やUI要素のサイズを小さめにして調整 */
+            #titleScreen {
+                padding: 10px 15px !important;
+                box-sizing: border-box;
+            }
+            #gameLogo {
+                font-size: 32px !important;
+            }
+            .menu-btn {
+                padding: 10px !important;
+                font-size: 14px !important;
+                margin: 5px 0 !important;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="900"></canvas>
+
+        <!-- スマホ用タッチ操作ボタン（スマホ時のみ表示） -->
+        <div id="mobileControls">
+            <button id="btnMobileSlow" class="mobile-btn">低速 (SLOW)</button>
+            <button id="btnMobileBomb" class="mobile-btn bomb-btn">霊撃 (BOMB)</button>
+            <button id="btnMobileCast" class="mobile-btn cast-btn">弾幕展開 (CAST)</button>
+        </div>
 
         <!-- 戦闘用オーバーレイUI -->
         <div id="battleOverlay" class="hidden">
@@ -801,6 +912,15 @@
         let receivedBomb = false;
         let sentDamageSync = false;
         let receivedDamageSync = false;
+
+        // スマホ用タッチ操作バッファ・トグル変数
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartPlayerX = 0;
+        let touchStartPlayerY = 0;
+        let isDragging = false;
+        let mobileSlowActive = false;
+        let mobileBombTriggered = false;
 
         function showOnlineSetup() {
             showScreen('screen-online-setup');
@@ -3091,7 +3211,8 @@
                 }
                 // 霊撃の発動処理 (回避側で戦闘フェーズ中のみ)
                 if (battlePhase === 'ACTION' && turnOwner === 'CPU') {
-                    let bombTriggered = inputState.bomb && !prevBombInput;
+                    let bombTriggered = (inputState.bomb && !prevBombInput) || mobileBombTriggered;
+                    mobileBombTriggered = false; // 消費
                     if (bombTriggered && player.bombs >= 1 && !player.isInvincible) {
                         player.bombs -= 1;
                         player.isInvincible = true;
@@ -3263,7 +3384,7 @@
                     dy *= 0.70710678;
                 }
 
-                const currentSpeed = inputState.slow ? player.slowSpeed : player.speed;
+                const currentSpeed = (inputState.slow || mobileSlowActive) ? player.slowSpeed : player.speed;
                 player.x += dx * currentSpeed * dt;
                 player.y += dy * currentSpeed * dt;
 
@@ -3276,7 +3397,7 @@
                         type: 'state',
                         x: PLAY_WIDTH - player.x,
                         y: canvas.height - player.y,
-                        slow: inputState.slow,
+                        slow: inputState.slow || mobileSlowActive,
                         moveDir: -dx // 左右の動きも点対称反転
                     });
                 }
@@ -3475,6 +3596,11 @@
                                 bullets.push({ x: cpu.x, y: cpu.y + 15, vx: 0, vy: 450, radius: 3, team: 'CPU', isNormal: true });
                             }
                         }
+                    }
+
+                    // 制限時間が切れたら、安全のために画面上の弾を全消去して進行不能を防ぐ
+                    if (actionTimer <= 0 && bullets.length > 0) {
+                        bullets = [];
                     }
 
                     // 制限時間が切れ、かつ画面上の弾がすべて消えたら精算フェーズへ
@@ -4017,6 +4143,100 @@
             ctx.font = '18px sans-serif';
             ctx.fillText('Graze: ' + player.grazeCount, UI_X, 875);
         }
+
+        // ==========================================
+        // スマートフォン用 タッチ操作・コントロール初期化システム
+        // ==========================================
+        function initTouchControls() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+
+            // 1. 自機のドラッグ（スライド）移動操作
+            canvas.addEventListener('touchstart', (e) => {
+                if (!isGameRunning || gameState !== 'BATTLE') return;
+                if (e.touches.length > 0) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartPlayerX = player.x;
+                    touchStartPlayerY = player.y;
+                    isDragging = true;
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!isGameRunning || gameState !== 'BATTLE' || !isDragging) return;
+                e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
+
+                if (e.touches.length > 0) {
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+
+                    const deltaX = currentX - touchStartX;
+                    const deltaY = currentY - touchStartY;
+
+                    // スマホ画面サイズとキャンバス論理解像度の比率
+                    const scaleX = PLAY_WIDTH / canvas.clientWidth;
+                    const scaleY = canvas.height / canvas.clientHeight;
+
+                    // ドラッグ感度を1.15倍程度に高め、指の下に隠れず快適に操作できるように調整
+                    const sensitivity = 1.15;
+                    const newX = touchStartPlayerX + deltaX * scaleX * sensitivity;
+                    const newY = touchStartPlayerY + deltaY * scaleY * sensitivity;
+
+                    // 境畍線 boundaryY および画面端へのクランプ処理
+                    player.x = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, newX));
+                    player.y = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, newY));
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                isDragging = false;
+            }, { passive: false });
+
+            // 2. スマホ用「低速移動 (SLOW)」トグルボタン
+            const btnSlow = document.getElementById('btnMobileSlow');
+            if (btnSlow) {
+                btnSlow.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mobileSlowActive = !mobileSlowActive;
+                    if (mobileSlowActive) {
+                        btnSlow.classList.add('active');
+                    } else {
+                        btnSlow.classList.remove('active');
+                    }
+                });
+            }
+
+            // 3. スマホ用「霊撃 (BOMB)」発動ボタン
+            const btnBomb = document.getElementById('btnMobileBomb');
+            if (btnBomb) {
+                btnBomb.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (battlePhase === 'ACTION' && turnOwner === 'CPU') {
+                        mobileBombTriggered = true; // メインループ側で検知されてボムが発動します
+                    }
+                });
+            }
+
+            // 4. スマホ用「弾幕展開 (CAST)」決定ボタン
+            const btnCast = document.getElementById('btnMobileCast');
+            if (btnCast) {
+                btnCast.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (battlePhase === 'PLANNING' && turnOwner === 'PLAYER') {
+                        let neededCount = turnCount >= 7 ? 2 : 1;
+                        if (selectedPlayerCards.length === neededCount) {
+                            castSelectedSpells();
+                        } else {
+                            alert(`スペルカードを ${neededCount} 枚選んでください！`);
+                        }
+                    }
+                });
+            }
+        }
+
+        // スマホ操作の自動初期化
+        initTouchControls();
     </script>
 </body>
 
