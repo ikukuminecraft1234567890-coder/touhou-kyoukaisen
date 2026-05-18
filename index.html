@@ -796,6 +796,7 @@
         let opponentDeck = null;
         
         // 同期用バッファ
+        let receivedState = null;
         let receivedCastIds = null;
         let receivedBomb = false;
         let sentDamageSync = false;
@@ -988,11 +989,8 @@
             }
 
             if (data.type === 'state') {
-                // 相手から受信した座標を相手プレイヤー(cpuオブジェクト)に格納
-                cpu.x = data.x;
-                cpu.y = data.y;
-                cpu.isSlow = data.slow;
-                cpu.moveDir = data.moveDir;
+                // 相手から受信した座標データをバッファに格納
+                receivedState = data;
             }
 
             if (data.type === 'cast') {
