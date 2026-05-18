@@ -602,8 +602,22 @@
         .diff-lunatic.active, .diff-lunatic:hover {
             background: rgba(255, 50, 100, 0.15);
             border-color: #ff3366;
-            color: #ff3366;
             box-shadow: 0 0 10px rgba(255, 50, 100, 0.4);
+        }
+
+        /* スマホモード時の明示的表示 (JSのタッチ検出と連動) */
+        .mobile-mode #mobileControls {
+            display: flex !important;
+        }
+
+        /* 重なるUI要素をすり抜けさせて背後のドラッグを妨げないようにする */
+        #battleOverlay, #phaseMessage {
+            pointer-events: none !important;
+        }
+        
+        /* ただし、カード自体や決定ボタンはタップできるようにする */
+        .hand-card-container, .hand-card, .cast-btn, .hand-btn, .menu-btn, .diff-btn, input, select {
+            pointer-events: auto !important;
         }
 
         /* スマホ用タッチボタンのスタイリング */
@@ -4149,10 +4163,19 @@
         // ==========================================
         function initTouchControls() {
             const canvas = document.getElementById('gameCanvas');
-            if (!canvas) return;
+            const container = document.getElementById('gameContainer');
+            if (!canvas || !container) return;
 
-            // 1. 自機のドラッグ（スライド）移動操作
-            canvas.addEventListener('touchstart', (e) => {
+            // タッチ操作デバイスの自動検出＆クラス付与（スマホUI表示を強制する）
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.body.classList.add('mobile-mode');
+            }
+
+            // 1. 自機のドラッグ（スライド）移動操作 (container全体で検知して前面UIとの干渉を完全に防ぐ)
+            container.addEventListener('touchstart', (e) => {
+                // 開発者ツールなどのエミュレータ対策としてタッチ開始時にも強制付与
+                document.body.classList.add('mobile-mode');
+
                 if (!isGameRunning || gameState !== 'BATTLE') return;
                 if (e.touches.length > 0) {
                     touchStartX = e.touches[0].clientX;
@@ -4163,7 +4186,7 @@
                 }
             }, { passive: false });
 
-            canvas.addEventListener('touchmove', (e) => {
+            container.addEventListener('touchmove', (e) => {
                 if (!isGameRunning || gameState !== 'BATTLE' || !isDragging) return;
                 e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
 
@@ -4189,7 +4212,7 @@
                 }
             }, { passive: false });
 
-            canvas.addEventListener('touchend', (e) => {
+            window.addEventListener('touchend', (e) => {
                 isDragging = false;
             }, { passive: false });
 
