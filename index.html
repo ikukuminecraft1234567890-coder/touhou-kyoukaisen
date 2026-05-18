@@ -631,11 +631,6 @@
             box-shadow: 0 0 10px rgba(255, 50, 100, 0.4);
         }
 
-        /* スマホモード時の明示的表示 (JSのタッチ検出と連動) */
-        .mobile-mode .mobile-only-bomb-btn {
-            display: flex !important;
-        }
-
         /* 重なるUI要素をすり抜けさせて背後のドラッグを妨げないようにする */
         #battleOverlay, #phaseMessage {
             pointer-events: none !important;
@@ -648,12 +643,12 @@
 
         /* スマホ用フローティングボムボタンのスタイリング */
         .mobile-only-bomb-btn {
-            display: none; /* デフォルトでは非表示 */
+            display: none; /* デフォルトでは非表示。JS側で必要な時だけ 'flex' にします */
             position: absolute;
-            bottom: 35px;
-            right: 35px;
-            width: 75px;
-            height: 75px;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background: rgba(255, 0, 100, 0.28);
             border: 2px solid rgba(255, 50, 150, 0.75);
@@ -661,7 +656,6 @@
             font-weight: bold;
             font-size: 16px;
             font-family: 'Noto Serif JP', serif;
-            display: flex;
             justify-content: center;
             align-items: center;
             text-shadow: 0 0 6px rgba(255, 50, 150, 0.9);
@@ -695,19 +689,25 @@
                 background-color: #030308 !important;
             }
             #gameContainer {
-                width: 100vw !important;
-                height: calc(100vw * 900 / 800) !important;
-                max-width: calc(100vh * 800 / 900) !important;
-                max-height: 100vh !important;
-                aspect-ratio: 800 / 900 !important;
+                position: relative !important;
+                /* アスペクト比を狂わせずに画面に100%収める魔法の min 計算式 */
+                width: min(94vw, 84vh * 800 / 900) !important;
+                height: min(94vw * 900 / 800, 84vh) !important;
+                aspect-ratio: 8 / 9 !important;
                 margin: 0 auto !important;
-                box-shadow: 0 10px 35px rgba(0,0,0,0.85) !important;
+                box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
                 border: none !important;
+                border-radius: 12px !important;
+                overflow: hidden !important;
             }
             #gameCanvas {
                 width: 100% !important;
                 height: 100% !important;
                 display: block !important;
+            }
+            /* スマホ時にはPC用のキー説明テキストを非表示にし、レイアウト崩れを防ぐ */
+            .guide {
+                display: none !important;
             }
             /* スマホ時の文字やメニューボタンのサイズ最適化 */
             #titleScreen {
@@ -3205,6 +3205,16 @@
 
         let lastTime = 0;
         function update(timestamp) {
+            // 霊撃ボタンの表示・非表示動的制御 (戦闘の回避アクション中のみ自動表示)
+            const bombBtn = document.getElementById('mobileBombBtn');
+            if (bombBtn) {
+                if (isGameRunning && gameState === 'BATTLE' && battlePhase === 'ACTION' && turnOwner === 'CPU') {
+                    bombBtn.style.display = 'flex';
+                } else {
+                    bombBtn.style.display = 'none';
+                }
+            }
+
             if (!isGameRunning) return;
             if (!lastTime) lastTime = timestamp;
             let dt = (timestamp - lastTime) / 1000;
