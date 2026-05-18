@@ -726,41 +726,47 @@
             
             /* スマホ時のカード手札エリアとカードサイズの超スリム化・最適化 */
             #phaseMessage {
-                padding: 12px 10px !important;
-                width: 95% !important;
-                max-width: 95% !important;
+                padding: 10px 8px !important;
+                width: 96% !important;
+                max-width: 96% !important;
+            }
+            #phaseMessage h3, #phaseMessage p, #phaseMessage span {
+                font-size: 13px !important;
+                margin: 4px 0 !important;
             }
             .hand-card-container {
-                gap: 6px !important;
-                margin-top: 10px !important;
+                gap: 5px !important;
+                margin-top: 6px !important;
             }
             .hand-card {
-                width: 76px !important;    /* 横幅を 110px から 76px にスリム化 */
-                height: 108px !important;  /* 高さを 150px から 108px にスリム化 */
-                padding: 6px !important;
+                width: 70px !important;    /* 横幅を 70px に極薄化 */
+                height: 94px !important;   /* 高さを 94px に極薄化 */
+                padding: 5px !important;
+                border-radius: 6px !important;
             }
             .hand-card .card-name {
-                font-size: 9px !important;  /* フォントサイズを縮小 */
-                margin-top: 4px !important;
-                line-height: 1.2 !important;
+                font-size: 8px !important;  /* 極小フォント */
+                margin-top: 3px !important;
+                line-height: 1.1 !important;
             }
             .hand-card .card-stats {
-                font-size: 8px !important;
-                padding-top: 3px !important;
+                font-size: 7px !important;
+                padding-top: 2px !important;
             }
             .hand-card .card-shortcut {
-                width: 14px !important;
-                height: 14px !important;
-                font-size: 9px !important;
-                top: -5px !important;
-                left: -5px !important;
+                width: 12px !important;
+                height: 12px !important;
+                font-size: 8px !important;
+                top: -4px !important;
+                left: -4px !important;
             }
             /* 決定ボタン（弾幕展開ボタン）のスマホ最適化 */
             .cast-btn {
-                width: 160px !important;
-                padding: 8px !important;
-                font-size: 13px !important;
-                margin-top: 10px !important;
+                width: 150px !important;
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+                margin-top: 8px !important;
+                border-radius: 4px !important;
             }
         }
     </style>
