@@ -914,28 +914,35 @@
                 </div>
 
                 <!-- ロビーメイン部分 (2列構成) -->
-                <div style="display: flex; flex-direction: column; gap: 15px; width: 95%; margin: 15px auto 0 auto; box-sizing: border-box;">
-                    
+                <div
+                    style="display: flex; flex-direction: column; gap: 15px; width: 95%; margin: 15px auto 0 auto; box-sizing: border-box;">
+
                     <!-- 部屋を作成するセクション -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); text-align: left; box-sizing: border-box;">
-                        <h4 style="margin: 0 0 10px 0; color: #00ffcc; font-size: 14px; border-bottom: 1px solid rgba(0, 255, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); text-align: left; box-sizing: border-box;">
+                        <h4
+                            style="margin: 0 0 10px 0; color: #00ffcc; font-size: 14px; border-bottom: 1px solid rgba(0, 255, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
                             <span>部屋を立てる (Host Room)</span>
-                            <span style="font-size: 9px; background: rgba(0, 255, 204, 0.1); padding: 2px 6px; border-radius: 4px; color: #00ffcc;">NEW</span>
+                            <span
+                                style="font-size: 9px; background: rgba(0, 255, 204, 0.1); padding: 2px 6px; border-radius: 4px; color: #00ffcc;">NEW</span>
                         </h4>
-                        
+
                         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
                             <div style="flex: 1; min-width: 130px;">
-                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">あなたのお名前 (Username):</label>
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">あなたのお名前
+                                    (Username):</label>
                                 <input type="text" id="online-username" placeholder="プレイヤー" maxlength="12"
                                     style="font-size: 13px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
                             </div>
                             <div style="flex: 1; min-width: 130px;">
-                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">部屋コード / 部屋名:</label>
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">部屋コード /
+                                    部屋名:</label>
                                 <input type="text" id="online-room-code" placeholder="例: 1234" maxlength="10"
                                     style="font-size: 13px; font-weight: bold; background: rgba(0,0,0,0.4); color: #00ffcc; border: 1px solid rgba(0,255,204,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
                             </div>
                             <div style="flex: 1; min-width: 130px;">
-                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">パスワード (空欄で一般公開):</label>
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">パスワード
+                                    (空欄で一般公開):</label>
                                 <input type="password" id="online-room-password" placeholder="秘密のパスワード" maxlength="15"
                                     style="font-size: 13px; background: rgba(0,0,0,0.4); color: #ff88ff; border: 1px solid rgba(255,85,204,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
                             </div>
@@ -948,17 +955,24 @@
                     </div>
 
                     <!-- 部屋一覧セクション -->
-                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 0, 204, 0.2); text-align: left; box-sizing: border-box; display: flex; flex-direction: column;">
-                        <h4 style="margin: 0 0 10px 0; color: #ff88ff; font-size: 14px; border-bottom: 1px solid rgba(255, 0, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 0, 204, 0.2); text-align: left; box-sizing: border-box; display: flex; flex-direction: column;">
+                        <h4
+                            style="margin: 0 0 10px 0; color: #ff88ff; font-size: 14px; border-bottom: 1px solid rgba(255, 0, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
                             <span>公開部屋一覧 (Active Rooms)</span>
-                            <button onclick="refreshRoomList()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,85,204,0.3); color: #ff88ff; font-size: 11px; padding: 2px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; outline: none;" onmouseover="this.style.background='rgba(255,85,204,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <button onclick="refreshRoomList()"
+                                style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,85,204,0.3); color: #ff88ff; font-size: 11px; padding: 2px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; outline: none;"
+                                onmouseover="this.style.background='rgba(255,85,204,0.2)'"
+                                onmouseout="this.style.background='rgba(255,255,255,0.08)'">
                                 🔄 リスト更新
                             </button>
                         </h4>
 
                         <!-- 部屋リスト表示スクロール領域 -->
-                        <div id="lobby-room-list" style="min-height: 100px; max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); padding: 6px; display: flex; flex-direction: column; gap: 6px;">
-                            <div style="color: #aaa; font-size: 11px; text-align: center; padding: 30px 0;">部屋リストを読み込み中...</div>
+                        <div id="lobby-room-list"
+                            style="min-height: 100px; max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); padding: 6px; display: flex; flex-direction: column; gap: 6px;">
+                            <div style="color: #aaa; font-size: 11px; text-align: center; padding: 30px 0;">
+                                部屋リストを読み込み中...</div>
                         </div>
                     </div>
 
@@ -986,26 +1000,34 @@
                 </p>
 
                 <!-- 待機詳細情報 (グラスモルフィズム風カード) -->
-                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(0, 255, 204, 0.25); border-radius: 12px; padding: 25px; width: 90%; max-width: 450px; margin: 0 auto; box-shadow: 0 0 15px rgba(0, 255, 204, 0.08);">
-                    
+                <div
+                    style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(0, 255, 204, 0.25); border-radius: 12px; padding: 25px; width: 90%; max-width: 450px; margin: 0 auto; box-shadow: 0 0 15px rgba(0, 255, 204, 0.08);">
+
                     <!-- パルスするインジケーター -->
-                    <div class="lobby-pulse-container" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <div class="lobby-pulse-container"
+                        style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
                         <span class="lobby-pulse-dot"></span>
-                        <span style="font-size: 13px; color: #00ffcc; font-weight: bold; text-shadow: 0 0 8px rgba(0,255,204,0.4); letter-spacing: 1px;">WAITING FOR OPPONENT</span>
+                        <span
+                            style="font-size: 13px; color: #00ffcc; font-weight: bold; text-shadow: 0 0 8px rgba(0,255,204,0.4); letter-spacing: 1px;">WAITING
+                            FOR OPPONENT</span>
                     </div>
 
                     <!-- 部屋コード表示 -->
                     <div style="margin-bottom: 15px;">
-                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">部屋コード (Room Code)</span>
-                        <div id="host-wait-room-code" style="font-size: 36px; font-weight: bold; color: #00ffcc; font-family: monospace; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0, 255, 204, 0.6); background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(0,255,204,0.2); display: inline-block;">
+                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">部屋コード (Room
+                            Code)</span>
+                        <div id="host-wait-room-code"
+                            style="font-size: 36px; font-weight: bold; color: #00ffcc; font-family: monospace; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0, 255, 204, 0.6); background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(0,255,204,0.2); display: inline-block;">
                             ----
                         </div>
                     </div>
 
                     <!-- パスワード表示 -->
                     <div style="margin-bottom: 15px;">
-                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">暗証番号 (Password)</span>
-                        <div id="host-wait-password" style="font-size: 16px; font-weight: bold; color: #ff88ff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,85,204,0.2); display: inline-block; min-width: 120px;">
+                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">暗証番号
+                            (Password)</span>
+                        <div id="host-wait-password"
+                            style="font-size: 16px; font-weight: bold; color: #ff88ff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,85,204,0.2); display: inline-block; min-width: 120px;">
                             なし (一般公開)
                         </div>
                     </div>
@@ -1013,7 +1035,8 @@
                     <!-- ホスト名表示 -->
                     <div>
                         <span style="font-size: 10px; color: #888; display: block; margin-bottom: 2px;">ホスト名:</span>
-                        <span id="host-wait-username" style="font-size: 14px; color: #fff; font-weight: bold;">----</span>
+                        <span id="host-wait-username"
+                            style="font-size: 14px; color: #fff; font-weight: bold;">----</span>
                     </div>
 
                 </div>
@@ -1024,6 +1047,7 @@
                         display: flex;
                         align-items: center;
                     }
+
                     .lobby-pulse-dot {
                         width: 10px;
                         height: 10px;
@@ -1033,16 +1057,19 @@
                         animation: lobby-pulse-anim 1.5s infinite ease-in-out;
                         box-shadow: 0 0 8px #00ffcc;
                     }
+
                     @keyframes lobby-pulse-anim {
                         0% {
                             transform: scale(0.85);
                             opacity: 0.5;
                         }
+
                         50% {
                             transform: scale(1.3);
                             opacity: 1;
                             box-shadow: 0 0 15px #00ffcc;
                         }
+
                         100% {
                             transform: scale(0.85);
                             opacity: 0.5;
@@ -1098,11 +1125,13 @@
             </div>
 
             <!-- 3. ビジュアルデッキ編集画面 -->
-            <div id="screen-deck-edit" class="selection-group hidden" style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px; box-sizing: border-box;">
+            <div id="screen-deck-edit" class="selection-group hidden"
+                style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px; box-sizing: border-box;">
                 <h3 style="margin-bottom: 5px;">デッキ編成</h3>
-                <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <div
+                    style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <span style="font-size: 14px; color: #ffb3b3; font-weight: bold;">デッキ名:</span>
-                    <input type="text" id="deck-name-input" placeholder="デッキ名を入力してください" 
+                    <input type="text" id="deck-name-input" placeholder="デッキ名を入力してください"
                         style="width: 180px; padding: 6px 10px; font-size: 13px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; outline: none; text-align: center;">
                 </div>
                 <div class="deck-edit-container-layout">
@@ -1178,7 +1207,7 @@
         function showOnlineSetup() {
             showScreen('screen-online-setup');
             renderOnlineDeckList();
-            
+
             // ユーザー名の取得と設定
             let savedUsername = localStorage.getItem('touhou_kyoukaisen_username') || '';
             if (!savedUsername) {
@@ -1192,7 +1221,7 @@
             document.getElementById('online-room-password').value = '';
 
             document.getElementById('online-status').textContent = 'ロビー準備完了';
-            
+
             if (peer) {
                 peer.destroy();
                 peer = null;
@@ -1258,7 +1287,7 @@
             try {
                 const res = await fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/');
                 if (!res.ok) throw new Error('Failed to fetch bucket keys');
-                
+
                 const text = await res.text();
                 const keys = text.split('\n').map(k => k.trim()).filter(k => k.startsWith('room_'));
 
@@ -1277,7 +1306,7 @@
                         if (Date.now() - data.createdAt > 1800000 || !data.active) {
                             try {
                                 fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/' + key, { method: 'DELETE' });
-                            } catch (err) {}
+                            } catch (err) { }
                             return null;
                         }
                         return data;
@@ -1309,8 +1338,8 @@
                     row.style.marginBottom = '4px';
 
                     const hasPassword = room.password && room.password.length > 0;
-                    const passwordBadge = hasPassword 
-                        ? '<span style="color:#ff88ff; font-size:9px; background:rgba(255,85,204,0.15); padding:2px 5px; border-radius:3px; font-weight:bold; margin-left:6px;">🔒 密室</span>' 
+                    const passwordBadge = hasPassword
+                        ? '<span style="color:#ff88ff; font-size:9px; background:rgba(255,85,204,0.15); padding:2px 5px; border-radius:3px; font-weight:bold; margin-left:6px;">🔒 密室</span>'
                         : '<span style="color:#88ff88; font-size:9px; background:rgba(0,255,100,0.1); padding:2px 5px; border-radius:3px; margin-left:6px;">🔓 公開</span>';
 
                     row.innerHTML = `
@@ -1381,7 +1410,7 @@
             }
 
             onlineRole = 'host';
-            
+
             try {
                 // ホスト側も自動割り当てUUIDを用いることでシグナリングサーバーの衝突や登録遅延を100%回避
                 peer = new Peer({
@@ -1468,7 +1497,7 @@
                             fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
                                 method: 'DELETE'
                             });
-                        } catch (e) {}
+                        } catch (e) { }
                         currentHostedRoomCode = null;
                     }
                 });
@@ -1727,7 +1756,7 @@
                     fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
                         method: 'DELETE'
                     });
-                } catch (e) {}
+                } catch (e) { }
                 currentHostedRoomCode = null;
             }
 
@@ -1754,7 +1783,7 @@
                     fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
                         method: 'DELETE'
                     });
-                } catch (e) {}
+                } catch (e) { }
                 currentHostedRoomCode = null;
             }
 
@@ -2465,7 +2494,7 @@
                 slot.className = cardData ? 'deck-slot filled' : 'deck-slot';
                 slot.innerHTML = cardData
                     ? `<span style="font-size:10px;color:#00ffff;">枠 ${i + 1}</span><span style="margin-top:4px;">${cardData.name.replace('【A】', '')}</span>`
-                     : `<span>スロット ${i + 1}<br>(未設定)</span>`;
+                    : `<span>スロット ${i + 1}<br>(未設定)</span>`;
 
                 slot.onclick = () => openCardSelector('active', i);
                 actContainer.appendChild(slot);
@@ -2596,7 +2625,7 @@
                 localStorage.setItem('touhou_kyoukaisen_decks', JSON.stringify(decks));
                 localStorage.setItem('touhou_kyoukaisen_selected_deck_index', selectedDeckIndex.toString());
             } catch (e) { }
-            
+
             showScreen('screen-deck-list');
             renderDeckList();
         }
@@ -3290,7 +3319,7 @@
             while (target.hand.length < 6) {
                 let candidates = target.abilities.filter(id => id && !target.usedAbilities.includes(id) && !target.hand.includes(id));
                 if (candidates.length === 0) break; // 補充できるアビリティがなければ終了
-                
+
                 let randIdx = Math.floor(Math.random() * candidates.length);
                 let chosenId = candidates[randIdx];
                 target.hand.push(chosenId);
@@ -3452,7 +3481,7 @@
                         } else {
                             // 通常のアクティブカードをキャスト
                             let activeCardsInHand = cpu.hand.filter(id => id && !id.startsWith('ab'));
-                            
+
                             // アクティブカードがない場合はフォールバックでアビリティを使う
                             if (activeCardsInHand.length === 0 && abIdsInHand.length > 0) {
                                 let abiId = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
@@ -3510,7 +3539,7 @@
 
                 let t = turnCount - 1;
                 let baseDmgMult = Math.pow(2, (t * t + 15 * t) / 450);
-                
+
                 // p24 共鳴波動 の適用（相手の歪み倍率の増加量が 15% 上昇）
                 let playerDmgMult = baseDmgMult;
                 let cpuDmgMult = baseDmgMult;
@@ -3719,7 +3748,7 @@
             if (oldBtn) oldBtn.remove();
 
             handContainer.innerHTML = '';
-            
+
             // 6ターンごとの一括カードリセットにするため、ここでの自動即時リロードは行いません。
             if (player.hand.length === 0) {
                 const msg = document.createElement('div');
@@ -4285,7 +4314,7 @@
             },
             'myouju': (attacker, target) => {
                 let res = [];
-                let ways = 16;
+                let ways = 25;
                 let startRadius = 15;
                 for (let i = 0; i < ways; i++) {
                     let initialAngle = (Math.PI * 2 / ways) * i;
@@ -4329,7 +4358,7 @@
 
                                 if (b.lifeTimer >= 15.0 || hitWall) {
                                     // 爆発分裂！
-                                    let splitWays = 6;
+                                    let splitWays = 18;
                                     let childSpeed = 260;
                                     for (let k = 0; k < splitWays; k++) {
                                         let splitAngle = (Math.PI * 2 / splitWays) * k + (Math.random() - 0.5) * 0.1;
@@ -4347,7 +4376,7 @@
                                             update: (cb, cdt) => {
                                                 cb.lifeTimer += cdt;
                                                 // 0.6秒間進んだら消滅 (一定距離で消滅)
-                                                if (cb.lifeTimer >= 0.6) {
+                                                if (cb.lifeTimer >= 6.0) {
                                                     cb.x = -9999;
                                                     cb.y = -9999;
                                                 }
@@ -4371,7 +4400,7 @@
                                 let angleDiff = targetAngle - currentAngle;
                                 while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
                                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                                
+
                                 // 追尾旋回速度を少しマイルドに調整（2.5 ➔ 1.6）。スリリングにかわせるようになり、グレイズも可能に！
                                 let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 1.6 * dt);
 
@@ -4435,7 +4464,7 @@
                                 let spawnDist = 120 + Math.random() * 160;
                                 let starX = attacker.x + Math.cos(spawnAngle) * spawnDist;
                                 let starY = attacker.y + Math.sin(spawnAngle) * spawnDist;
-                                
+
                                 bullets.push({
                                     x: starX,
                                     y: starY,
@@ -4464,7 +4493,7 @@
                         else if (cycleTime >= 1.0 && cycleTime < 4.0) {
                             b.isWarning = false;
                             b.isResting = false;
-                            
+
                             // 急激に極太サイズまでビームを拡大
                             let targetRadius = 90;
                             b.radius = Math.min(targetRadius, b.radius + (targetRadius - b.radius) * 12 * dt);
@@ -4576,7 +4605,7 @@
                     hasHitTarget: false,
                     update: (b, dt) => {
                         b.lifeTimer += dt;
- 
+
                         if (b.state === 0) {
                             // 槍が通過した跡（軌跡）に赤い弾幕を撒き散らす
                             b.trailSpawnTimer = (b.trailSpawnTimer || 0) + dt;
@@ -4614,7 +4643,7 @@
                                     }
                                 }
                             }
- 
+
                             let reachWall = b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10 || b.y > canvas.height - 10;
                             if (reachWall || b.lifeTimer >= 1.2) {
                                 b.state = 1;
@@ -4622,12 +4651,12 @@
                                 b.vy = 0;
                                 b.radius = 20;
                                 b.lifeTimer = 0;
- 
+
                                 let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
                                 if (distToTarget < 120 && !target.isInvincible) {
                                     target.pendingDamage += 80; // 爆発時に追加で80ダメージ！
                                 }
- 
+
                                 let ways = 32; // 爆発破片を32方向に増やしてさらにド派手に！
                                 let fragmentSpeed = 300;
                                 for (let i = 0; i < ways; i++) {
@@ -4774,7 +4803,7 @@
                             addBattleEffect("【乾坤一擲】 霊撃で相手に50ダメージ！", "#ff8888");
                             checkDeath();
                         }
-                        
+
                         // パッシブp11判定 (無敵時間2.5s ➔ 3.5s)
                         if (player.passives.includes('p11')) {
                             player.invincibleTimer = 3.5;
@@ -5039,7 +5068,7 @@
                                 let ry = cpu.y - b.y;
                                 let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
                                 let distPerp = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
-                                
+
                                 if (distAlong > 0 && distAlong < 1200 && Math.abs(distPerp) < b.radius + 80) {
                                     isDanger = true;
                                     break;
@@ -5368,7 +5397,7 @@
                             if (player.passives.includes('p6')) {
                                 player.pendingHeal += 1; // グレイズヒールをp6効果に変更
                             }
-                            
+
                             // p21 吸血の牙 (10グレイズごとにHP+10)
                             if (player.passives.includes('p21') && player.grazeCount % 10 === 0) {
                                 player.hp = Math.min(player.maxHp || 1000, player.hp + 10);
@@ -5407,7 +5436,7 @@
                             }
                             continue;
                         }
-                         const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
+                        const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
                         if (distSq < (cpu.hitboxRadius + bHitR) ** 2) {
                             let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 1 : 40); // 通常弾は一発1ダメージ固定
                             // 攻撃側（PLAYER）のパッシブ補正
@@ -5446,7 +5475,7 @@
                         if (!b.grazed && distSq < (cpu.grazeRadius + bHitR) ** 2) {
                             b.grazed = true; cpu.grazeCount++;
                             cpu.pendingHeal += 1;
-                            
+
                             // p21 吸血の牙 (10グレイズごとにHP+10)
                             if (cpu.passives.includes('p21') && cpu.grazeCount % 10 === 0) {
                                 cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + 10);
@@ -5606,7 +5635,7 @@
                     if (b.state === 0) {
                         let angle = Math.atan2(b.vy, b.vx);
                         ctx.rotate(angle);
-                        
+
                         ctx.fillStyle = 'rgba(255, 10, 10, 0.2)';
                         ctx.beginPath();
                         ctx.moveTo(90, 0);
@@ -5912,11 +5941,11 @@
                     ctx.fillStyle = eff.color;
                     ctx.globalAlpha = alpha;
                     ctx.font = "bold 16px sans-serif";
-                    
+
                     // 重ならないようにずらす。かつ、徐々に上にスライドする
                     let slideY = (eff.maxTime - eff.timer) * 35;
                     let yPos = canvas.height / 2 - 100 - idx * 24 - slideY;
-                    
+
                     ctx.shadowColor = 'rgba(0,0,0,0.8)';
                     ctx.shadowBlur = 4;
                     ctx.fillText(eff.text, PLAY_WIDTH / 2, yPos);
