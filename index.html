@@ -1154,6 +1154,7 @@
         let onlineConnected = false;
         let opponentDeck = null;
         let connectionTimeoutId = null;
+        let hostTimeoutId = null;
         let currentHostedRoomCode = null;
 
         // 同期用バッファ
@@ -1272,7 +1273,13 @@
                         const roomRes = await fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/' + key);
                         if (!roomRes.ok) return null;
                         const data = await roomRes.json();
-                        if (Date.now() - data.createdAt > 3600000 || !data.active) return null;
+                        // 30分（1800000ミリ秒）以上接続がない、または非アクティブな部屋はKVdbから自動削除してクリーンアップ
+                        if (Date.now() - data.createdAt > 1800000 || !data.active) {
+                            try {
+                                fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/' + key, { method: 'DELETE' });
+                            } catch (err) {}
+                            return null;
+                        }
                         return data;
                     } catch (e) {
                         return null;
@@ -1404,6 +1411,15 @@
                     statusEl.textContent = `部屋「${roomCode}」を作成しました！相手の接続を待っています...`;
                     currentHostedRoomCode = roomCode;
 
+                    // 30分（1800000ミリ秒）対戦相手の接続がない場合は自動解散
+                    if (hostTimeoutId) {
+                        clearTimeout(hostTimeoutId);
+                    }
+                    hostTimeoutId = setTimeout(() => {
+                        alert('30分間対戦相手の接続がなかったため、部屋を自動的に解散しました。');
+                        cancelHosting();
+                    }, 1800000);
+
                     // KVdbに部屋を登録
                     const username = document.getElementById('online-username').value.trim() || '境界の開拓者';
                     const password = document.getElementById('online-room-password').value.trim();
@@ -1437,6 +1453,10 @@
                         c.send({ type: 'rejected', reason: 'already_connected' });
                         c.close();
                         return;
+                    }
+                    if (hostTimeoutId) {
+                        clearTimeout(hostTimeoutId);
+                        hostTimeoutId = null;
                     }
                     conn = c;
                     onlineRole = 'host';
@@ -1685,6 +1705,10 @@
                 clearTimeout(connectionTimeoutId);
                 connectionTimeoutId = null;
             }
+            if (hostTimeoutId) {
+                clearTimeout(hostTimeoutId);
+                hostTimeoutId = null;
+            }
             isOnlineMode = false;
             onlineConnected = false;
             opponentDeck = null;
@@ -1711,6 +1735,10 @@
         }
 
         function cancelHosting() {
+            if (hostTimeoutId) {
+                clearTimeout(hostTimeoutId);
+                hostTimeoutId = null;
+            }
             if (peer) {
                 peer.destroy();
                 peer = null;
@@ -4273,17 +4301,8 @@
                         rotAngle: initialAngle,
                         distRadius: startRadius,
                         lifeTimer: 0,
-                        bounceCount: 0,
                         update: (b, dt) => {
                             b.lifeTimer += dt;
-
-                            // 弾自体の最大寿命を設定（6.0秒で美しく自己消滅し、無限ループを完全に防止）
-                            if (b.lifeTimer >= 6.0) {
-                                b.x = -9999;
-                                b.y = -9999;
-                                return;
-                            }
-
                             b.color = 'hsl(' + ((b.rotAngle * 180 / Math.PI + b.lifeTimer * 200) % 360) + ', 100%, 70%)';
 
                             if (b.state === 0) {
@@ -4300,6 +4319,47 @@
                                     b.vy = Math.sin(angle) * 350;
                                 }
                             } else {
+                                // 🌟 15秒経過するか、壁に当たったら爆発して6分裂する！
+                                let margin = 12;
+                                let hitWall = false;
+                                if (b.x < margin && b.vx < 0) hitWall = true;
+                                if (b.x > PLAY_WIDTH - margin && b.vx > 0) hitWall = true;
+                                if (b.y < 120 && b.vy < 0) hitWall = true;
+                                if (b.y > canvas.height - margin && b.vy > 0) hitWall = true;
+
+                                if (b.lifeTimer >= 15.0 || hitWall) {
+                                    // 爆発分裂！
+                                    let splitWays = 6;
+                                    let childSpeed = 260;
+                                    for (let k = 0; k < splitWays; k++) {
+                                        let splitAngle = (Math.PI * 2 / splitWays) * k + (Math.random() - 0.5) * 0.1;
+                                        bullets.push({
+                                            x: b.x,
+                                            y: b.y,
+                                            vx: Math.cos(splitAngle) * childSpeed,
+                                            vy: Math.sin(splitAngle) * childSpeed,
+                                            radius: 6,
+                                            team: b.team,
+                                            color: 'hsl(' + (k * (360 / splitWays)) + ', 100%, 75%)',
+                                            isNormal: true,
+                                            customDmg: 15,
+                                            lifeTimer: 0,
+                                            update: (cb, cdt) => {
+                                                cb.lifeTimer += cdt;
+                                                // 0.6秒間進んだら消滅 (一定距離で消滅)
+                                                if (cb.lifeTimer >= 0.6) {
+                                                    cb.x = -9999;
+                                                    cb.y = -9999;
+                                                }
+                                            }
+                                        });
+                                    }
+                                    // 親弾消滅
+                                    b.x = -9999;
+                                    b.y = -9999;
+                                    return;
+                                }
+
                                 let currTarget = b.team === 'PLAYER' ? cpu : player;
                                 let tx = currTarget.x;
                                 let ty = currTarget.y;
@@ -4318,95 +4378,6 @@
                                 let speed = 350;
                                 b.vx = Math.cos(nextAngle) * speed;
                                 b.vy = Math.sin(nextAngle) * speed;
-
-                                let margin = 10;
-                                let bounced = false;
-                                if (b.x < margin && b.vx < 0) { b.vx = -b.vx; bounced = true; }
-                                if (b.x > PLAY_WIDTH - margin && b.vx > 0) { b.vx = -b.vx; bounced = true; }
-                                if (b.y < 120 && b.vy < 0) { b.vy = -b.vy; bounced = true; }
-                                if (b.y > canvas.height - margin && b.vy > 0) { b.vy = -b.vy; bounced = true; }
-
-                                if (bounced) {
-                                    b.bounceCount++;
-                                    if (b.bounceCount > 2) {
-                                        b.x = -9999;
-                                        b.y = -9999;
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                return res;
-            },
-            'myouju': (attacker, target) => {
-                let res = [];
-                let ways = 28;
-                let startRadius = 15;
-                for (let i = 0; i < ways; i++) {
-                    let initialAngle = (Math.PI * 2 / ways) * i;
-                    res.push({
-                        x: attacker.x + Math.cos(initialAngle) * startRadius,
-                        y: attacker.y + Math.sin(initialAngle) * startRadius,
-                        vx: 0,
-                        vy: 0,
-                        radius: 9,
-                        team: attacker.team,
-                        color: 'hsl(' + (i * (360 / ways)) + ', 100%, 70%)',
-                        state: 0, // 0: 回転拡大, 1: 追尾
-                        rotAngle: initialAngle,
-                        distRadius: startRadius,
-                        lifeTimer: 0,
-                        bounceCount: 0,
-                        update: (b, dt) => {
-                            b.lifeTimer += dt;
-                            b.color = 'hsl(' + ((b.rotAngle * 180 / Math.PI + b.lifeTimer * 200) % 360) + ', 100%, 70%)';
-
-                            if (b.state === 0) {
-                                b.rotAngle += 4.5 * dt;
-                                b.distRadius = Math.min(80, b.distRadius + 75 * dt);
-                                b.x = attacker.x + Math.cos(b.rotAngle) * b.distRadius;
-                                b.y = attacker.y + Math.sin(b.rotAngle) * b.distRadius;
-
-                                if (b.lifeTimer >= 0.8) {
-                                    b.state = 1;
-                                    let currTarget = b.team === 'PLAYER' ? cpu : player;
-                                    let angle = Math.atan2(currTarget.y - b.y, currTarget.x - b.x);
-                                    b.vx = Math.cos(angle) * 350;
-                                    b.vy = Math.sin(angle) * 350;
-                                }
-                            } else {
-                                let currTarget = b.team === 'PLAYER' ? cpu : player;
-                                let tx = currTarget.x;
-                                let ty = currTarget.y;
-                                let dx = tx - b.x;
-                                let dy = ty - b.y;
-                                let targetAngle = Math.atan2(dy, dx);
-                                let currentAngle = Math.atan2(b.vy, b.vx);
-
-                                let angleDiff = targetAngle - currentAngle;
-                                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-                                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 2.5 * dt);
-
-                                let speed = 350;
-                                b.vx = Math.cos(nextAngle) * speed;
-                                b.vy = Math.sin(nextAngle) * speed;
-
-                                let margin = 10;
-                                let bounced = false;
-                                if (b.x < margin && b.vx < 0) { b.vx = -b.vx; bounced = true; }
-                                if (b.x > PLAY_WIDTH - margin && b.vx > 0) { b.vx = -b.vx; bounced = true; }
-                                if (b.y < margin && b.vy < 0) { b.vy = -b.vy; bounced = true; }
-                                if (b.y > canvas.height - margin && b.vy > 0) { b.vy = -b.vy; bounced = true; }
-
-                                if (bounced) {
-                                    b.bounceCount++;
-                                    if (b.bounceCount > 2) {
-                                        b.x = -9999;
-                                        b.y = -9999;
-                                    }
-                                }
                             }
                         }
                     });
