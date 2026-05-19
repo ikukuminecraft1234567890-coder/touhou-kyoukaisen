@@ -4342,10 +4342,12 @@
 
                                 if (b.lifeTimer >= 0.8) {
                                     b.state = 1;
-                                    let currTarget = b.team === 'PLAYER' ? cpu : player;
-                                    let angle = Math.atan2(currTarget.y - b.y, currTarget.x - b.x);
-                                    b.vx = Math.cos(angle) * 350;
-                                    b.vy = Math.sin(angle) * 350;
+                                    let radialVx = Math.cos(b.rotAngle) * 160;
+                                    let radialVy = Math.sin(b.rotAngle) * 160;
+                                    let tangentialVx = Math.cos(b.rotAngle + Math.PI / 2) * (b.distRadius * 3.8);
+                                    let tangentialVy = Math.sin(b.rotAngle + Math.PI / 2) * (b.distRadius * 3.8);
+                                    b.vx = radialVx + tangentialVx;
+                                    b.vy = radialVy + tangentialVy;
                                 }
                             } else {
                                 // 🌟 15秒経過するか、壁に当たったら爆発して6分裂する！
@@ -4390,23 +4392,23 @@
                                 }
 
                                 let currTarget = b.team === 'PLAYER' ? cpu : player;
-                                let tx = currTarget.x;
-                                let ty = currTarget.y;
-                                let dx = tx - b.x;
-                                let dy = ty - b.y;
-                                let targetAngle = Math.atan2(dy, dx);
-                                let currentAngle = Math.atan2(b.vy, b.vx);
-
-                                let angleDiff = targetAngle - currentAngle;
-                                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-                                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-
-                                // 追尾旋回速度を少しマイルドに調整（2.5 ➔ 1.6）。スリリングにかわせるようになり、グレイズも可能に！
-                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 1.6 * dt);
-
-                                let speed = 350;
-                                b.vx = Math.cos(nextAngle) * speed;
-                                b.vy = Math.sin(nextAngle) * speed;
+                                let dx = currTarget.x - b.x;
+                                let dy = currTarget.y - b.y;
+                                let dist = Math.hypot(dx, dy);
+                                let targetSpeed = 350;
+                                if (dist > 0) {
+                                    let desiredVx = (dx / dist) * targetSpeed;
+                                    let desiredVy = (dy / dist) * targetSpeed;
+                                    // 慣性を大きく残しつつ、緩やかに相手へ引き寄せられるようにステアリング制御（2.2）をかける
+                                    let steeringFactor = 2.2;
+                                    b.vx += (desiredVx - b.vx) * steeringFactor * dt;
+                                    b.vy += (desiredVy - b.vy) * steeringFactor * dt;
+                                }
+                                let currSpeed = Math.hypot(b.vx, b.vy);
+                                if (currSpeed > targetSpeed) {
+                                    b.vx = (b.vx / currSpeed) * targetSpeed;
+                                    b.vy = (b.vy / currSpeed) * targetSpeed;
+                                }
                             }
                         }
                     });
