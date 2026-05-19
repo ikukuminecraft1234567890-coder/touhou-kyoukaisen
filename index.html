@@ -5316,6 +5316,10 @@
                         bullets.splice(i, 1); continue;
                     }
 
+                    if (b.isBeam || b.isGungnir) {
+                        continue;
+                    }
+
                     let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
 
                     if (b.isBombPiece) {
