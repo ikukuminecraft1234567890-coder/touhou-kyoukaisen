@@ -4353,7 +4353,7 @@
                                 let hitWall = false;
                                 if (b.x < margin && b.vx < 0) hitWall = true;
                                 if (b.x > PLAY_WIDTH - margin && b.vx > 0) hitWall = true;
-                                if (b.y < 120 && b.vy < 0) hitWall = true;
+                                if (b.y < margin && b.vy < 0) hitWall = true;
                                 if (b.y > canvas.height - margin && b.vy > 0) hitWall = true;
 
                                 if (b.lifeTimer >= 15.0 || hitWall) {
