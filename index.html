@@ -977,6 +977,88 @@
                 </div>
             </div>
 
+            <!-- 5-2. オンライン対戦ホスト待機画面 -->
+            <div id="screen-online-host-waiting" class="selection-group hidden"
+                style="width: 100%; max-height: 90%; overflow-y: auto; padding: 25px; box-sizing: border-box; text-align: center;">
+                <h3 style="margin-bottom: 5px; font-size: 24px;">対戦相手を待機中...</h3>
+                <p style="font-size: 11px; color: #aaa; margin: 0 0 25px 0;">
+                    あなたの部屋にゲストが接続するまで、この画面のままお待ちください。
+                </p>
+
+                <!-- 待機詳細情報 (グラスモルフィズム風カード) -->
+                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(0, 255, 204, 0.25); border-radius: 12px; padding: 25px; width: 90%; max-width: 450px; margin: 0 auto; box-shadow: 0 0 15px rgba(0, 255, 204, 0.08);">
+                    
+                    <!-- パルスするインジケーター -->
+                    <div class="lobby-pulse-container" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                        <span class="lobby-pulse-dot"></span>
+                        <span style="font-size: 13px; color: #00ffcc; font-weight: bold; text-shadow: 0 0 8px rgba(0,255,204,0.4); letter-spacing: 1px;">WAITING FOR OPPONENT</span>
+                    </div>
+
+                    <!-- 部屋コード表示 -->
+                    <div style="margin-bottom: 15px;">
+                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">部屋コード (Room Code)</span>
+                        <div id="host-wait-room-code" style="font-size: 36px; font-weight: bold; color: #00ffcc; font-family: monospace; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0, 255, 204, 0.6); background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(0,255,204,0.2); display: inline-block;">
+                            ----
+                        </div>
+                    </div>
+
+                    <!-- パスワード表示 -->
+                    <div style="margin-bottom: 15px;">
+                        <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">暗証番号 (Password)</span>
+                        <div id="host-wait-password" style="font-size: 16px; font-weight: bold; color: #ff88ff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,85,204,0.2); display: inline-block; min-width: 120px;">
+                            なし (一般公開)
+                        </div>
+                    </div>
+
+                    <!-- ホスト名表示 -->
+                    <div>
+                        <span style="font-size: 10px; color: #888; display: block; margin-bottom: 2px;">ホスト名:</span>
+                        <span id="host-wait-username" style="font-size: 14px; color: #fff; font-weight: bold;">----</span>
+                    </div>
+
+                </div>
+
+                <!-- スピナー/アビリティ風パルス用CSS -->
+                <style>
+                    .lobby-pulse-container {
+                        display: flex;
+                        align-items: center;
+                    }
+                    .lobby-pulse-dot {
+                        width: 10px;
+                        height: 10px;
+                        background-color: #00ffcc;
+                        border-radius: 50%;
+                        display: inline-block;
+                        animation: lobby-pulse-anim 1.5s infinite ease-in-out;
+                        box-shadow: 0 0 8px #00ffcc;
+                    }
+                    @keyframes lobby-pulse-anim {
+                        0% {
+                            transform: scale(0.85);
+                            opacity: 0.5;
+                        }
+                        50% {
+                            transform: scale(1.3);
+                            opacity: 1;
+                            box-shadow: 0 0 15px #00ffcc;
+                        }
+                        100% {
+                            transform: scale(0.85);
+                            opacity: 0.5;
+                        }
+                    }
+                </style>
+
+                <!-- アクションボタン -->
+                <div style="margin-top: 30px;">
+                    <button class="menu-btn" onclick="cancelHosting()"
+                        style="width: 200px; background: linear-gradient(135deg, #551111 0%, #220000 100%); border-color: #ff3333; color: #ff8888; font-weight: bold; box-shadow: 0 0 8px rgba(255,50,50,0.15);">
+                        部屋を解散して戻る
+                    </button>
+                </div>
+            </div>
+
             <!-- キーコンフィグ画面 -->
             <div id="screen-key-config" class="selection-group hidden"
                 style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
@@ -1253,7 +1335,7 @@
                             }
                         }
                         document.getElementById('online-room-code').value = room.roomCode;
-                        joinRoom(room.roomCode);
+                        joinRoom(room.roomCode, room.peerId);
                     };
 
                     listContainer.appendChild(row);
@@ -1294,9 +1376,8 @@
             onlineRole = 'host';
             
             try {
-                // 衝突を防ぐため専用の接頭辞を付与
-                const hostPeerId = 'touhou-kyoukaisen-room-' + roomCode;
-                peer = new Peer(hostPeerId, {
+                // ホスト側も自動割り当てUUIDを用いることでシグナリングサーバーの衝突や登録遅延を100%回避
+                peer = new Peer({
                     host: '0.peerjs.com',
                     port: 443,
                     secure: true,
@@ -1328,11 +1409,18 @@
                     const password = document.getElementById('online-room-password').value.trim();
                     localStorage.setItem('touhou_kyoukaisen_username', username);
 
+                    // ホスト専用待機画面の情報を更新して切り替え
+                    document.getElementById('host-wait-room-code').textContent = roomCode;
+                    document.getElementById('host-wait-password').textContent = password || 'なし (一般公開)';
+                    document.getElementById('host-wait-username').textContent = username;
+                    showScreen('screen-online-host-waiting');
+
                     try {
                         await fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${roomCode}`, {
                             method: 'POST',
                             body: JSON.stringify({
                                 roomCode: roomCode,
+                                peerId: id, // ここに本当のPeerJS IDを保存
                                 password: password,
                                 hostName: username,
                                 createdAt: Date.now(),
@@ -1384,7 +1472,7 @@
             }
         }
 
-        function joinRoom(directCode) {
+        async function joinRoom(directCode, directPeerId) {
             const roomCode = directCode || document.getElementById('online-room-code').value.trim();
             const statusEl = document.getElementById('online-status');
 
@@ -1394,6 +1482,29 @@
             }
 
             statusEl.textContent = `部屋「${roomCode}」に接続中...`;
+
+            let targetPeerId = directPeerId;
+
+            // もし直接のpeerIdがない場合（手動入力の場合）、KVdbから部屋情報を取得して入手
+            if (!targetPeerId) {
+                try {
+                    const res = await fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${roomCode}`);
+                    if (!res.ok) throw new Error('Room not found');
+                    const data = await res.json();
+                    if (!data.active) throw new Error('Room inactive');
+
+                    const inputPwd = document.getElementById('online-room-password').value.trim();
+                    if (data.password && data.password !== inputPwd) {
+                        alert('パスワードが違います！');
+                        statusEl.textContent = 'パスワード不一致';
+                        return;
+                    }
+                    targetPeerId = data.peerId;
+                } catch (e) {
+                    statusEl.textContent = `部屋「${roomCode}」が見つかりませんでした。`;
+                    return;
+                }
+            }
 
             if (peer) {
                 peer.destroy();
@@ -1437,8 +1548,7 @@
                 });
 
                 peer.on('open', (id) => {
-                    const hostPeerId = 'touhou-kyoukaisen-room-' + roomCode;
-                    conn = peer.connect(hostPeerId);
+                    conn = peer.connect(targetPeerId);
                     setupConnection();
 
                     // 15秒の接続タイムアウトタイマーを設定
@@ -1454,7 +1564,7 @@
                 peer.on('error', (err) => {
                     console.error('PeerJS Error:', err);
                     if (err.type === 'peer-unavailable') {
-                        statusEl.textContent = `部屋「${roomCode}」が見つかりませんでした。ホストがまだ部屋を作成していないか、コードが間違っています。`;
+                        statusEl.textContent = `部屋「${roomCode}」のホストへの接続に失敗しました。ホストが解散した可能性があります。`;
                     } else {
                         statusEl.textContent = 'エラー: ' + err.type;
                     }
@@ -1598,6 +1708,31 @@
             }
 
             showScreen('screen-menu');
+        }
+
+        function cancelHosting() {
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            if (conn) {
+                conn.close();
+                conn = null;
+            }
+
+            // KVdbから部屋を削除
+            if (currentHostedRoomCode) {
+                try {
+                    fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
+                        method: 'DELETE'
+                    });
+                } catch (e) {}
+                currentHostedRoomCode = null;
+            }
+
+            // 再度ロビー画面を表示してリスト更新
+            showScreen('screen-online-setup');
+            refreshRoomList();
         }
 
         // ブラウザやタブを閉じる際、ホストしていた部屋をKVdbから非活性化
@@ -4141,6 +4276,14 @@
                         bounceCount: 0,
                         update: (b, dt) => {
                             b.lifeTimer += dt;
+
+                            // 弾自体の最大寿命を設定（6.0秒で美しく自己消滅し、無限ループを完全に防止）
+                            if (b.lifeTimer >= 6.0) {
+                                b.x = -9999;
+                                b.y = -9999;
+                                return;
+                            }
+
                             b.color = 'hsl(' + ((b.rotAngle * 180 / Math.PI + b.lifeTimer * 200) % 360) + ', 100%, 70%)';
 
                             if (b.state === 0) {
@@ -4168,7 +4311,9 @@
                                 let angleDiff = targetAngle - currentAngle;
                                 while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
                                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 2.5 * dt);
+                                
+                                // 追尾旋回速度を少しマイルドに調整（2.5 ➔ 1.6）。スリリングにかわせるようになり、グレイズも可能に！
+                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 1.6 * dt);
 
                                 let speed = 350;
                                 b.vx = Math.cos(nextAngle) * speed;
