@@ -5681,7 +5681,7 @@
                         ctx.fill();
                     }
                     ctx.restore();
-                } else if (b.isNormal && b.team === 'PLAYER') {
+                } else if (b.isNormal && b.team === 'PLAYER' && !b.color) {
                     ctx.save();
                     ctx.translate(b.x, b.y);
                     ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
