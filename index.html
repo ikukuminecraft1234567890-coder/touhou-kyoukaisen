@@ -1130,7 +1130,21 @@
             statusEl.textContent = 'シグナリングサーバーに接続中...';
 
             try {
-                peer = new Peer();
+                // ローカルファイル(file://)や異なるプロトコル間でのシグナリングサーバー不一致を防ぐため、
+                // 常に同じセキュアWSSサーバー(wss://0.peerjs.com:443)に接続するよう明示的に設定します。
+                peer = new Peer({
+                    host: '0.peerjs.com',
+                    port: 443,
+                    secure: true,
+                    debug: 1,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' }
+                        ]
+                    }
+                });
 
                 peer.on('open', (id) => {
                     myIdEl.textContent = id;
