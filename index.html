@@ -1832,13 +1832,13 @@
                 { id: 'p2', name: '【P】移動支援', desc: '自機・敵機の通常移動速度が大幅にアップする。' },
                 { id: 'p3', name: '【P】かすり拡大', desc: 'グレイズ（掠り判定）の範囲が1.5倍に拡大する。' },
                 { id: 'p4', name: '【P】霊撃増幅', desc: 'ボム（霊撃）の初期所持数と最大数が＋1される。' },
-                { id: 'p5', name: '【P】かすり回復', desc: 'グレイズ数が300の倍数に達するたびに、ボム（霊撃）が1つ回復する。' },
+                { id: 'p5', name: '【P】かすり回復', desc: 'グレイズ数が400の倍数に達するたびに、ボム（霊撃）が1つ回復する。' },
                 { id: 'p6', name: '【P】かすり治癒', desc: 'グレイズ（掠り）が発生するたびに、自身のHPが1回復する。' },
                 { id: 'p7', name: '【P】豊穣の守り', desc: 'HPが25%以下になったとき、一度だけHPを300即座に回復する。' },
                 { id: 'p8', name: '【P】死中活路', desc: '所持ボム（霊撃）が0のとき、相手に与える弾幕ダメージが1.25倍になる。' },
                 { id: 'p9', name: '【P】縮地・神風', desc: '自機の移動速度（通常・低速ともに）が常時12%上昇する。' },
-                { id: 'p10', name: '【P】霊力還元', desc: 'グレイズ時に3%の超低確率でボム（霊撃）が即座に1つ回復する。' },
-                { id: 'p11', name: '【P】八卦の加護', desc: 'ボム（霊撃）展開時の無敵時間が通常2.5秒から3.5秒に延長される。' },
+                { id: 'p10', name: '【P】霊力還元', desc: 'グレイズ時に1%の超低確率でボム（霊撃）が即座に1つ回復する。' },
+                { id: 'p11', name: '【P】八卦の加護', desc: 'ボム（霊撃）展開時の無敵時間が通常2.5秒から3.0秒に延長される。' },
                 { id: 'p12', name: '【P】金剛身', desc: '最大HPの上限が 1000 ➔ 1200 に増加する。' },
                 { id: 'p13', name: '【P】自然治癒', desc: '毎ターンの精算（RESOLUTION）時にHPを30自動回復する。' },
                 { id: 'p14', name: '【P】気炎万丈', desc: '自身が相手に与える蓄積ダメージが常時10%増加する。' },
@@ -1846,14 +1846,14 @@
                 { id: 'p16', name: '【P】背水の陣', desc: '自身のHPが300以下のとき、相手に与える蓄積ダメージが25%増加する。' },
                 { id: 'p17', name: '【P】金剛結界', desc: '自身のHPが300以下のとき、被弾ダメージが20%軽減される。' },
                 { id: 'p18', name: '【P】韋駄天', desc: '低速移動（Shiftキー/スローボタン）時の移動速度が25%上昇する。' },
-                { id: 'p19', name: '【P】乾坤一擲', desc: '自分がボム（霊撃）を発動した際、相手に即座に50のダメージを与える。' },
-                { id: 'p20', name: '【P】霊力節約', desc: 'ボム（霊撃）を発動したとき、15%の確率でボム残数が消費されない。' },
+                { id: 'p19', name: '【P】乾坤一擲', desc: '自分がボム（霊撃）を発動した際、相手に即座に25のダメージを与える。' },
+                { id: 'p20', name: '【P】霊力節約', desc: 'ボム（霊撃）を発動したとき、10%の確率でボム残数が消費されない。' },
                 { id: 'p21', name: '【P】吸血の牙', desc: '累計10回グレイズするごとに、自身のHPが10回復する。' },
                 { id: 'p22', name: '【P】憤怒の炎', desc: '被弾ダメージを受けた次のターン、与える蓄積ダメージが20%増加する。' },
                 { id: 'p23', name: '【P】幸運のダイス', desc: '毎ターン開始時、10%の確率で「1.5秒間の完全無敵」または「ボム1個回復」が発動する。' },
                 { id: 'p24', name: '【P】共鳴波動', desc: '境界の歪み（ターンスケール）による相手のダメージ倍率の増加量が15%上昇する。' },
                 { id: 'p25', name: '【P】絶体絶命', desc: 'HPが0になるダメージを受けた時、一度だけHP1で踏みとどまり1.5秒間無敵になる。' },
-                { id: 'p26', name: '【P】霊素調和', desc: 'ターン開始時に20%の確率でボムが1回復する。' }
+                { id: 'p26', name: '【P】霊素調和', desc: 'ターン開始時に10%の確率でボムが1回復する。' }
             ]
         };
 
@@ -3356,7 +3356,7 @@
                             }
                         }
                     }
-                    if (player.passives.includes('p26') && Math.random() < 0.20) {
+                    if (player.passives.includes('p26') && Math.random() < 0.10) {
                         if (player.bombs < player.maxBombs) {
                             player.bombs++;
                             addBattleEffect("【霊素調和】 ボムが1つ回復！", "#aaffaa");
@@ -3376,7 +3376,7 @@
                             }
                         }
                     }
-                    if (cpu.passives.includes('p26') && Math.random() < 0.20) {
+                    if (cpu.passives.includes('p26') && Math.random() < 0.10) {
                         if (cpu.bombs < cpu.maxBombs) {
                             cpu.bombs++;
                             addBattleEffect("【霊素調和】 相手のボムが1つ回復！", "#ffaacc");
@@ -4538,14 +4538,14 @@
                             // 美しい虹色のうねる星弾スプレー射出
                             if (b.starSpawnTimer === undefined) b.starSpawnTimer = 0;
                             b.starSpawnTimer += dt;
-                            if (b.starSpawnTimer >= 0.15) {
+                            if (b.starSpawnTimer >= 0.08) {
                                 b.starSpawnTimer = 0;
-                                let ways = 2;
+                                let ways = 3;
                                 let baseAngle = attacker.team === 'CPU' ? Math.PI / 2 : -Math.PI / 2;
                                 for (let i = 0; i < ways; i++) {
-                                    let offsetAngle = i === 0 ? -0.42 : 0.42;
+                                    let offsetAngle = (i - 1) * 0.38;
                                     let sprayAngle = baseAngle + offsetAngle + (Math.random() - 0.5) * 0.1;
-                                    let starSpeed = 110 + Math.random() * 90;
+                                    let starSpeed = 240 + Math.random() * 120;
                                     bullets.push({
                                         x: attacker.x + (Math.random() - 0.5) * 30,
                                         y: attacker.y + knockbackDir * 15,
@@ -4555,6 +4555,8 @@
                                         team: b.team,
                                         color: 'hsl(' + ((performance.now() / 3.5 + i * 120) % 360) + ', 100%, 65%)',
                                         isNormal: false,
+                                        isStar: true,
+                                        rotAngle: Math.random() * Math.PI * 2,
                                         customDmg: 15, // かすり傷程度の15ダメージ
                                         curve: (Math.random() - 0.5) * 0.5,
                                         update: (sb, sdt) => {
@@ -4788,7 +4790,7 @@
                     mobileBombTriggered = false; // 消費
                     if (bombTriggered && player.bombs >= 1 && !player.isInvincible) {
                         let consumed = true;
-                        if (player.passives.includes('p20') && Math.random() < 0.15) {
+                        if (player.passives.includes('p20') && Math.random() < 0.10) {
                             consumed = false;
                             addBattleEffect("【霊力節約】 ボムが消費されなかった！", "#aaffaa");
                         }
@@ -4799,14 +4801,14 @@
 
                         // p19 乾坤一擲
                         if (player.passives.includes('p19')) {
-                            cpu.hp = Math.max(0, cpu.hp - 50);
-                            addBattleEffect("【乾坤一擲】 霊撃で相手に50ダメージ！", "#ff8888");
+                            cpu.hp = Math.max(0, cpu.hp - 25);
+                            addBattleEffect("【乾坤一擲】 霊撃で相手に25ダメージ！", "#ff8888");
                             checkDeath();
                         }
 
-                        // パッシブp11判定 (無敵時間2.5s ➔ 3.5s)
+                        // パッシブp11判定 (無敵時間2.5s ➔ 3.0s)
                         if (player.passives.includes('p11')) {
-                            player.invincibleTimer = 3.5;
+                            player.invincibleTimer = 3.0;
                             addBattleEffect("【八卦の加護】 霊撃の無敵時間延長！", "#00ffff");
                         } else {
                             player.invincibleTimer = 2.5;
@@ -4842,7 +4844,7 @@
                         if (receivedBomb) {
                             receivedBomb = false;
                             let consumed = true;
-                            if (cpu.passives.includes('p20') && Math.random() < 0.15) {
+                            if (cpu.passives.includes('p20') && Math.random() < 0.10) {
                                 consumed = false;
                                 addBattleEffect("【霊力節約】 相手のボムが消費されなかった！", "#ffaacc");
                             }
@@ -4853,13 +4855,13 @@
 
                             // p19 乾坤一擲
                             if (cpu.passives.includes('p19')) {
-                                player.hp = Math.max(0, player.hp - 50);
-                                addBattleEffect("【乾坤一擲】 霊撃であなたに50ダメージ！", "#ff8888");
+                                player.hp = Math.max(0, player.hp - 25);
+                                addBattleEffect("【乾坤一擲】 霊撃であなたに25ダメージ！", "#ff8888");
                                 checkDeath();
                             }
 
                             if (cpu.passives.includes('p11')) {
-                                cpu.invincibleTimer = 3.5;
+                                cpu.invincibleTimer = 3.0;
                                 addBattleEffect("【八卦の加護】 相手の霊撃無敵時間が延長！", "#ff5555");
                             } else {
                                 cpu.invincibleTimer = 2.5;
@@ -4883,7 +4885,7 @@
                         if (cpu.bombs >= 1 && !cpu.isInvincible && cpu.bombCooldown <= 0) {
                             if (cpu.pendingDamage > 40 || (cpu.hp < 300 && Math.random() < 0.05)) {
                                 let consumed = true;
-                                if (cpu.passives.includes('p20') && Math.random() < 0.15) {
+                                if (cpu.passives.includes('p20') && Math.random() < 0.10) {
                                     consumed = false;
                                     addBattleEffect("【霊力節約】 相手のボムが消費されなかった！", "#ffaacc");
                                 }
@@ -4894,13 +4896,13 @@
 
                                 // p19 乾坤一擲
                                 if (cpu.passives.includes('p19')) {
-                                    player.hp = Math.max(0, player.hp - 50);
-                                    addBattleEffect("【乾坤一擲】 霊撃であなたに50ダメージ！", "#ff8888");
+                                    player.hp = Math.max(0, player.hp - 25);
+                                    addBattleEffect("【乾坤一擲】 霊撃であなたに25ダメージ！", "#ff8888");
                                     checkDeath();
                                 }
 
                                 if (cpu.passives.includes('p11')) {
-                                    cpu.invincibleTimer = 3.5;
+                                    cpu.invincibleTimer = 3.0;
                                     addBattleEffect("【八卦の加護】 相手の霊撃無敵時間が延長！", "#ff5555");
                                 } else {
                                     cpu.invincibleTimer = 2.5;
@@ -5347,12 +5349,12 @@
                                 }
                                 spawnBombPiece(b.x, b.y, 3);
 
-                                // パッシブp5の判定 (300グレイズごとに回復に調整)
-                                if (player.passives.includes('p5') && player.grazeCount % 300 === 0) {
+                                // パッシブp5の判定 (400グレイズごとに回復に調整)
+                                if (player.passives.includes('p5') && player.grazeCount % 400 === 0) {
                                     if (player.bombs < player.maxBombs) player.bombs++;
                                 }
-                                // パッシブp10の判定 (3%でボム回復)
-                                if (player.passives.includes('p10') && Math.random() < 0.03) {
+                                // パッシブp10の判定 (1%でボム回復)
+                                if (player.passives.includes('p10') && Math.random() < 0.01) {
                                     if (player.bombs < player.maxBombs) {
                                         player.bombs++;
                                         addBattleEffect("【霊力還元】 ボムが1つ回復！", "#aaffaa");
@@ -5405,12 +5407,12 @@
 
                             spawnBombPiece(b.x, b.y, 3);
 
-                            // パッシブp5の判定 (300グレイズごとに回復に調整)
-                            if (player.passives.includes('p5') && player.grazeCount % 300 === 0) {
+                            // パッシブp5の判定 (400グレイズごとに回復に調整)
+                            if (player.passives.includes('p5') && player.grazeCount % 400 === 0) {
                                 if (player.bombs < player.maxBombs) player.bombs++;
                             }
-                            // パッシブp10の判定 (3%でボム回復)
-                            if (player.passives.includes('p10') && Math.random() < 0.03) {
+                            // パッシブp10の判定 (1%でボム回復)
+                            if (player.passives.includes('p10') && Math.random() < 0.01) {
                                 if (player.bombs < player.maxBombs) {
                                     player.bombs++;
                                     addBattleEffect("【霊力還元】 ボムが1つ回復！", "#aaffaa");
@@ -5424,10 +5426,10 @@
                                 b.grazed = true; cpu.grazeCount++;
                                 cpu.pendingHeal += 1;
                                 // CPUのパッシブ判定
-                                if (cpu.passives.includes('p5') && cpu.grazeCount % 300 === 0) {
+                                if (cpu.passives.includes('p5') && cpu.grazeCount % 400 === 0) {
                                     if (cpu.bombs < cpu.maxBombs) cpu.bombs++;
                                 }
-                                if (cpu.passives.includes('p10') && Math.random() < 0.03) {
+                                if (cpu.passives.includes('p10') && Math.random() < 0.01) {
                                     if (cpu.bombs < cpu.maxBombs) {
                                         cpu.bombs++;
                                         addBattleEffect("【霊力還元】 相手のボムが回復！", "#ff8888");
@@ -5482,10 +5484,10 @@
                             }
 
                             // CPUのパッシブ判定
-                            if (cpu.passives.includes('p5') && cpu.grazeCount % 300 === 0) {
+                            if (cpu.passives.includes('p5') && cpu.grazeCount % 400 === 0) {
                                 if (cpu.bombs < cpu.maxBombs) cpu.bombs++;
                             }
-                            if (cpu.passives.includes('p10') && Math.random() < 0.03) {
+                            if (cpu.passives.includes('p10') && Math.random() < 0.01) {
                                 if (cpu.bombs < cpu.maxBombs) {
                                     cpu.bombs++;
                                     addBattleEffect("【霊力還元】 相手のボムが回復！", "#ff8888");
@@ -5702,6 +5704,55 @@
                     ctx.fillStyle = grad;
                     ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fill();
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 1; ctx.stroke();
+                } else if (b.isStar) {
+                    let color = b.color || (b.team === 'PLAYER' ? '#55aaff' : '#ff4444');
+                    let drawRadius = b.radius * 1.6;
+                    let rot = (b.rotAngle || 0) + (performance.now() / 1000) * 8; // 毎秒8ラジアンで回転
+                    b.rotAngle = rot; // 回転角度を保存して滑らかに回す
+                    let points = 5;
+                    let outerRadius = drawRadius;
+                    let innerRadius = drawRadius * 0.45;
+                    let cx = b.x;
+                    let cy = b.y;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    let step = Math.PI / points;
+                    for (let k = 0; k < 2 * points; k++) {
+                        let r = (k % 2 === 0) ? outerRadius : innerRadius;
+                        let currAng = rot + k * step;
+                        let sx = cx + Math.cos(currAng) * r;
+                        let sy = cy + Math.sin(currAng) * r;
+                        if (k === 0) {
+                            ctx.moveTo(sx, sy);
+                        } else {
+                            ctx.lineTo(sx, sy);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 10; // 発光効果
+                    ctx.fill();
+
+                    // 内側の白ハイライト星
+                    ctx.beginPath();
+                    for (let k = 0; k < 2 * points; k++) {
+                        let r = ((k % 2 === 0) ? outerRadius : innerRadius) * 0.5;
+                        let currAng = rot + k * step;
+                        let sx = cx + Math.cos(currAng) * r;
+                        let sy = cy + Math.sin(currAng) * r;
+                        if (k === 0) {
+                            ctx.moveTo(sx, sy);
+                        } else {
+                            ctx.lineTo(sx, sy);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 0;
+                    ctx.fill();
+                    ctx.restore();
                 } else {
                     let color = b.color || (b.team === 'PLAYER' ? '#55aaff' : '#ff4444');
 
