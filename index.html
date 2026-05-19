@@ -21,7 +21,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            touch-action: none; /* ダブルタップズームやスクロールを無効化 */
+            touch-action: none;
+            /* ダブルタップズームやスクロールを無効化 */
         }
 
         body {
@@ -607,43 +608,59 @@
             transform: translateY(-1px);
         }
 
-        .diff-easy.active, .diff-easy:hover {
+        .diff-easy.active,
+        .diff-easy:hover {
             background: rgba(85, 255, 85, 0.15);
             border-color: #55ff55;
             color: #55ff55;
             box-shadow: 0 0 10px rgba(85, 255, 85, 0.4);
         }
-        .diff-normal.active, .diff-normal:hover {
+
+        .diff-normal.active,
+        .diff-normal:hover {
             background: rgba(0, 255, 200, 0.15);
             border-color: #00ffcc;
             color: #00ffcc;
             box-shadow: 0 0 10px rgba(0, 255, 200, 0.4);
         }
-        .diff-hard.active, .diff-hard:hover {
+
+        .diff-hard.active,
+        .diff-hard:hover {
             background: rgba(255, 100, 255, 0.15);
             border-color: #ff66ff;
             color: #ff66ff;
             box-shadow: 0 0 10px rgba(255, 100, 255, 0.4);
         }
-        .diff-lunatic.active, .diff-lunatic:hover {
+
+        .diff-lunatic.active,
+        .diff-lunatic:hover {
             background: rgba(255, 50, 100, 0.15);
             border-color: #ff3366;
             box-shadow: 0 0 10px rgba(255, 50, 100, 0.4);
         }
 
         /* 重なるUI要素をすり抜けさせて背後のドラッグを妨げないようにする */
-        #battleOverlay, #phaseMessage {
+        #battleOverlay,
+        #phaseMessage {
             pointer-events: none !important;
         }
-        
+
         /* ただし、カード自体や決定ボタンはタップできるようにする */
-        .hand-card-container, .hand-card, .cast-btn, .hand-btn, .menu-btn, .diff-btn, input, select {
+        .hand-card-container,
+        .hand-card,
+        .cast-btn,
+        .hand-btn,
+        .menu-btn,
+        .diff-btn,
+        input,
+        select {
             pointer-events: auto !important;
         }
 
         /* スマホ用フローティングボムボタンのスタイリング */
         .mobile-only-bomb-btn {
-            display: none; /* デフォルトでは非表示。JS側で必要な時だけ 'flex' にします */
+            display: none;
+            /* デフォルトでは非表示。JS側で必要な時だけ 'flex' にします */
             position: absolute;
             bottom: 30px;
             right: 30px;
@@ -676,8 +693,11 @@
         }
 
         /* アスペクト比 8:9 を1ピクセルも狂わせず、スマホ画面にピタッとフィットさせる究極のレスポンシブCSS */
-        @media (max-width: 900px), (max-height: 950px) {
-            html, body {
+        @media (max-width: 900px),
+        (max-height: 950px) {
+
+            html,
+            body {
                 margin: 0;
                 padding: 0;
                 width: 100% !important;
@@ -688,6 +708,7 @@
                 align-items: center !important;
                 background-color: #030308 !important;
             }
+
             #gameContainer {
                 position: relative !important;
                 /* アスペクト比を狂わせずに画面に100%収める魔法の min 計算式 */
@@ -695,35 +716,40 @@
                 height: min(94vw * 900 / 800, 84vh) !important;
                 aspect-ratio: 8 / 9 !important;
                 margin: 0 auto !important;
-                box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9) !important;
                 border: none !important;
                 border-radius: 12px !important;
                 overflow: hidden !important;
             }
+
             #gameCanvas {
                 width: 100% !important;
                 height: 100% !important;
                 display: block !important;
             }
+
             /* スマホ時にはPC用のキー説明テキストを非表示にし、レイアウト崩れを防ぐ */
             .guide {
                 display: none !important;
             }
+
             /* スマホ時の文字やメニューボタンのサイズ最適化 */
             #titleScreen {
                 padding: 10px 15px !important;
                 box-sizing: border-box;
             }
+
             #gameLogo {
                 font-size: 28px !important;
                 margin-top: 15px !important;
             }
+
             .menu-btn {
                 padding: 9px !important;
                 font-size: 13px !important;
                 margin: 4px 0 !important;
             }
-            
+
             /* スマホ時のカード手札エリアとカードサイズの超スリム化・最適化 */
             #phaseMessage {
                 padding: 12px 10px !important;
@@ -733,15 +759,20 @@
                 flex-direction: column !important;
                 align-items: center !important;
             }
-            #phaseMessage h3, #phaseMessage p, #phaseMessage span {
+
+            #phaseMessage h3,
+            #phaseMessage p,
+            #phaseMessage span {
                 font-size: 13px !important;
                 margin: 4px 0 !important;
             }
+
             /* カードが並ぶコンテナだけを最大高さ230pxに制限してスクロール可能に！ */
             .hand-card-container {
                 max-height: 230px !important;
                 overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch; /* iOSでの滑らかなスクロール */
+                -webkit-overflow-scrolling: touch;
+                /* iOSでの滑らかなスクロール */
                 gap: 8px !important;
                 margin-top: 8px !important;
                 padding: 4px 2px !important;
@@ -751,22 +782,28 @@
                 justify-content: center !important;
                 box-sizing: border-box !important;
             }
+
             .hand-card {
-                width: 76px !important;    /* 見やすさをキープしたコンパクトサイズ */
+                width: 76px !important;
+                /* 見やすさをキープしたコンパクトサイズ */
                 height: 106px !important;
                 padding: 6px !important;
                 border-radius: 8px !important;
-                flex-shrink: 0 !important; /* スクロール内での縮みを防止 */
+                flex-shrink: 0 !important;
+                /* スクロール内での縮みを防止 */
             }
+
             .hand-card .card-name {
                 font-size: 9px !important;
                 margin-top: 3px !important;
                 line-height: 1.2 !important;
             }
+
             .hand-card .card-stats {
                 font-size: 8px !important;
                 padding-top: 3px !important;
             }
+
             .hand-card .card-shortcut {
                 width: 14px !important;
                 height: 14px !important;
@@ -774,6 +811,7 @@
                 top: -5px !important;
                 left: -5px !important;
             }
+
             /* 決定ボタン（弾幕展開ボタン）のスマホ最適化 - 常にカードの下に固定されて見切れない */
             .cast-btn {
                 width: 160px !important;
@@ -818,77 +856,102 @@
             </div>
 
             <!-- 4. 対戦準備画面 -->
-            <div id="screen-battle-setup" class="selection-group hidden" style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
+            <div id="screen-battle-setup" class="selection-group hidden"
+                style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
                 <h3 style="margin-bottom: 5px; font-size: 24px;">対戦準備</h3>
-                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">使用デッキとCPUの難易度を選択し、出撃してください。</p>
-                
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">
+                    使用デッキとCPUの難易度を選択し、出撃してください。</p>
+
                 <!-- デッキ選択 -->
                 <div style="margin-top: 15px; width: 100%;">
                     <h4 style="color: #ffb3b3; margin-bottom: 8px; font-size: 15px; text-align: left;">① 使用デッキの選択</h4>
-                    <div id="setup-deck-list-container" style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 160px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
+                    <div id="setup-deck-list-container"
+                        style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 160px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
                     </div>
                 </div>
 
                 <!-- 難易度選択 -->
                 <div style="margin-top: 20px; width: 100%;">
-                    <h4 style="color: #aaffaa; margin-bottom: 8px; font-size: 15px; text-align: left;">② CPU of 強さ (DIFFICULTY)</h4>
-                    <div style="display: flex; gap: 8px; justify-content: center; width: 95%; margin: 0 auto; box-sizing: border-box;">
+                    <h4 style="color: #aaffaa; margin-bottom: 8px; font-size: 15px; text-align: left;">② CPU of 強さ
+                        (DIFFICULTY)</h4>
+                    <div
+                        style="display: flex; gap: 8px; justify-content: center; width: 95%; margin: 0 auto; box-sizing: border-box;">
                         <button class="diff-btn diff-easy" onclick="selectDifficulty('EASY')">EASY</button>
                         <button class="diff-btn diff-normal active" onclick="selectDifficulty('NORMAL')">NORMAL</button>
                         <button class="diff-btn diff-hard" onclick="selectDifficulty('HARD')">HARD</button>
                         <button class="diff-btn diff-lunatic" onclick="selectDifficulty('LUNATIC')">LUNATIC</button>
                     </div>
-                    <div id="setup-diff-desc" style="font-size: 12px; color: #00ffcc; text-align: center; margin-top: 10px; min-height: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(0,255,200,0.3);">
+                    <div id="setup-diff-desc"
+                        style="font-size: 12px; color: #00ffcc; text-align: center; margin-top: 10px; min-height: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(0,255,200,0.3);">
                         標準的な難易度です。熱いバトルを楽しめます。
                     </div>
                 </div>
 
                 <!-- アクションボタン -->
                 <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; width: 100%;">
-                    <button class="menu-btn" onclick="startGame()" style="width: 150px; background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6); font-weight: bold;">戦闘開始！</button>
-                    <button class="menu-btn" onclick="showScreen('screen-menu')" style="width: 150px; background: #222;">戻る</button>
+                    <button class="menu-btn" onclick="startGame()"
+                        style="width: 150px; background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6); font-weight: bold;">戦闘開始！</button>
+                    <button class="menu-btn" onclick="showScreen('screen-menu')"
+                        style="width: 150px; background: #222;">戻る</button>
                 </div>
             </div>
 
             <!-- 5. オンライン対戦画面 -->
-            <div id="screen-online-setup" class="selection-group hidden" style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
+            <div id="screen-online-setup" class="selection-group hidden"
+                style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
                 <h3 style="margin-bottom: 5px; font-size: 24px;">オンライン対戦</h3>
-                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">P2P通信で他のプレイヤーと直接対戦します。</p>
-                
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">P2P通信で他のプレイヤーと直接対戦します。
+                </p>
+
                 <!-- デッキ選択 -->
                 <div style="margin-top: 15px; width: 100%;">
                     <h4 style="color: #ffb3b3; margin-bottom: 8px; font-size: 15px; text-align: left;">① 使用デッキの選択</h4>
-                    <div id="online-deck-list-container" style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 120px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
+                    <div id="online-deck-list-container"
+                        style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 120px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
                     </div>
                 </div>
 
                 <!-- ホスト（部屋を作る） -->
-                <div style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
-                    <h4 style="margin: 0 0 8px 0; color: #00ffcc; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">部屋を作る (HOST)</h4>
+                <div
+                    style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
+                    <h4
+                        style="margin: 0 0 8px 0; color: #00ffcc; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
+                        部屋を作る (HOST)</h4>
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div id="my-peer-id" style="font-size: 14px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px; flex-grow: 1; text-align: center; border: 1px solid rgba(255,255,255,0.1); word-break: break-all; min-height: 20px;">ID生成中...</div>
-                        <button class="menu-btn" onclick="copyPeerId()" style="width: 80px; padding: 8px; font-size: 12px; margin: 0;">コピー</button>
+                        <div id="my-peer-id"
+                            style="font-size: 14px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px; flex-grow: 1; text-align: center; border: 1px solid rgba(255,255,255,0.1); word-break: break-all; min-height: 20px;">
+                            ID生成中...</div>
+                        <button class="menu-btn" onclick="copyPeerId()"
+                            style="width: 80px; padding: 8px; font-size: 12px; margin: 0;">コピー</button>
                     </div>
-                    <p style="font-size: 10px; color: #aaa; margin: 6px 0 0 0; text-align: left;">表示されているIDを対戦相手に伝えてください。相手が接続すると自動でゲームが始まります。</p>
+                    <p style="font-size: 10px; color: #aaa; margin: 6px 0 0 0; text-align: left;">
+                        表示されているIDを対戦相手に伝えてください。相手が接続すると自動でゲームが始まります。</p>
                 </div>
 
                 <!-- クライアント（部屋に入る） -->
-                <div style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
-                    <h4 style="margin: 0 0 8px 0; color: #ff8888; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">部屋に入る (CLIENT)</h4>
+                <div
+                    style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
+                    <h4
+                        style="margin: 0 0 8px 0; color: #ff8888; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
+                        部屋に入る (CLIENT)</h4>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="text" id="target-peer-id" placeholder="相手のIDを入力してください" style="font-size: 13px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; flex-grow: 1; box-sizing: border-box; height: 38px;">
-                        <button class="menu-btn" onclick="connectToHost()" style="width: 100px; padding: 8px; font-size: 12px; margin: 0; background: linear-gradient(135deg, #550044 0%, #220011 100%); border-color: #ff00cc; color: #ff88ff; font-weight: bold;">接続して開始</button>
+                        <input type="text" id="target-peer-id" placeholder="相手のIDを入力してください"
+                            style="font-size: 13px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; flex-grow: 1; box-sizing: border-box; height: 38px;">
+                        <button class="menu-btn" onclick="connectToHost()"
+                            style="width: 100px; padding: 8px; font-size: 12px; margin: 0; background: linear-gradient(135deg, #550044 0%, #220011 100%); border-color: #ff00cc; color: #ff88ff; font-weight: bold;">接続して開始</button>
                     </div>
                 </div>
 
                 <!-- ステータス表示 -->
-                <div id="online-status" style="font-size: 12px; color: #ffcc00; text-align: center; margin-top: 15px; min-height: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(255,200,0,0.3);">
+                <div id="online-status"
+                    style="font-size: 12px; color: #ffcc00; text-align: center; margin-top: 15px; min-height: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(255,200,0,0.3);">
                     待機中...
                 </div>
 
                 <!-- アクションボタン -->
                 <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; width: 100%;">
-                    <button class="menu-btn" onclick="disconnectOnline()" style="width: 150px; background: #222;">戻る</button>
+                    <button class="menu-btn" onclick="disconnectOnline()"
+                        style="width: 150px; background: #222;">戻る</button>
                 </div>
             </div>
 
@@ -931,12 +994,21 @@
             </div>
 
             <!-- 3. ビジュアルデッキ編集画面 -->
-            <div id="screen-deck-edit" class="selection-group hidden">
-                <h3>デッキ編成</h3>
+            <div id="screen-deck-edit" class="selection-group hidden" style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px; box-sizing: border-box;">
+                <h3 style="margin-bottom: 5px;">デッキ編成</h3>
+                <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span style="font-size: 14px; color: #ffb3b3; font-weight: bold;">デッキ名:</span>
+                    <input type="text" id="deck-name-input" placeholder="デッキ名を入力してください" 
+                        style="width: 180px; padding: 6px 10px; font-size: 13px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; outline: none; text-align: center;">
+                </div>
                 <div class="deck-edit-container-layout">
                     <div class="deck-edit-section">
                         <h4>アクティブセット (6枚)</h4>
                         <div class="deck-slots-grid" id="active-slots"></div>
+                    </div>
+                    <div class="deck-edit-section">
+                        <h4>アビリティセット (6枚)</h4>
+                        <div class="deck-slots-grid" id="ability-slots"></div>
                     </div>
                     <div class="deck-edit-section">
                         <h4>パッシブセット (3枚)</h4>
@@ -977,7 +1049,7 @@
         let onlineRole = null; // 'host' or 'client'
         let onlineConnected = false;
         let opponentDeck = null;
-        
+
         // 同期用バッファ
         let receivedState = null;
         let receivedCastIds = null;
@@ -1006,7 +1078,7 @@
             const container = document.getElementById('online-deck-list-container');
             if (!container) return;
             container.innerHTML = '';
-            
+
             if (decks.length === 0) {
                 container.innerHTML = '<p style="color:#888a9e; font-size:11px; margin-top:10px; text-align:center;">デッキがありません。デッキ構築で作成してください。</p>';
                 return;
@@ -1020,12 +1092,12 @@
                 div.style.fontSize = '12px';
                 div.style.cursor = 'pointer';
                 div.style.border = isSelected ? '1px solid #00ffcc' : '1px solid rgba(255,255,255,0.1)';
-                
+
                 div.onclick = () => {
                     selectedDeckIndex = idx;
                     try {
                         localStorage.setItem('touhou_kyoukaisen_selected_deck_index', selectedDeckIndex.toString());
-                    } catch(e) {}
+                    } catch (e) { }
                     renderOnlineDeckList();
                 };
 
@@ -1042,7 +1114,7 @@
         function initPeer() {
             const myIdEl = document.getElementById('my-peer-id');
             const statusEl = document.getElementById('online-status');
-            
+
             if (peer) {
                 if (peer.open) {
                     myIdEl.textContent = peer.id;
@@ -1059,7 +1131,7 @@
 
             try {
                 peer = new Peer();
-                
+
                 peer.on('open', (id) => {
                     myIdEl.textContent = id;
                     statusEl.textContent = '準備完了！相手からの接続を待っています...';
@@ -1119,7 +1191,7 @@
             }
 
             statusEl.textContent = '対戦相手に接続中...';
-            
+
             if (conn) {
                 conn.close();
                 conn = null;
@@ -1136,7 +1208,7 @@
             conn.on('open', () => {
                 onlineConnected = true;
                 statusEl.textContent = '接続成功！デッキ情報を送信中...';
-                
+
                 // 自分のデッキデータを送信
                 let selectedDeck = (decks.length > 0 && selectedDeckIndex >= 0 && selectedDeckIndex < decks.length) ? decks[selectedDeckIndex] : null;
                 let baseActive = selectedDeck ? selectedDeck.active.filter(v => v !== "") : defaultCards.active.slice(0, 6).map(c => c.id);
@@ -1175,7 +1247,7 @@
             if (data.type === 'deck') {
                 opponentDeck = data;
                 document.getElementById('online-status').textContent = 'デッキ情報を受信しました！戦闘準備完了！';
-                
+
                 // 両者準備完了したらゲーム開始
                 setTimeout(() => {
                     initOnlineBattle();
@@ -1252,7 +1324,18 @@
                 { id: 'a6', name: '【A】エボリューション', duration: 16, pattern: 'evolution', interval: 0.45, desc: '【靈刻門】直進する親弾から左右に子弾が分裂する。' },
                 { id: 'a7', name: '【A】消える魔球', duration: 14, pattern: 'vanishing', interval: 0.5, desc: '【靈刻門】静止後、赤く輝き超高速で相手を再追尾する。' },
                 { id: 'a8', name: '【A】スパイラル', duration: 10, pattern: 'spiral', interval: 0.08, desc: '【靈刻門】回転しながら全方位へ放ち、途中で逆回転する。' },
-                { id: 'a9', name: '【A】クロスカーブ', duration: 15, pattern: 'cross', interval: 0.9, desc: '【新スペル】発射時の相手方向を基準に、後方から放たれた大量の弾がゆっくりカーブして美しくX字クロスする。' }
+                { id: 'a9', name: '【A】クロスカーブ', duration: 15, pattern: 'cross', interval: 0.9, desc: '【新スペル】発射時の相手方向を基準に、後方から放たれた大量の弾がゆっくりカーブして美しくX字クロスする。' },
+                { id: 'a10', name: '【A】霊符「夢想妙珠」', duration: 15, pattern: 'myouju', interval: 3.5, desc: '【博麗霊夢】自機の周囲を回転しながら広がり、その後相手を強力に自動追尾する虹色の光弾を放つ。' },
+                { id: 'a11', name: '【A】恋符「マスタースパーク」', duration: 26, pattern: 'masterspark', interval: 99.0, desc: '【霧雨魔理沙】移動速度が激減する代わりに、画面を埋め尽くす極太の七色ビームを前方に照射する。' },
+                { id: 'a12', name: '【A】神槍「スピア・オブ・グングニル」', duration: 8, pattern: 'gungnir', interval: 1.2, desc: '【レミリア】全てを貫通する超高速の紅い槍を投げ、衝突時に大爆発を起こして破片を撒き散らす。' }
+            ],
+            ability: [
+                { id: 'ab1', name: '【急】霊力充填', desc: '【即時アビリティ】自身のボム（霊撃）を即座に1つ回復する。' },
+                { id: 'ab2', name: '【急】生命息吹', desc: '【即時アビリティ】自身のHPを200即座に回復する。' },
+                { id: 'ab3', name: '【急】精神統一', desc: '【即時アビリティ】次の相手の弾幕フェーズ中に受けるダメージをすべて半減するシールドを展開する。' },
+                { id: 'ab4', name: '【急】波状爆撃', desc: '【即時アビリティ】相手に60ポイントの即時直接ダメージを与える。' },
+                { id: 'ab5', name: '【急】瞬間結界', desc: '【即時アビリティ】即座に1.5秒間の完全無敵状態になる。' },
+                { id: 'ab6', name: '【急】霊力還元', desc: '【即時アビリティ】グレイズ数を即座に+150し、自身のHPを50回復する。' }
             ],
             passive: [
                 { id: 'p1', name: '【P】被弾軽減', desc: '受ける被弾ダメージを毎回20ポイント軽減する。' },
@@ -1260,9 +1343,42 @@
                 { id: 'p3', name: '【P】かすり拡大', desc: 'グレイズ（掠り判定）の範囲が1.5倍に拡大する。' },
                 { id: 'p4', name: '【P】霊撃増幅', desc: 'ボム（霊撃）の初期所持数と最大数が＋1される。' },
                 { id: 'p5', name: '【P】かすり回復', desc: 'グレイズ数が300の倍数に達するたびに、ボム（霊撃）が1つ回復する。' },
-                { id: 'p6', name: '【P】かすり治癒', desc: 'グレイズ（掠り）が発生するたびに、自身のHPが1回復する。' }
+                { id: 'p6', name: '【P】かすり治癒', desc: 'グレイズ（掠り）が発生するたびに、自身のHPが1回復する。' },
+                { id: 'p7', name: '【P】豊穣の守り', desc: 'HPが25%以下になったとき、一度だけHPを300即座に回復する。' },
+                { id: 'p8', name: '【P】死中活路', desc: '所持ボム（霊撃）が0のとき、相手に与える弾幕ダメージが1.25倍になる。' },
+                { id: 'p9', name: '【P】縮地・神風', desc: '自機の移動速度（通常・低速ともに）が常時12%上昇する。' },
+                { id: 'p10', name: '【P】霊力還元', desc: 'グレイズ時に3%の超低確率でボム（霊撃）が即座に1つ回復する。' },
+                { id: 'p11', name: '【P】八卦の加護', desc: 'ボム（霊撃）展開時の無敵時間が通常2.5秒から3.5秒に延長される。' },
+                { id: 'p12', name: '【P】金剛身', desc: '最大HPの上限が 1000 ➔ 1200 に増加する。' },
+                { id: 'p13', name: '【P】自然治癒', desc: '毎ターンの精算（RESOLUTION）時にHPを30自動回復する。' },
+                { id: 'p14', name: '【P】気炎万丈', desc: '自身が相手に与える蓄積ダメージが常時10%増加する。' },
+                { id: 'p15', name: '【P】弾幕結界', desc: '相手がスペルカードを発動したターン、自身が受ける被弾ダメージを毎回15ポイント軽減する。' },
+                { id: 'p16', name: '【P】背水の陣', desc: '自身のHPが300以下のとき、相手に与える蓄積ダメージが25%増加する。' },
+                { id: 'p17', name: '【P】金剛結界', desc: '自身のHPが300以下のとき、被弾ダメージが20%軽減される。' },
+                { id: 'p18', name: '【P】韋駄天', desc: '低速移動（Shiftキー/スローボタン）時の移動速度が25%上昇する。' },
+                { id: 'p19', name: '【P】乾坤一擲', desc: '自分がボム（霊撃）を発動した際、相手に即座に50のダメージを与える。' },
+                { id: 'p20', name: '【P】霊力節約', desc: 'ボム（霊撃）を発動したとき、15%の確率でボム残数が消費されない。' },
+                { id: 'p21', name: '【P】吸血の牙', desc: '累計10回グレイズするごとに、自身のHPが10回復する。' },
+                { id: 'p22', name: '【P】憤怒の炎', desc: '被弾ダメージを受けた次のターン、与える蓄積ダメージが20%増加する。' },
+                { id: 'p23', name: '【P】幸運のダイス', desc: '毎ターン開始時、10%の確率で「1.5秒間の完全無敵」または「ボム1個回復」が発動する。' },
+                { id: 'p24', name: '【P】共鳴波動', desc: '境界の歪み（ターンスケール）による相手のダメージ倍率の増加量が15%上昇する。' },
+                { id: 'p25', name: '【P】絶体絶命', desc: 'HPが0になるダメージを受けた時、一度だけHP1で踏みとどまり1.5秒間無敵になる。' },
+                { id: 'p26', name: '【P】霊素調和', desc: 'ターン開始時に20%の確率でボムが1回復する。' }
             ]
         };
+
+        let editingDeckIndex = -1; // -1:新規作成, >=0:編集中のデッキインデックス
+        let activeEffects = []; // 戦闘中のパッシブ等の発動エフェクト表示用
+        let screenShakeAmount = 0; // 画面揺れ（地震エフェクト）の強度管理用
+
+        function addBattleEffect(text, color = '#ffcc00') {
+            activeEffects.push({
+                text: text,
+                timer: 2.0,
+                maxTime: 2.0,
+                color: color
+            });
+        }
 
         let decks = []; // 保存されたデッキ一覧
         let selectedDeckIndex = 0; // 現在選択中のバトル用アクティブデッキのインデックス
@@ -1272,6 +1388,11 @@
             const savedDecks = localStorage.getItem('touhou_kyoukaisen_decks');
             if (savedDecks) {
                 decks = JSON.parse(savedDecks);
+                decks.forEach(d => {
+                    if (!d.ability) {
+                        d.ability = ["ab1", "ab2", "ab3", "ab4", "ab5", "ab6"];
+                    }
+                });
             }
             const savedSelectedDeckIndex = localStorage.getItem('touhou_kyoukaisen_selected_deck_index');
             if (savedSelectedDeckIndex !== null) {
@@ -1762,7 +1883,7 @@
             const container = document.getElementById('setup-deck-list-container');
             if (!container) return;
             container.innerHTML = '';
-            
+
             if (decks.length === 0) {
                 container.innerHTML = '<p style="color:#888a9e; font-size:12px; margin-top:10px; text-align:center;">デッキがありません。デッキ構築で作成してください。</p>';
                 return;
@@ -1776,12 +1897,12 @@
                 div.style.fontSize = '12px';
                 div.style.cursor = 'pointer';
                 div.style.border = isSelected ? '1px solid #00ffcc' : '1px solid rgba(255,255,255,0.1)';
-                
+
                 div.onclick = () => {
                     selectedDeckIndex = idx;
                     try {
                         localStorage.setItem('touhou_kyoukaisen_selected_deck_index', selectedDeckIndex.toString());
-                    } catch(e) {}
+                    } catch (e) { }
                     renderSetupDeckList();
                 };
 
@@ -1801,7 +1922,7 @@
 
         function selectDifficulty(diff) {
             cpuDifficulty = diff;
-            
+
             const buttons = document.querySelectorAll('.diff-btn');
             buttons.forEach(btn => {
                 btn.classList.remove('active');
@@ -1837,20 +1958,41 @@
         }
 
         function createNewDeck() {
+            editingDeckIndex = -1;
             // 初期状態にデフォルトで使いやすいカードをセットして、操作を劇的に楽にする
             currentEditingDeck = {
                 name: `カスタムデッキ ${decks.length + 1}`,
                 active: ["a1", "a9", "a3", "a6", "a7", "a8"], // クロスカーブ、スパイラルも標準で入る
+                ability: ["ab1", "ab2", "ab3", "ab4", "ab5", "ab6"], // デフォルトアビリティ
                 passive: ["p1", "p2", "p3"]
             };
             showScreen('screen-deck-edit');
+            const nameInput = document.getElementById('deck-name-input');
+            if (nameInput) nameInput.value = currentEditingDeck.name;
+            renderDeckEdit();
+        }
+
+        function editDeck(index) {
+            editingDeckIndex = index;
+            const originalDeck = decks[index];
+            currentEditingDeck = {
+                name: originalDeck.name,
+                active: [...originalDeck.active],
+                ability: originalDeck.ability ? [...originalDeck.ability] : ["ab1", "ab2", "ab3", "ab4", "ab5", "ab6"],
+                passive: [...originalDeck.passive]
+            };
+            showScreen('screen-deck-edit');
+            const nameInput = document.getElementById('deck-name-input');
+            if (nameInput) nameInput.value = currentEditingDeck.name;
             renderDeckEdit();
         }
 
         function renderDeckEdit() {
             const actContainer = document.getElementById('active-slots');
+            const abiContainer = document.getElementById('ability-slots');
             const pasContainer = document.getElementById('passive-slots');
             actContainer.innerHTML = '';
+            abiContainer.innerHTML = '';
             pasContainer.innerHTML = '';
 
             // アクティブスロット生成 (6個)
@@ -1862,10 +2004,25 @@
                 slot.className = cardData ? 'deck-slot filled' : 'deck-slot';
                 slot.innerHTML = cardData
                     ? `<span style="font-size:10px;color:#00ffff;">枠 ${i + 1}</span><span style="margin-top:4px;">${cardData.name.replace('【A】', '')}</span>`
-                    : `<span>スロット ${i + 1}<br>(未設定)</span>`;
+                     : `<span>スロット ${i + 1}<br>(未設定)</span>`;
 
                 slot.onclick = () => openCardSelector('active', i);
                 actContainer.appendChild(slot);
+            }
+
+            // アビリティスロット生成 (6個)
+            for (let i = 0; i < 6; i++) {
+                const slot = document.createElement('div');
+                const cardId = currentEditingDeck.ability ? currentEditingDeck.ability[i] : null;
+                const cardData = defaultCards.ability.find(c => c.id === cardId);
+
+                slot.className = cardData ? 'deck-slot filled' : 'deck-slot';
+                slot.innerHTML = cardData
+                    ? `<span style="font-size:10px;color:#ffcc00;">枠 ${i + 1}</span><span style="margin-top:4px;">${cardData.name.replace('【急】', '')}</span>`
+                    : `<span>スロット ${i + 1}<br>(未設定)</span>`;
+
+                slot.onclick = () => openCardSelector('ability', i);
+                abiContainer.appendChild(slot);
             }
 
             // パッシブスロット生成 (3個)
@@ -1894,11 +2051,11 @@
             const container = document.getElementById('selector-cards-container');
             const title = document.getElementById('selector-modal-title');
 
-            title.textContent = type === 'active' ? `アクティブカード選択 (スロット ${index + 1})` : `パッシブカード選択 (スロット ${index + 1})`;
+            title.textContent = type === 'active' ? `アクティブカード選択 (スロット ${index + 1})` : (type === 'ability' ? `アビリティカード選択 (スロット ${index + 1})` : `パッシブカード選択 (スロット ${index + 1})`);
             container.innerHTML = '';
 
-            const list = type === 'active' ? defaultCards.active : defaultCards.passive;
-            const currentEquipped = type === 'active' ? currentEditingDeck.active : currentEditingDeck.passive;
+            const list = type === 'active' ? defaultCards.active : (type === 'ability' ? defaultCards.ability : defaultCards.passive);
+            const currentEquipped = type === 'active' ? currentEditingDeck.active : (type === 'ability' ? currentEditingDeck.ability : currentEditingDeck.passive);
 
             // クリア用オプション
             const clearItem = document.createElement('div');
@@ -1909,7 +2066,7 @@
             container.appendChild(clearItem);
 
             list.forEach(card => {
-                const isEquippedElsewhere = currentEquipped.includes(card.id) && currentEquipped[index] !== card.id;
+                const isEquippedElsewhere = currentEquipped && currentEquipped.includes(card.id) && currentEquipped[index] !== card.id;
                 const item = document.createElement('div');
                 item.className = isEquippedElsewhere ? 'selector-card-item disabled' : 'selector-card-item';
 
@@ -1936,6 +2093,9 @@
         function selectCard(cardId) {
             if (activeSelectSlotType === 'active') {
                 currentEditingDeck.active[activeSelectSlotIndex] = cardId || "";
+            } else if (activeSelectSlotType === 'ability') {
+                if (!currentEditingDeck.ability) currentEditingDeck.ability = [];
+                currentEditingDeck.ability[activeSelectSlotIndex] = cardId || "";
             } else {
                 currentEditingDeck.passive[activeSelectSlotIndex] = cardId || "";
             }
@@ -1954,13 +2114,28 @@
         }
 
         function saveDeck() {
-            decks.push(currentEditingDeck);
-            selectedDeckIndex = decks.length - 1; // 新規作成したデッキを自動選択
+            const nameInput = document.getElementById('deck-name-input');
+            let deckName = nameInput ? nameInput.value.trim() : "";
+            if (deckName === "") {
+                deckName = editingDeckIndex >= 0 ? decks[editingDeckIndex].name : `カスタムデッキ ${decks.length + 1}`;
+            }
+            currentEditingDeck.name = deckName;
+
+            if (editingDeckIndex >= 0) {
+                // 上書き編集
+                decks[editingDeckIndex] = currentEditingDeck;
+                selectedDeckIndex = editingDeckIndex;
+            } else {
+                // 新規作成
+                decks.push(currentEditingDeck);
+                selectedDeckIndex = decks.length - 1; // 自動選択
+            }
+
             try {
                 localStorage.setItem('touhou_kyoukaisen_decks', JSON.stringify(decks));
                 localStorage.setItem('touhou_kyoukaisen_selected_deck_index', selectedDeckIndex.toString());
             } catch (e) { }
-            alert('デッキを登録しました！');
+            
             showScreen('screen-deck-list');
             renderDeckList();
         }
@@ -1986,7 +2161,7 @@
                 div.className = isSelected ? 'deck-card selected-deck-card' : 'deck-card';
 
                 div.onclick = (e) => {
-                    // 削除ボタンがクリックされたときは選択処理を行わない
+                    // 削除ボタンや編集ボタンなどのボタン類がクリックされたときは選択処理を行わない
                     if (e.target.tagName.toLowerCase() === 'button') return;
                     selectDeck(idx);
                 };
@@ -1998,9 +2173,11 @@
                     </div>
                     <div style="margin-top:6px;">
                         <span style="font-size: 12px; color: #aaa;">アクティブ: ${deck.active.map(id => defaultCards.active.find(c => c.id === id)?.name.replace('【A】', '')).join(', ')}</span><br>
+                        <span style="font-size: 12px; color: #ffcc00;">アビリティ: ${deck.ability ? deck.ability.map(id => defaultCards.ability.find(c => c.id === id)?.name.replace('【急】', '')).join(', ') : '未装備'}</span><br>
                         <span style="font-size: 12px; color: #99a;">パッシブ: ${deck.passive.map(id => defaultCards.passive.find(c => c.id === id)?.name.replace('【P】', '')).join(', ')}</span>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+                        <button class="deck-card-btn" onclick="editDeck(${idx})" style="padding:4px 10px; font-size:11px; margin-top:6px; background: linear-gradient(135deg, #004455 0%, #001122 100%); border-color: #00ffcc; color: #00ffff;">編集</button>
                         <button class="deck-card-btn" onclick="deleteDeck(${idx})" style="padding:4px 10px; font-size:11px; margin-top:6px;">削除</button>
                     </div>
                 `;
@@ -2068,7 +2245,7 @@
         let reigekiCutinTimer = 0;
         let reigekiCutinOwner = 'PLAYER';
         let prevBombInput = false;
- 
+
         // エンティティ
         const player = {
             team: 'PLAYER',
@@ -2083,7 +2260,7 @@
             invincibleTimer: 0,
             optionAngle: 0 // オプション回転用
         };
- 
+
         const cpu = {
             team: 'CPU',
             x: PLAY_WIDTH / 2, y: canvas.height * 0.2,
@@ -2428,26 +2605,38 @@
             document.getElementById('titleScreen').style.display = 'none';
             isGameRunning = true;
 
+            // 選択されたデッキのロード
+            let selectedDeck = (decks.length > 0 && selectedDeckIndex >= 0 && selectedDeckIndex < decks.length) ? decks[selectedDeckIndex] : null;
+            let baseActive = selectedDeck ? selectedDeck.active.filter(v => v !== "") : defaultCards.active.slice(0, 6).map(c => c.id);
+            let baseAbility = selectedDeck && selectedDeck.ability ? selectedDeck.ability.filter(v => v !== "") : defaultCards.ability.map(c => c.id);
+            let basePassive = selectedDeck ? selectedDeck.passive.filter(v => v !== "") : defaultCards.passive.map(c => c.id);
+            player.deck = [...baseActive]; player.hand = [...player.deck];
+            player.abilities = [...baseAbility];
+            player.usedAbilities = [];
+            player.ab3Shield = false;
+            player.passives = [...basePassive];
+
+            // 金剛身 (p12) 判定による最大HPの設定
+            if (player.passives.includes('p12')) {
+                player.maxHp = 1200;
+                player.hp = 1200;
+            } else {
+                player.maxHp = 1000;
+                player.hp = 1000;
+            }
+
             // プレイヤー初期化
-            player.hp = 1000; player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
+            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
             player.x = PLAY_WIDTH / 2; player.y = canvas.height * 0.8;
             player.isInvincible = false;
             player.invincibleTimer = 0;
 
-            // 選択されたデッキのロード
-            let selectedDeck = (decks.length > 0 && selectedDeckIndex >= 0 && selectedDeckIndex < decks.length) ? decks[selectedDeckIndex] : null;
-            let baseActive = selectedDeck ? selectedDeck.active.filter(v => v !== "") : defaultCards.active.slice(0, 6).map(c => c.id);
-            let basePassive = selectedDeck ? selectedDeck.passive.filter(v => v !== "") : defaultCards.passive.map(c => c.id);
-            player.deck = [...baseActive]; player.hand = [...player.deck];
-            player.passives = [...basePassive];
-            
             // パッシブの適用（ボム最大数）
             player.maxBombs = player.passives.includes('p4') ? 4 : 3;
             player.bombs = player.maxBombs;
             player.bombPieces = 0;
 
             // 相手（cpuオブジェクト）の初期化
-            cpu.hp = 1000; cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.pendingHeal = 0;
             cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
             cpu.isInvincible = false;
             cpu.invincibleTimer = 0;
@@ -2456,12 +2645,28 @@
             if (opponentDeck) {
                 cpu.deck = [...opponentDeck.active];
                 cpu.hand = [...cpu.deck];
+                cpu.abilities = opponentDeck.ability ? [...opponentDeck.ability] : defaultCards.ability.map(c => c.id);
+                cpu.usedAbilities = [];
+                cpu.ab3Shield = false;
                 cpu.passives = [...opponentDeck.passive];
             } else {
                 cpu.deck = defaultCards.active.map(c => c.id);
                 cpu.hand = [...cpu.deck];
+                cpu.abilities = defaultCards.ability.map(c => c.id);
+                cpu.usedAbilities = [];
+                cpu.ab3Shield = false;
                 cpu.passives = defaultCards.passive.map(c => c.id);
             }
+
+            if (cpu.passives.includes('p12')) {
+                cpu.maxHp = 1200;
+                cpu.hp = 1200;
+            } else {
+                cpu.maxHp = 1000;
+                cpu.hp = 1000;
+            }
+
+            cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.pendingHeal = 0;
             cpu.maxBombs = cpu.passives.includes('p4') ? 4 : 3;
             cpu.bombs = cpu.maxBombs;
             cpu.bombCooldown = 0;
@@ -2485,8 +2690,6 @@
         }
 
         function initBattle() {
-            player.hp = 1000; player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
-            
             // 難易度に応じたCPUの基本パラメータ（移動速度、回避の思考間隔、弾の認識漏れ確率）設定
             if (cpuDifficulty === 'EASY') {
                 cpu.speed = 140;
@@ -2509,13 +2712,36 @@
             player.x = PLAY_WIDTH / 2; player.y = canvas.height * 0.8;
             player.isInvincible = false;
             player.invincibleTimer = 0;
-            
+
             // デッキのロードと手札生成
             let selectedDeck = (decks.length > 0 && selectedDeckIndex >= 0 && selectedDeckIndex < decks.length) ? decks[selectedDeckIndex] : null;
             let baseActive = selectedDeck ? selectedDeck.active.filter(v => v !== "") : defaultCards.active.slice(0, 6).map(c => c.id);
             let basePassive = selectedDeck ? selectedDeck.passive.filter(v => v !== "") : defaultCards.passive.map(c => c.id);
             player.deck = [...baseActive]; player.hand = [...player.deck];
+            let baseAbility = selectedDeck && selectedDeck.ability ? selectedDeck.ability.filter(v => v !== "") : defaultCards.ability.map(c => c.id);
+            player.abilities = [...baseAbility];
+            player.usedAbilities = [];
+            player.ab3Shield = false;
             player.passives = [...basePassive];
+
+            // 金剛身 (p12) 判定による最大HPの設定
+            if (player.passives.includes('p12')) {
+                player.maxHp = 1200;
+                player.hp = 1200;
+            } else {
+                player.maxHp = 1000;
+                player.hp = 1000;
+            }
+
+            if (cpu.passives.includes('p12')) {
+                cpu.maxHp = 1200;
+                cpu.hp = 1200;
+            } else {
+                cpu.maxHp = 1000;
+                cpu.hp = 1000;
+            }
+
+            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
 
             // パッシブ効果の適用
             if (player.passives.includes('p4')) {
@@ -2537,6 +2763,9 @@
             reigekiCutinTimer = 0;
             reigekiCutinOwner = 'PLAYER';
             prevBombInput = false;
+            activeEffects = []; // エフェクト配列のクリア
+            player.p7Triggered = false; // HP25%以下自動回復フラグ
+            cpu.p7Triggered = false;
             cpu.hp = 1000; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.grazeCount = 0; cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
             cpu.targetX = cpu.x; cpu.targetY = cpu.y;
             bullets = [];
@@ -2545,24 +2774,67 @@
             selectedPlayerCards = []; // リセット
 
             cpu.deck = defaultCards.active.map(c => c.id); cpu.hand = [...cpu.deck];
+            cpu.abilities = defaultCards.ability.map(c => c.id);
+            cpu.usedAbilities = [];
+            cpu.ab3Shield = false;
             cpu.passives = defaultCards.passive.map(c => c.id);
 
             changePhase('PLANNING', 'PLAYER'); // プレイヤー先攻で開始
         }
 
         function applyPassives() {
-            player.speed = 405; player.grazeRadius = 30;
-            cpu.speed = 200; cpu.grazeRadius = 30;
+            player.speed = 405; player.slowSpeed = 135; player.grazeRadius = 30;
+            cpu.speed = 200; cpu.slowSpeed = 70; cpu.grazeRadius = 30;
 
             if (turnCount === 1) return; // 第1ターンはパッシブ無効
 
-            if (player.passives.includes('p2')) player.speed = 500;
+            // player パッシブ
+            if (player.passives.includes('p2')) {
+                player.speed = 500;
+                player.slowSpeed = 170;
+            }
+            if (player.passives.includes('p9')) {
+                player.speed = Math.floor(player.speed * 1.12);
+                player.slowSpeed = Math.floor(player.slowSpeed * 1.12);
+            }
+            if (player.passives.includes('p18')) {
+                player.slowSpeed = Math.floor(player.slowSpeed * 1.25); // 韋駄天 (低速速度+25%)
+            }
             if (player.passives.includes('p3')) player.grazeRadius = 45;
-            if (cpu.passives.includes('p2')) cpu.speed = 280;
+
+            // cpu パッシブ
+            if (cpu.passives.includes('p2')) {
+                cpu.speed = 280;
+                cpu.slowSpeed = 95;
+            }
+            if (cpu.passives.includes('p9')) {
+                cpu.speed = Math.floor(cpu.speed * 1.12);
+                cpu.slowSpeed = Math.floor(cpu.slowSpeed * 1.12);
+            }
+            if (cpu.passives.includes('p18')) {
+                cpu.slowSpeed = Math.floor(cpu.slowSpeed * 1.25); // 韋駄天 (低速速度+25%)
+            }
             if (cpu.passives.includes('p3')) cpu.grazeRadius = 45;
         }
 
         let selectedPlayerCards = []; // PLANNINGフェーズでのプレイヤーのカード選択インデックス
+
+        function fillHandAbilities(owner = 'PLAYER') {
+            let target = owner === 'PLAYER' ? player : cpu;
+            if (!target.abilities) target.abilities = [];
+            if (!target.usedAbilities) target.usedAbilities = [];
+            if (!target.hand) target.hand = [];
+
+            // 手札の長さが6になるまで、装備アビリティ(未使用かつ手札にないもの)からランダムに補充
+            while (target.hand.length < 6) {
+                let candidates = target.abilities.filter(id => id && !target.usedAbilities.includes(id) && !target.hand.includes(id));
+                if (candidates.length === 0) break; // 補充できるアビリティがなければ終了
+                
+                let randIdx = Math.floor(Math.random() * candidates.length);
+                let chosenId = candidates[randIdx];
+                target.hand.push(chosenId);
+            }
+        }
 
         function changePhase(phase, owner) {
             battlePhase = phase;
@@ -2573,6 +2845,72 @@
             if (oldBtn) oldBtn.remove();
 
             if (phase === 'PLANNING') {
+                // 憤怒の炎 (p22) バフの準備＆更新
+                player.p22Buff = player.hitLastTurn || false;
+                player.hitLastTurn = false; // 消費
+                cpu.p22Buff = cpu.hitLastTurn || false;
+                cpu.hitLastTurn = false; // 消費
+
+                // 幸運のダイス (p23) / 霊素調和 (p26) の処理 (毎ターン開始時)
+                if (turnCount > 1) {
+                    // PLAYER の開始時パッシブ
+                    if (player.passives.includes('p23') && Math.random() < 0.10) {
+                        if (Math.random() < 0.5) {
+                            player.isInvincible = true;
+                            player.invincibleTimer = 1.5;
+                            addBattleEffect("【幸運のダイス】 完全無敵(1.5秒)獲得！", "#ffff88");
+                        } else {
+                            if (player.bombs < player.maxBombs) {
+                                player.bombs++;
+                                addBattleEffect("【幸運のダイス】 ボムが1つ回復！", "#aaffaa");
+                            }
+                        }
+                    }
+                    if (player.passives.includes('p26') && Math.random() < 0.20) {
+                        if (player.bombs < player.maxBombs) {
+                            player.bombs++;
+                            addBattleEffect("【霊素調和】 ボムが1つ回復！", "#aaffaa");
+                        }
+                    }
+
+                    // CPU の開始時パッシブ
+                    if (cpu.passives.includes('p23') && Math.random() < 0.10) {
+                        if (Math.random() < 0.5) {
+                            cpu.isInvincible = true;
+                            cpu.invincibleTimer = 1.5;
+                            addBattleEffect("【幸運のダイス】 相手が完全無敵(1.5秒)を獲得！", "#ffff88");
+                        } else {
+                            if (cpu.bombs < cpu.maxBombs) {
+                                cpu.bombs++;
+                                addBattleEffect("【幸運のダイス】 相手のボムが1つ回復！", "#ffaacc");
+                            }
+                        }
+                    }
+                    if (cpu.passives.includes('p26') && Math.random() < 0.20) {
+                        if (cpu.bombs < cpu.maxBombs) {
+                            cpu.bombs++;
+                            addBattleEffect("【霊素調和】 相手のボムが1つ回復！", "#ffaacc");
+                        }
+                    }
+                }
+
+                // 6ターンごとの一括カードリセット (1ターン目、7ターン目、13ターン目...)
+                // ターン内の所有者切り替え（CPUへの移行時）に重複リロードが走るバグを防ぐため、PLAYERターン開始時にのみ実行する
+                if (owner === 'PLAYER' && (turnCount - 1) % 6 === 0) {
+                    player.hand = [...player.deck];
+                    player.usedAbilities = [];
+                    cpu.hand = [...cpu.deck];
+                    cpu.usedAbilities = [];
+                    // 戦闘中ならリロードエフェクトを出す
+                    if (turnCount > 1) {
+                        addBattleEffect("◆ デッキ ＆ アビリティ 全リロード！ ◆", "#ffff00");
+                    }
+                }
+
+                // アビリティによる手札の空き枠の穴埋め補充
+                fillHandAbilities('PLAYER');
+                fillHandAbilities('CPU');
+
                 applyPassives();
                 selectedPlayerCards = []; // フェーズ移行時に選択をクリア
                 battleOverlay.classList.remove('hidden');
@@ -2600,21 +2938,106 @@
 
                     setTimeout(() => {
                         if (gameState !== 'BATTLE') return;
-                        if (cpu.hand.length === 0) cpu.hand = [...cpu.deck]; // リロード
 
-                        if (turnCount >= 7) {
-                            // 2枚ランダムに選ぶ
-                            let selectedIds = [];
-                            for (let i = 0; i < 2; i++) {
-                                if (cpu.hand.length === 0) cpu.hand = [...cpu.deck];
-                                const rIdx = Math.floor(Math.random() * cpu.hand.length);
-                                selectedIds.push(cpu.hand.splice(rIdx, 1)[0]);
+                        // CPUのアビリティ使用判断AI
+                        let abIdsInHand = cpu.hand.filter(id => id && id.startsWith('ab'));
+                        let chosenAbiId = null;
+
+                        if (abIdsInHand.length > 0) {
+                            // 1. 瀕死（HP<350）時の生命息吹(ab2)・霊力還元(ab6)の緊急回復
+                            if (cpu.hp < 350) {
+                                if (abIdsInHand.includes('ab2')) chosenAbiId = 'ab2';
+                                else if (abIdsInHand.includes('ab6')) chosenAbiId = 'ab6';
                             }
-                            startActionPhase(selectedIds);
+                            // 2. とどめ（プレイヤーHP<=120）時の波状爆撃(ab4)の奇襲
+                            if (!chosenAbiId && player.hp <= 120 && abIdsInHand.includes('ab4')) {
+                                chosenAbiId = 'ab4';
+                            }
+                            // 3. ボム枯渇時の霊力充填(ab1)
+                            if (!chosenAbiId && cpu.bombs === 0 && abIdsInHand.includes('ab1')) {
+                                chosenAbiId = 'ab1';
+                            }
+                            // 4. 防御目的の瞬間結界(ab5)・精神統一(ab3)
+                            if (!chosenAbiId && cpu.hp < 500 && cpu.bombs === 0) {
+                                if (abIdsInHand.includes('ab5') && Math.random() < 0.6) chosenAbiId = 'ab5';
+                                else if (abIdsInHand.includes('ab3') && Math.random() < 0.6) chosenAbiId = 'ab3';
+                            }
+
+                            // 5. 手札がすべてアビリティカードの場合は、どれか1つを必ず使う
+                            if (!chosenAbiId && cpu.hand.every(id => id && id.startsWith('ab'))) {
+                                chosenAbiId = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
+                            }
+
+                            // 6. 通常時もたまにトリッキーに使う (25%の確率)
+                            if (!chosenAbiId && Math.random() < 0.25) {
+                                chosenAbiId = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
+                            }
+                        }
+
+                        if (chosenAbiId) {
+                            // アビリティをキャスト
+                            let idx = cpu.hand.indexOf(chosenAbiId);
+                            cpu.hand.splice(idx, 1); // 手札から消費
+
+                            // 効果適用
+                            applyAbilityEffect(chosenAbiId, 'CPU');
+
+                            // 手札補充
+                            fillHandAbilities('CPU');
+
+                            // 即ターン移行
+                            changePhase('RESOLUTION', 'CPU');
+                            resolutionTimer = 0.8;
                         } else {
-                            const rIdx = Math.floor(Math.random() * cpu.hand.length);
-                            const selectedCardId = cpu.hand.splice(rIdx, 1)[0];
-                            startActionPhase(selectedCardId);
+                            // 通常のアクティブカードをキャスト
+                            let activeCardsInHand = cpu.hand.filter(id => id && !id.startsWith('ab'));
+                            
+                            // アクティブカードがない場合はフォールバックでアビリティを使う
+                            if (activeCardsInHand.length === 0 && abIdsInHand.length > 0) {
+                                let abiId = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
+                                let idx = cpu.hand.indexOf(abiId);
+                                cpu.hand.splice(idx, 1);
+                                applyAbilityEffect(abiId, 'CPU');
+                                fillHandAbilities('CPU');
+                                changePhase('RESOLUTION', 'CPU');
+                                resolutionTimer = 0.8;
+                                return;
+                            }
+
+                            if (turnCount >= 7) {
+                                // 2枚選ぶ
+                                let selectedIds = [];
+                                for (let i = 0; i < 2; i++) {
+                                    let actives = cpu.hand.filter(id => id && !id.startsWith('ab'));
+                                    if (actives.length === 0) break;
+                                    const rIdx = Math.floor(Math.random() * actives.length);
+                                    let picked = actives[rIdx];
+                                    let realIdx = cpu.hand.indexOf(picked);
+                                    selectedIds.push(cpu.hand.splice(realIdx, 1)[0]); // 消費する
+                                }
+                                if (selectedIds.length > 0) {
+                                    startActionPhase(selectedIds);
+                                } else {
+                                    // 6ターンごとの一括リロードまで手札の即時強制リロードは行わない
+                                    fillHandAbilities('CPU');
+                                    changePhase('RESOLUTION', 'CPU');
+                                    resolutionTimer = 0.5;
+                                }
+                            } else {
+                                let actives = cpu.hand.filter(id => id && !id.startsWith('ab'));
+                                if (actives.length > 0) {
+                                    const rIdx = Math.floor(Math.random() * actives.length);
+                                    let picked = actives[rIdx];
+                                    let realIdx = cpu.hand.indexOf(picked);
+                                    const selectedCardId = cpu.hand.splice(realIdx, 1)[0]; // 消費する
+                                    startActionPhase(selectedCardId);
+                                } else {
+                                    // 6ターンごとの一括リロードまで手札の即時強制リロードは行わない
+                                    fillHandAbilities('CPU');
+                                    changePhase('RESOLUTION', 'CPU');
+                                    resolutionTimer = 0.5;
+                                }
+                            }
                         }
                     }, 1500);
                 }
@@ -2625,12 +3048,23 @@
                 handContainer.innerHTML = '';
 
                 let t = turnCount - 1;
-                let dmgMult = Math.pow(2, (t * t + 15 * t) / 450);
+                let baseDmgMult = Math.pow(2, (t * t + 15 * t) / 450);
+                
+                // p24 共鳴波動 の適用（相手の歪み倍率の増加量が 15% 上昇）
+                let playerDmgMult = baseDmgMult;
+                let cpuDmgMult = baseDmgMult;
+                if (cpu.passives.includes('p24') && t > 0) {
+                    playerDmgMult = 1.0 + (baseDmgMult - 1.0) * 1.15;
+                }
+                if (player.passives.includes('p24') && t > 0) {
+                    cpuDmgMult = 1.0 + (baseDmgMult - 1.0) * 1.15;
+                }
+
                 let healReducePercent = (400 / 59) * (Math.pow(3.95, t / 15) - 1);
                 let healMult = Math.max(0, 1 - (healReducePercent / 100));
 
-                let playerDmg = Math.floor(player.pendingDamage * dmgMult);
-                let cpuDmg = Math.floor(cpu.pendingDamage * dmgMult);
+                let playerDmg = Math.floor(player.pendingDamage * playerDmgMult);
+                let cpuDmg = Math.floor(cpu.pendingDamage * cpuDmgMult);
                 let playerHeal = Math.floor(player.pendingHeal * healMult);
                 let cpuHeal = Math.floor(cpu.pendingHeal * healMult);
                 let pMsg = [];
@@ -2646,13 +3080,46 @@
                     }
                 }
 
-                player.hp -= playerDmg; cpu.hp -= cpuDmg;
-                player.hp = Math.min(player.maxHp, player.hp + playerHeal);
-                cpu.hp = Math.min(cpu.maxHp, cpu.hp + cpuHeal);
+                // 【急】精神統一の半減シールド処理
+                if (playerDmg > 0 && player.ab3Shield) {
+                    let prevDmg = playerDmg;
+                    playerDmg = Math.floor(playerDmg / 2);
+                    player.ab3Shield = false; // 消費
+                    pMsg.push(`[PLAYER] 【急】精神統一シールド：ダメージ${prevDmg - playerDmg}軽減(半減)`);
+                }
+                if (cpuDmg > 0 && cpu.ab3Shield) {
+                    let prevDmg = cpuDmg;
+                    cpuDmg = Math.floor(cpuDmg / 2);
+                    cpu.ab3Shield = false; // 消費
+                    pMsg.push(`[CPU] 【急】精神統一シールド：ダメージ${prevDmg - cpuDmg}軽減(半減)`);
+                }
+
+                player.hp -= playerDmg;
+                // p25 絶体絶命 (プレイヤー踏みとどまり判定)
+                if (player.hp <= 0 && player.passives.includes('p25') && !player.p25Triggered) {
+                    player.hp = 1;
+                    player.p25Triggered = true;
+                    player.isInvincible = true;
+                    player.invincibleTimer = 1.5;
+                    pMsg.push(`[PLAYER] 【絶体絶命】 発動！ 一度だけHP1で踏みとどまり完全無敵！`);
+                }
+
+                cpu.hp -= cpuDmg;
+                // p25 絶体絶命 (CPU踏みとどまり判定)
+                if (cpu.hp <= 0 && cpu.passives.includes('p25') && !cpu.p25Triggered) {
+                    cpu.hp = 1;
+                    cpu.p25Triggered = true;
+                    cpu.isInvincible = true;
+                    cpu.invincibleTimer = 1.5;
+                    pMsg.push(`[CPU] 【絶体絶命】 発動！ 一度だけHP1で踏みとどまり完全無敵！`);
+                }
+
+                player.hp = Math.min(player.maxHp || 1000, player.hp + playerHeal);
+                cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + cpuHeal);
                 player.pendingDamage = 0; cpu.pendingDamage = 0; player.pendingHeal = 0; cpu.pendingHeal = 0;
 
                 let html = `<span style="font-family:'Noto Serif JP',serif; font-size:24px; color:#ffcc00; letter-spacing:2px;">精算フェーズ</span><br>`;
-                if (t > 0) html += `<span style="font-size:12px; color:#cccccc;">【境界の歪み】 ダメージ ${dmgMult.toFixed(2)}倍 / 回復量 -${Math.floor(healReducePercent)}%</span><br>`;
+                if (t > 0) html += `<span style="font-size:12px; color:#cccccc;">【境界の歪み】 ダメージ ${baseDmgMult.toFixed(2)}倍 / 回復量 -${Math.floor(healReducePercent)}%</span><br>`;
                 html += `<br><span style="font-size:18px; color:#ff8888;">PLAYER: -${playerDmg} DMG</span>`;
                 if (playerHeal > 0) html += ` <span style="font-size:18px; color:#88ff88;">(+${playerHeal} HP)</span>`;
                 html += `<br><span style="font-size:18px; color:#ff8888;">CPU: -${cpuDmg} DMG</span>`;
@@ -2671,6 +3138,60 @@
             }
         }
 
+        function applyAbilityEffect(cardId, owner) {
+            let user = owner === 'PLAYER' ? player : cpu;
+            let target = owner === 'PLAYER' ? cpu : player;
+
+            let cardData = defaultCards.ability.find(c => c.id === cardId);
+            if (!cardData) return;
+
+            if (!user.usedAbilities) user.usedAbilities = [];
+            user.usedAbilities.push(cardId);
+
+            let effectMsg = "";
+            let color = "#ffcc00";
+
+            switch (cardId) {
+                case 'ab1': // 【急】霊力充填
+                    user.bombs = Math.min(user.maxBombs, user.bombs + 1);
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【霊力充填】：ボムが1つ回復！`;
+                    break;
+                case 'ab2': // 【急】生命息吹
+                    let heal = 200;
+                    user.hp = Math.min(user.maxHp || 1000, user.hp + heal);
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【生命息吹】：HPが${heal}回復！`;
+                    color = "#aaffaa";
+                    break;
+                case 'ab3': // 【急】精神統一
+                    user.ab3Shield = true;
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【精神統一】：被弾半減結界を展開！`;
+                    color = "#aae0ff";
+                    break;
+                case 'ab4': // 【急】波状爆撃
+                    let dmg = 60;
+                    target.hp = Math.max(0, target.hp - dmg);
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【波状爆撃】：相手に${dmg}の直接打撃！`;
+                    color = "#ff8888";
+                    checkDeath(); // 撃破判定
+                    break;
+                case 'ab5': // 【急】瞬間結界
+                    user.isInvincible = true;
+                    user.invincibleTimer = 1.5;
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【瞬間結界】：1.5秒間の完全無敵！`;
+                    color = "#ffffff";
+                    break;
+                case 'ab6': // 【急】霊力還元
+                    user.grazeCount = (user.grazeCount || 0) + 150;
+                    user.hp = Math.min(1000, user.hp + 50);
+                    effectMsg = `${owner === 'PLAYER' ? 'あなた' : '相手'}の【霊力還元】：グレイズ+150 ＆ HP+50！`;
+                    color = "#ffffcc";
+                    break;
+            }
+
+            // バトルエフェクトのフワッとした発動表示
+            addBattleEffect(effectMsg, color);
+        }
+
         function castSelectedSpells() {
             if (selectedPlayerCards.length === 0) return;
             // インデックスが大きい方から順に取り除いてバグを防ぐ
@@ -2686,7 +3207,30 @@
                 });
             }
 
-            startActionPhase(cardIds);
+            // アビリティカードが1枚でも含まれているかの検知
+            let hasAbility = cardIds.some(id => id && id.startsWith('ab'));
+
+            if (hasAbility) {
+                // アビリティの効果を即時適用
+                cardIds.forEach(id => {
+                    if (id && id.startsWith('ab')) {
+                        applyAbilityEffect(id, 'PLAYER');
+                    } else if (id) {
+                        // アビリティと同時に選ばれたアクティブカードは手札から消費されて捨札へ
+                    }
+                });
+
+                // 減った手札枠をアビリティカードで即座に補充
+                fillHandAbilities('PLAYER');
+                renderHand();
+
+                // 即座に精算フェーズ（タイマーを極小の0.8秒にしてテンポ良く）に移行し、相手にターンを渡す
+                changePhase('RESOLUTION', 'PLAYER');
+                resolutionTimer = 0.8;
+            } else {
+                // 通常のアクティブカードの場合は通常通り弾幕アクションフェーズを開始
+                startActionPhase(cardIds);
+            }
         }
 
         function selectPlayerCard(idx) {
@@ -2714,11 +3258,12 @@
             if (oldBtn) oldBtn.remove();
 
             handContainer.innerHTML = '';
+            
+            // 6ターンごとの一括カードリセットにするため、ここでの自動即時リロードは行いません。
             if (player.hand.length === 0) {
-                player.hand = [...player.deck]; // 即時リロード仕様
                 const msg = document.createElement('div');
-                msg.textContent = "全手札展開完了！デッキ即時リロード！";
-                msg.style.color = "#ffff55"; msg.style.marginBottom = "10px"; msg.style.fontSize = "13px";
+                msg.textContent = "手札がありません！次のリロード（6ターンごと）を待つか、ボムを使用してください。";
+                msg.style.color = "#ff5555"; msg.style.marginBottom = "10px"; msg.style.fontSize = "13px";
                 handContainer.appendChild(msg);
             }
 
@@ -2735,7 +3280,7 @@
             }
 
             player.hand.forEach((cardId, idx) => {
-                const cardData = defaultCards.active.find(c => c.id === cardId);
+                const cardData = defaultCards.active.find(c => c.id === cardId) || defaultCards.ability.find(c => c.id === cardId);
                 if (!cardData) return;
 
                 const cardEl = document.createElement('div');
@@ -2747,6 +3292,13 @@
                 if (isFocused) classes.push('focused-card');
                 cardEl.className = classes.join(' ');
 
+                let isAbility = cardId.startsWith('ab');
+                if (isAbility) {
+                    cardEl.style.border = '2px solid #ffcc00';
+                    cardEl.style.boxShadow = isSelected ? '0 0 15px rgba(255,204,0,0.9)' : '0 0 8px rgba(255,204,0,0.5)';
+                    cardEl.style.background = 'linear-gradient(135deg, #2a2200 0%, #110e00 100%)';
+                }
+
                 // キー名
                 let shortcutKey = idx + 1;
                 if (idx === 0 && keyConfig.card1 !== '1') shortcutKey = keyConfig.card1;
@@ -2757,11 +3309,19 @@
                 if (idx === 5 && keyConfig.card6 !== '6') shortcutKey = keyConfig.card6;
                 if (shortcutKey === ' ') shortcutKey = 'Space';
 
-                cardEl.innerHTML = `
-                    <div class="card-shortcut">${shortcutKey}</div>
-                    <div class="card-name">${cardData.name.replace('【A】', '')}</div>
-                    <div class="card-stats">時間 ${cardData.duration}s<br>間隔 ${cardData.interval}s</div>
-                `;
+                if (isAbility) {
+                    cardEl.innerHTML = `
+                        <div class="card-shortcut" style="background:#ffcc00; color:#000;">${shortcutKey}</div>
+                        <div class="card-name" style="color:#ffcc00;">${cardData.name.replace('【急】', '')}</div>
+                        <div class="card-stats" style="font-size:9px; color:#ffdd88; line-height:1.2; padding:2px;">即時アビリティ<br>発動後相手ターン</div>
+                    `;
+                } else {
+                    cardEl.innerHTML = `
+                        <div class="card-shortcut">${shortcutKey}</div>
+                        <div class="card-name">${cardData.name.replace('【A】', '')}</div>
+                        <div class="card-stats">時間 ${cardData.duration}s<br>間隔 ${cardData.interval}s</div>
+                    `;
+                }
 
                 cardEl.onclick = () => {
                     focusedCardIndex = idx;
@@ -2797,7 +3357,7 @@
                 let found = defaultCards.active.find(c => c.id === id);
                 if (found) {
                     // 独立した timer プロパティを持たせるために浅くコピー
-                    return { ...found, spawnTimer: 0 };
+                    return { ...found, spawnTimer: found.interval };
                 }
                 return null;
             }).filter(Boolean);
@@ -3149,11 +3709,6 @@
             'cross': (attacker, target) => {
                 // 交符「クロスカーブ・レクイエム」
                 // さらに後ろめで、大量の70発が一斉にばらけながら射出。
-                // 1. 曲がるまでを約0.48秒間に延長。
-                // 2. カーブするまでのフェーズ0において、不規則に「ブルブル」「ぶわぶわ」とランダムノイズ（横揺れ1.65）でぶれながら超広大に大拡散！
-                // 3. 大外の左右両端から、ターゲットの手前付近までゆったり大旋回。
-                // 4. 直進（フェーズ2）に入った瞬間に、ターゲット（自機/CPU）の最新の座標へと軌道を「ビシッ」と自動修正して収束！
-                // 5. 軌道修正完了と同時に、毎秒+620px/s²の超々加速で美しく一点交差（クロス）して突き刺さる！
                 let targetDx = target.x - attacker.x;
                 let targetDy = target.y - attacker.y;
                 let baseAngle = Math.atan2(targetDy, targetDx);
@@ -3266,6 +3821,428 @@
                     });
                 }
                 return res;
+            },
+            'myouju': (attacker, target) => {
+                let res = [];
+                let ways = 16;
+                let startRadius = 15;
+                for (let i = 0; i < ways; i++) {
+                    let initialAngle = (Math.PI * 2 / ways) * i;
+                    res.push({
+                        x: attacker.x + Math.cos(initialAngle) * startRadius,
+                        y: attacker.y + Math.sin(initialAngle) * startRadius,
+                        vx: 0,
+                        vy: 0,
+                        radius: 9,
+                        team: attacker.team,
+                        color: 'hsl(' + (i * (360 / ways)) + ', 100%, 70%)',
+                        state: 0, // 0: 回転拡大, 1: 追尾
+                        rotAngle: initialAngle,
+                        distRadius: startRadius,
+                        lifeTimer: 0,
+                        bounceCount: 0,
+                        update: (b, dt) => {
+                            b.lifeTimer += dt;
+                            b.color = 'hsl(' + ((b.rotAngle * 180 / Math.PI + b.lifeTimer * 200) % 360) + ', 100%, 70%)';
+
+                            if (b.state === 0) {
+                                b.rotAngle += 4.5 * dt;
+                                b.distRadius = Math.min(80, b.distRadius + 75 * dt);
+                                b.x = attacker.x + Math.cos(b.rotAngle) * b.distRadius;
+                                b.y = attacker.y + Math.sin(b.rotAngle) * b.distRadius;
+
+                                if (b.lifeTimer >= 0.8) {
+                                    b.state = 1;
+                                    let currTarget = b.team === 'PLAYER' ? cpu : player;
+                                    let angle = Math.atan2(currTarget.y - b.y, currTarget.x - b.x);
+                                    b.vx = Math.cos(angle) * 350;
+                                    b.vy = Math.sin(angle) * 350;
+                                }
+                            } else {
+                                let currTarget = b.team === 'PLAYER' ? cpu : player;
+                                let tx = currTarget.x;
+                                let ty = currTarget.y;
+                                let dx = tx - b.x;
+                                let dy = ty - b.y;
+                                let targetAngle = Math.atan2(dy, dx);
+                                let currentAngle = Math.atan2(b.vy, b.vx);
+
+                                let angleDiff = targetAngle - currentAngle;
+                                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 2.5 * dt);
+
+                                let speed = 350;
+                                b.vx = Math.cos(nextAngle) * speed;
+                                b.vy = Math.sin(nextAngle) * speed;
+
+                                let margin = 10;
+                                let bounced = false;
+                                if (b.x < margin && b.vx < 0) { b.vx = -b.vx; bounced = true; }
+                                if (b.x > PLAY_WIDTH - margin && b.vx > 0) { b.vx = -b.vx; bounced = true; }
+                                if (b.y < 120 && b.vy < 0) { b.vy = -b.vy; bounced = true; }
+                                if (b.y > canvas.height - margin && b.vy > 0) { b.vy = -b.vy; bounced = true; }
+
+                                if (bounced) {
+                                    b.bounceCount++;
+                                    if (b.bounceCount > 2) {
+                                        b.x = -9999;
+                                        b.y = -9999;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                return res;
+            },
+            'myouju': (attacker, target) => {
+                let res = [];
+                let ways = 28;
+                let startRadius = 15;
+                for (let i = 0; i < ways; i++) {
+                    let initialAngle = (Math.PI * 2 / ways) * i;
+                    res.push({
+                        x: attacker.x + Math.cos(initialAngle) * startRadius,
+                        y: attacker.y + Math.sin(initialAngle) * startRadius,
+                        vx: 0,
+                        vy: 0,
+                        radius: 9,
+                        team: attacker.team,
+                        color: 'hsl(' + (i * (360 / ways)) + ', 100%, 70%)',
+                        state: 0, // 0: 回転拡大, 1: 追尾
+                        rotAngle: initialAngle,
+                        distRadius: startRadius,
+                        lifeTimer: 0,
+                        bounceCount: 0,
+                        update: (b, dt) => {
+                            b.lifeTimer += dt;
+                            b.color = 'hsl(' + ((b.rotAngle * 180 / Math.PI + b.lifeTimer * 200) % 360) + ', 100%, 70%)';
+
+                            if (b.state === 0) {
+                                b.rotAngle += 4.5 * dt;
+                                b.distRadius = Math.min(80, b.distRadius + 75 * dt);
+                                b.x = attacker.x + Math.cos(b.rotAngle) * b.distRadius;
+                                b.y = attacker.y + Math.sin(b.rotAngle) * b.distRadius;
+
+                                if (b.lifeTimer >= 0.8) {
+                                    b.state = 1;
+                                    let currTarget = b.team === 'PLAYER' ? cpu : player;
+                                    let angle = Math.atan2(currTarget.y - b.y, currTarget.x - b.x);
+                                    b.vx = Math.cos(angle) * 350;
+                                    b.vy = Math.sin(angle) * 350;
+                                }
+                            } else {
+                                let currTarget = b.team === 'PLAYER' ? cpu : player;
+                                let tx = currTarget.x;
+                                let ty = currTarget.y;
+                                let dx = tx - b.x;
+                                let dy = ty - b.y;
+                                let targetAngle = Math.atan2(dy, dx);
+                                let currentAngle = Math.atan2(b.vy, b.vx);
+
+                                let angleDiff = targetAngle - currentAngle;
+                                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                                let nextAngle = currentAngle + Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 2.5 * dt);
+
+                                let speed = 350;
+                                b.vx = Math.cos(nextAngle) * speed;
+                                b.vy = Math.sin(nextAngle) * speed;
+
+                                let margin = 10;
+                                let bounced = false;
+                                if (b.x < margin && b.vx < 0) { b.vx = -b.vx; bounced = true; }
+                                if (b.x > PLAY_WIDTH - margin && b.vx > 0) { b.vx = -b.vx; bounced = true; }
+                                if (b.y < margin && b.vy < 0) { b.vy = -b.vy; bounced = true; }
+                                if (b.y > canvas.height - margin && b.vy > 0) { b.vy = -b.vy; bounced = true; }
+
+                                if (bounced) {
+                                    b.bounceCount++;
+                                    if (b.bounceCount > 2) {
+                                        b.x = -9999;
+                                        b.y = -9999;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                return res;
+            },
+            'masterspark': (attacker, target) => {
+                let res = [];
+                res.push({
+                    x: attacker.x,
+                    y: attacker.y,
+                    vx: 0,
+                    vy: 0,
+                    radius: 8, // 初期半径 (予告フェーズ用)
+                    warningWidth: 180, // 予告範囲の枠幅 (ビーム実サイズに連動)
+                    team: attacker.team,
+                    color: 'rgba(255, 255, 255, 0.95)',
+                    isBeam: true,
+                    isWarning: true,
+                    lifeTimer: 0,
+                    angle: attacker.team === 'CPU' ? Math.PI / 2 : -Math.PI / 2, // プレイヤーは上向き、CPUは下向き
+                    update: (b, dt) => {
+                        b.lifeTimer += dt;
+
+                        // 26秒のスペルカード時間切れでビーム消滅
+                        if (b.lifeTimer >= 26.0) {
+                            b.x = -9999;
+                            b.y = -9999;
+                            return;
+                        }
+
+                        // キャスター（攻撃側）の速度をマスタースパーク中は激減
+                        attacker.speed = 80;
+                        attacker.slowSpeed = 30;
+
+                        // マスタースパークの強烈な反動（ノックバック）
+                        let knockbackDir = attacker.team === 'PLAYER' ? 1 : -1;
+                        attacker.y += knockbackDir * 20 * dt;
+                        let boundaryY = 120;
+                        attacker.y = Math.max(boundaryY + attacker.grazeRadius, Math.min(canvas.height - attacker.grazeRadius, attacker.y));
+
+                        // 7秒間のサイクルループ：1sチャージ、3s発射、1s収束、2s休憩
+                        let cycleTime = b.lifeTimer % 7.0;
+
+                        // 1. チャージフェーズ (0.0秒 〜 1.0秒): 吸い込みチャージ粒子を発生
+                        if (cycleTime < 1.0) {
+                            b.isWarning = true;
+                            b.isResting = false;
+                            b.radius = 8;
+                            b.x = attacker.x; // キャスター位置に完全固定（自動追尾なし）
+
+                            // 周囲からキャスターの元へと急激に収束する美しい魔力粒子（星）を生成
+                            if (Math.random() < 0.45) {
+                                let spawnAngle = Math.random() * Math.PI * 2;
+                                let spawnDist = 120 + Math.random() * 160;
+                                let starX = attacker.x + Math.cos(spawnAngle) * spawnDist;
+                                let starY = attacker.y + Math.sin(spawnAngle) * spawnDist;
+                                
+                                bullets.push({
+                                    x: starX,
+                                    y: starY,
+                                    vx: -Math.cos(spawnAngle) * 230,
+                                    vy: -Math.sin(spawnAngle) * 230,
+                                    radius: 7.0,
+                                    team: b.team,
+                                    color: 'hsl(' + (Math.random() * 360) + ', 100%, 70%)',
+                                    isNormal: false,
+                                    lifeTimer: 0,
+                                    update: (cb, cdt) => {
+                                        cb.lifeTimer += cdt;
+                                        // キャスターに近づいたら消去
+                                        let dx = attacker.x - cb.x;
+                                        let dy = attacker.y - cb.y;
+                                        let dist = Math.hypot(dx, dy);
+                                        if (dist < 15 || cb.lifeTimer > 1.0) {
+                                            cb.x = -9999;
+                                            cb.y = -9999;
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        // 2. 本射フェーズ (1.0秒 〜 4.0秒): 画面を揺らす極太レーザー ＆ 七色星弾スプレー
+                        else if (cycleTime >= 1.0 && cycleTime < 4.0) {
+                            b.isWarning = false;
+                            b.isResting = false;
+                            
+                            // 急激に極太サイズまでビームを拡大
+                            let targetRadius = 90;
+                            b.radius = Math.min(targetRadius, b.radius + (targetRadius - b.radius) * 12 * dt);
+
+                            // 自動追尾なし、キャスターのX座標に完全に追従
+                            b.x = attacker.x;
+
+                            // 画面を豪快に揺らす
+                            screenShakeAmount = 9.0;
+
+                            // レーザーの判定幅の中に入った相手の通常弾をすべて消滅（かき消し）させる
+                            let beamLeft = b.x - b.radius;
+                            let beamRight = b.x + b.radius;
+                            for (let k = bullets.length - 1; k >= 0; k--) {
+                                let eb = bullets[k];
+                                if (eb.team !== b.team && eb.isNormal) {
+                                    if (eb.x >= beamLeft && eb.x <= beamRight) {
+                                        if (attacker.team === 'PLAYER' && eb.y < b.y) {
+                                            bullets.splice(k, 1);
+                                        } else if (attacker.team === 'CPU' && eb.y > b.y) {
+                                            bullets.splice(k, 1);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // ビーム射線上の相手に連続ヒット
+                            let targetDx = Math.abs(target.x - b.x);
+                            if (targetDx < b.radius + target.hitboxRadius) {
+                                let isTargetInBeam = false;
+                                if (attacker.team === 'PLAYER' && target.y < b.y) {
+                                    isTargetInBeam = true;
+                                } else if (attacker.team === 'CPU' && target.y > b.y) {
+                                    isTargetInBeam = true;
+                                }
+
+                                if (isTargetInBeam && !target.isInvincible) {
+                                    target.hp = Math.max(0, target.hp - 105 * dt); // 極太レーザーの壊滅的持続ダメージ
+                                    checkDeath();
+                                }
+                            }
+
+                            // 美しい虹色のうねる星弾スプレー射出
+                            if (b.starSpawnTimer === undefined) b.starSpawnTimer = 0;
+                            b.starSpawnTimer += dt;
+                            if (b.starSpawnTimer >= 0.15) {
+                                b.starSpawnTimer = 0;
+                                let ways = 2;
+                                let baseAngle = attacker.team === 'CPU' ? Math.PI / 2 : -Math.PI / 2;
+                                for (let i = 0; i < ways; i++) {
+                                    let offsetAngle = i === 0 ? -0.42 : 0.42;
+                                    let sprayAngle = baseAngle + offsetAngle + (Math.random() - 0.5) * 0.1;
+                                    let starSpeed = 110 + Math.random() * 90;
+                                    bullets.push({
+                                        x: attacker.x + (Math.random() - 0.5) * 30,
+                                        y: attacker.y + knockbackDir * 15,
+                                        vx: Math.cos(sprayAngle) * starSpeed,
+                                        vy: Math.sin(sprayAngle) * starSpeed,
+                                        radius: 6.5,
+                                        team: b.team,
+                                        color: 'hsl(' + ((performance.now() / 3.5 + i * 120) % 360) + ', 100%, 65%)',
+                                        isNormal: false,
+                                        customDmg: 15, // かすり傷程度の15ダメージ
+                                        curve: (Math.random() - 0.5) * 0.5,
+                                        update: (sb, sdt) => {
+                                            if (sb.curve !== 0) {
+                                                let currentAngle = Math.atan2(sb.vy, sb.vx);
+                                                let newAngle = currentAngle + sb.curve * sdt;
+                                                let speedVal = Math.hypot(sb.vx, sb.vy);
+                                                sb.vx = Math.cos(newAngle) * speedVal;
+                                                sb.vy = Math.sin(newAngle) * speedVal;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        // 3. 収束フェーズ (4.0秒 〜 5.0秒): レーザーが超高速でしぼみながら消失
+                        else if (cycleTime >= 4.0 && cycleTime < 5.0) {
+                            b.isWarning = false;
+                            b.isResting = false;
+                            b.radius = Math.max(0, b.radius - 320 * dt);
+                            b.x = attacker.x;
+                        }
+                        // 4. 休憩フェーズ (5.0秒 〜 7.0秒): 判定と描画を完全にオフ
+                        else {
+                            b.isWarning = false;
+                            b.isResting = true;
+                            b.radius = 0;
+                            b.x = attacker.x;
+                        }
+                    }
+                });
+                return res;
+            },
+            'gungnir': (attacker, target) => {
+                let res = [];
+                let angle = Math.atan2(target.y - attacker.y, target.x - attacker.x);
+                res.push({
+                    x: attacker.x,
+                    y: attacker.y,
+                    vx: Math.cos(angle) * 750, // 存在感のあるスピード
+                    vy: Math.sin(angle) * 750,
+                    radius: 20, // 槍の判定サイズ
+                    team: attacker.team,
+                    color: '#ff1111',
+                    isGungnir: true,
+                    state: 0,
+                    lifeTimer: 0,
+                    hasHitTarget: false,
+                    update: (b, dt) => {
+                        b.lifeTimer += dt;
+ 
+                        if (b.state === 0) {
+                            // 槍が通過した跡（軌跡）に赤い弾幕を撒き散らす
+                            b.trailSpawnTimer = (b.trailSpawnTimer || 0) + dt;
+                            if (b.trailSpawnTimer >= 0.04) {
+                                b.trailSpawnTimer = 0;
+                                let moveAngle = Math.atan2(b.vy, b.vx);
+                                let perpAngle1 = moveAngle + Math.PI / 2 + (Math.random() - 0.5) * 0.4;
+                                let perpAngle2 = moveAngle - Math.PI / 2 + (Math.random() - 0.5) * 0.4;
+                                let spd = 60 + Math.random() * 80;
+                                bullets.push(
+                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle1) * spd, vy: Math.sin(perpAngle1) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false },
+                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle2) * spd, vy: Math.sin(perpAngle2) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false }
+                                );
+                            }
+
+                            // すべての敵弾を貫通して消滅させる (55pxの超広範囲)
+                            for (let k = bullets.length - 1; k >= 0; k--) {
+                                let eb = bullets[k];
+                                if (eb && eb.team !== b.team) {
+                                    let dist = Math.hypot(eb.x - b.x, eb.y - b.y);
+                                    if (dist < 55) {
+                                        bullets.splice(k, 1);
+                                    }
+                                }
+                            }
+
+                            // ターゲット（機体）との当たり判定（貫通時の一撃）
+                            let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
+                            if (distToTarget < (target.hitboxRadius + b.radius)) {
+                                if (!b.hasHitTarget) {
+                                    b.hasHitTarget = true;
+                                    if (!target.isInvincible) {
+                                        target.hp = Math.max(0, target.hp - 100); // 貫通時に100ダメージ！
+                                        checkDeath();
+                                        addBattleEffect("◆ GUNGNIR PIERCE! ◆", "#ff3333");
+                                    }
+                                }
+                            }
+ 
+                            let reachWall = b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10 || b.y > canvas.height - 10;
+                            if (reachWall || b.lifeTimer >= 1.2) {
+                                b.state = 1;
+                                b.vx = 0;
+                                b.vy = 0;
+                                b.radius = 20;
+                                b.lifeTimer = 0;
+ 
+                                let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
+                                if (distToTarget < 120 && !target.isInvincible) {
+                                    target.hp = Math.max(0, target.hp - 80); // 爆発時に追加で80ダメージ！
+                                    checkDeath();
+                                }
+ 
+                                let ways = 32; // 爆発破片を32方向に増やしてさらにド派手に！
+                                let fragmentSpeed = 300;
+                                for (let i = 0; i < ways; i++) {
+                                    let fragAngle = (Math.PI * 2 / ways) * i;
+                                    bullets.push({
+                                        x: b.x,
+                                        y: b.y,
+                                        vx: Math.cos(fragAngle) * fragmentSpeed,
+                                        vy: Math.sin(fragAngle) * fragmentSpeed,
+                                        radius: 6,
+                                        team: b.team,
+                                        color: '#ff3355',
+                                        isNormal: false
+                                    });
+                                }
+                            }
+                        } else if (b.state === 1) {
+                            b.radius = 20 + b.lifeTimer * 250; // 爆発規模拡大
+                            if (b.lifeTimer >= 0.45) {
+                                b.x = -9999;
+                                b.y = -9999;
+                            }
+                        }
+                    }
+                });
+                return res;
             }
         };
 
@@ -3287,6 +4264,20 @@
             lastTime = timestamp;
             if (dt > 0.1) dt = 0.1;
 
+            // バトルエフェクトのタイマー更新
+            for (let i = activeEffects.length - 1; i >= 0; i--) {
+                activeEffects[i].timer -= dt;
+                if (activeEffects[i].timer <= 0) {
+                    activeEffects.splice(i, 1);
+                }
+            }
+
+            // 画面揺れ（スクリーンの振動）の減衰更新
+            if (screenShakeAmount > 0) {
+                screenShakeAmount -= 15 * dt;
+                if (screenShakeAmount < 0) screenShakeAmount = 0;
+            }
+
             // 毎フレーム入力を更新（ゲームパッド ＆ キーコンフィグ）
             updateInputState();
 
@@ -3300,10 +4291,10 @@
                     let moveX = diffX * lerpFactor * dt;
                     let moveY = diffY * lerpFactor * dt;
                     let moveDistance = Math.hypot(moveX, moveY);
-                    
+
                     let currentSpeed = player.speed; // 通常速度 player.speed (350)
                     let maxMove = currentSpeed * dt;
-                    
+
                     if (moveDistance > maxMove) {
                         player.x += (diffX / distance) * maxMove;
                         player.y += (diffY / distance) * maxMove;
@@ -3319,17 +4310,68 @@
                 if (isOnlineMode && battlePhase === 'PLANNING' && turnOwner === 'CPU' && receivedCastIds) {
                     let cardIds = receivedCastIds;
                     receivedCastIds = null; // リセット
-                    startActionPhase(cardIds);
+
+                    let hasAbility = cardIds.some(id => id && id.startsWith('ab'));
+                    if (hasAbility) {
+                        // 相手側のアビリティ効果を即時適用
+                        cardIds.forEach(id => {
+                            if (id && id.startsWith('ab')) {
+                                applyAbilityEffect(id, 'CPU');
+                                // 相手手札から消費
+                                if (cpu.hand) {
+                                    let idx = cpu.hand.indexOf(id);
+                                    if (idx !== -1) cpu.hand.splice(idx, 1);
+                                }
+                            }
+                        });
+
+                        // 相手の手札を補充
+                        fillHandAbilities('CPU');
+
+                        // 精算フェーズへ直行
+                        changePhase('RESOLUTION', 'CPU');
+                        resolutionTimer = 0.8;
+                    } else {
+                        // 通常キャスト
+                        cardIds.forEach(id => {
+                            if (cpu.hand) {
+                                let idx = cpu.hand.indexOf(id);
+                                if (idx !== -1) cpu.hand.splice(idx, 1);
+                            }
+                        });
+                        startActionPhase(cardIds);
+                    }
                 }
                 // 霊撃の発動処理 (回避側で戦闘フェーズ中のみ)
                 if (battlePhase === 'ACTION' && turnOwner === 'CPU') {
                     let bombTriggered = (inputState.bomb && !prevBombInput) || mobileBombTriggered;
                     mobileBombTriggered = false; // 消費
                     if (bombTriggered && player.bombs >= 1 && !player.isInvincible) {
-                        player.bombs -= 1;
+                        let consumed = true;
+                        if (player.passives.includes('p20') && Math.random() < 0.15) {
+                            consumed = false;
+                            addBattleEffect("【霊力節約】 ボムが消費されなかった！", "#aaffaa");
+                        }
+                        if (consumed) {
+                            player.bombs -= 1;
+                        }
                         player.isInvincible = true;
-                        player.invincibleTimer = 2.5; // 2.5秒間無敵
+
+                        // p19 乾坤一擲
+                        if (player.passives.includes('p19')) {
+                            cpu.hp = Math.max(0, cpu.hp - 50);
+                            addBattleEffect("【乾坤一擲】 霊撃で相手に50ダメージ！", "#ff8888");
+                            checkDeath();
+                        }
                         
+                        // パッシブp11判定 (無敵時間2.5s ➔ 3.5s)
+                        if (player.passives.includes('p11')) {
+                            player.invincibleTimer = 3.5;
+                            addBattleEffect("【八卦の加護】 霊撃の無敵時間延長！", "#00ffff");
+                        } else {
+                            player.invincibleTimer = 2.5;
+                        }
+
                         activeReigekis.push({
                             team: 'PLAYER',
                             x: player.x,
@@ -3339,7 +4381,7 @@
                             duration: 2.0,
                             timer: 0
                         });
-                        
+
                         reigekiCutinTimer = 1.0;
                         reigekiCutinOwner = 'PLAYER';
 
@@ -3359,10 +4401,30 @@
                         // 相手からボム発動情報を受信した場合
                         if (receivedBomb) {
                             receivedBomb = false;
-                            cpu.bombs -= 1;
+                            let consumed = true;
+                            if (cpu.passives.includes('p20') && Math.random() < 0.15) {
+                                consumed = false;
+                                addBattleEffect("【霊力節約】 相手のボムが消費されなかった！", "#ffaacc");
+                            }
+                            if (consumed) {
+                                cpu.bombs -= 1;
+                            }
                             cpu.isInvincible = true;
-                            cpu.invincibleTimer = 2.5; // 2.5秒間無敵
-                            
+
+                            // p19 乾坤一擲
+                            if (cpu.passives.includes('p19')) {
+                                player.hp = Math.max(0, player.hp - 50);
+                                addBattleEffect("【乾坤一擲】 霊撃であなたに50ダメージ！", "#ff8888");
+                                checkDeath();
+                            }
+
+                            if (cpu.passives.includes('p11')) {
+                                cpu.invincibleTimer = 3.5;
+                                addBattleEffect("【八卦の加護】 相手の霊撃無敵時間が延長！", "#ff5555");
+                            } else {
+                                cpu.invincibleTimer = 2.5;
+                            }
+
                             activeReigekis.push({
                                 team: 'CPU',
                                 x: cpu.x,
@@ -3372,19 +4434,39 @@
                                 duration: 2.0,
                                 timer: 0
                             });
-                            
+
                             reigekiCutinTimer = 1.0;
                             reigekiCutinOwner = 'CPU';
                         }
                     } else {
-                        // 通常の自律CPUのボム発動処理
+                        // 通常の自律CPU of bomb trigger
                         if (cpu.bombs >= 1 && !cpu.isInvincible && cpu.bombCooldown <= 0) {
                             if (cpu.pendingDamage > 40 || (cpu.hp < 300 && Math.random() < 0.05)) {
-                                cpu.bombs -= 1;
+                                let consumed = true;
+                                if (cpu.passives.includes('p20') && Math.random() < 0.15) {
+                                    consumed = false;
+                                    addBattleEffect("【霊力節約】 相手のボムが消費されなかった！", "#ffaacc");
+                                }
+                                if (consumed) {
+                                    cpu.bombs -= 1;
+                                }
                                 cpu.isInvincible = true;
-                                cpu.invincibleTimer = 2.5; // 2.5秒間無敵
+
+                                // p19 乾坤一擲
+                                if (cpu.passives.includes('p19')) {
+                                    player.hp = Math.max(0, player.hp - 50);
+                                    addBattleEffect("【乾坤一擲】 霊撃であなたに50ダメージ！", "#ff8888");
+                                    checkDeath();
+                                }
+
+                                if (cpu.passives.includes('p11')) {
+                                    cpu.invincibleTimer = 3.5;
+                                    addBattleEffect("【八卦の加護】 相手の霊撃無敵時間が延長！", "#ff5555");
+                                } else {
+                                    cpu.invincibleTimer = 2.5;
+                                }
                                 cpu.bombCooldown = 5.0; // クールダウン5秒
-                                
+
                                 activeReigekis.push({
                                     team: 'CPU',
                                     x: cpu.x,
@@ -3394,7 +4476,7 @@
                                     duration: 2.0,
                                     timer: 0
                                 });
-                                
+
                                 reigekiCutinTimer = 1.0;
                                 reigekiCutinOwner = 'CPU';
                             }
@@ -3430,10 +4512,10 @@
                 for (let i = activeReigekis.length - 1; i >= 0; i--) {
                     let r = activeReigekis[i];
                     r.timer += dt;
-                    
+
                     // 半径を徐々に広げる
                     r.radius = 30 + (r.maxRadius - 30) * (r.timer / r.duration);
-                    
+
                     if (r.team === 'PLAYER') {
                         r.x = player.x;
                         r.y = player.y;
@@ -3528,7 +4610,7 @@
                 } else {
                     // 通常のCPUの自律移動（予測ベースのAI）
                     let isDanger = false;
-                    
+
                     // 難易度に応じた思考タイミングの管理
                     if (cpu.thinkTimer === undefined) cpu.thinkTimer = 0;
                     cpu.thinkTimer++;
@@ -3540,8 +4622,21 @@
                             // 初級・中級等では、弾ごとに確率で見落とす（回避のトリガーにしない）
                             if (Math.random() < cpu.ignoreChance) continue;
 
-                            if (Math.abs(b.x - cpu.x) < 200 && Math.abs(b.y - cpu.y) < 250) {
-                                isDanger = true; break;
+                            if (b.isBeam) {
+                                // 角度可変レーザービームの危険検知！
+                                let rx = cpu.x - b.x;
+                                let ry = cpu.y - b.y;
+                                let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
+                                let distPerp = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
+                                
+                                if (distAlong > 0 && distAlong < 1200 && Math.abs(distPerp) < b.radius + 80) {
+                                    isDanger = true;
+                                    break;
+                                }
+                            } else {
+                                if (Math.abs(b.x - cpu.x) < 200 && Math.abs(b.y - cpu.y) < 250) {
+                                    isDanger = true; break;
+                                }
                             }
                         }
                     }
@@ -3577,12 +4672,25 @@
                                             // 思考計算中も、確率で弾の軌道を計算からサボる
                                             if (Math.random() < cpu.ignoreChance) continue;
 
-                                            let pBx = b.x + b.vx * t;
-                                            let pBy = b.y + b.vy * t;
-                                            let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
-                                            let dist = Math.sqrt((pBx - pCpuX) ** 2 + (pBy - pCpuY) ** 2) - bHitR - cpu.hitboxRadius;
+                                            if (b.isBeam) {
+                                                // 将来の仮想CPU位置(pCpuX, pCpuY)と、ビームの軸からの垂直距離を計算
+                                                let rx = pCpuX - b.x;
+                                                let ry = pCpuY - b.y;
+                                                let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
+                                                let distPerp = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
 
-                                            if (dist < minTDist) minTDist = dist;
+                                                if (distAlong > 0 && distAlong < 1200) {
+                                                    let dist = Math.abs(distPerp) - (b.isWarning ? 90 : b.radius) - cpu.hitboxRadius;
+                                                    if (dist < minTDist) minTDist = dist;
+                                                }
+                                            } else {
+                                                let pBx = b.x + b.vx * t;
+                                                let pBy = b.y + b.vy * t;
+                                                let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
+                                                let dist = Math.sqrt((pBx - pCpuX) ** 2 + (pBy - pCpuY) ** 2) - bHitR - cpu.hitboxRadius;
+
+                                                if (dist < minTDist) minTDist = dist;
+                                            }
                                         }
                                     }
                                 }
@@ -3710,11 +4818,6 @@
                         }
                     }
 
-                    // 制限時間が切れたら、安全のために画面上の弾を全消去して進行不能を防ぐ
-                    if (actionTimer <= 0 && bullets.length > 0) {
-                        bullets = [];
-                    }
-
                     // 制限時間が切れ、かつ画面上の弾がすべて消えたら精算フェーズへ
                     if (actionTimer <= 0 && bullets.length === 0) {
                         if (isOnlineMode) {
@@ -3740,6 +4843,14 @@
                 } else if (battlePhase === 'RESOLUTION') {
                     resolutionTimer -= dt;
                     if (resolutionTimer <= 0) {
+                        // 自然治癒 (p13) の適用
+                        if (player.passives.includes('p13')) {
+                            player.hp = Math.min(player.maxHp || 1000, player.hp + 30);
+                        }
+                        if (cpu.passives.includes('p13')) {
+                            cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + 30);
+                        }
+
                         let nextOwner = turnOwner === 'PLAYER' ? 'CPU' : 'PLAYER';
                         // 後手(CPU)の精算が終わったタイミングで次のターンに進む
                         if (turnOwner === 'CPU') {
@@ -3752,6 +4863,7 @@
                 // 弾の更新と当たり判定
                 for (let i = bullets.length - 1; i >= 0; i--) {
                     let b = bullets[i];
+                    if (!b) continue; // 安全対策: ループ内で配列が縮小して範囲外になった場合の回避
                     if (b.update) b.update(b, dt); // 弾個別の状態更新 (消える魔球やエボリューションなど)
                     b.x += b.vx * dt; b.y += b.vy * dt;
 
@@ -3795,17 +4907,45 @@
                                 if (player.passives.includes('p5') && player.grazeCount % 300 === 0) {
                                     if (player.bombs < player.maxBombs) player.bombs++;
                                 }
+                                // パッシブp10の判定 (3%でボム回復)
+                                if (player.passives.includes('p10') && Math.random() < 0.03) {
+                                    if (player.bombs < player.maxBombs) {
+                                        player.bombs++;
+                                        addBattleEffect("【霊力還元】 ボムが1つ回復！", "#aaffaa");
+                                    }
+                                }
                             }
                             continue;
                         }
                         const distSq = (player.x - b.x) ** 2 + (player.y - b.y) ** 2;
                         if (distSq < (player.hitboxRadius + bHitR) ** 2) {
-                            let dmg = b.isNormal ? 2 : 50;
+                            let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 2 : 50);
+                            // 攻撃側（CPU）のパッシブ補正
+                            if (cpu.passives.includes('p8') && cpu.bombs === 0) {
+                                dmg = Math.floor(dmg * 1.25);
+                            }
+                            if (cpu.passives.includes('p14')) {
+                                dmg = Math.floor(dmg * 1.10); // 気炎万丈 (+10%)
+                            }
+                            if (cpu.passives.includes('p16') && cpu.hp <= 300) {
+                                dmg = Math.floor(dmg * 1.25); // 背水の陣 (+25%)
+                            }
+                            if (cpu.p22Buff && cpu.passives.includes('p22')) {
+                                dmg = Math.floor(dmg * 1.20); // 憤怒の炎 (+20%)
+                            }
+
+                            // 防御側（PLAYER）のパッシブ補正
                             if (player.passives.includes('p1')) dmg = Math.max(1, dmg - 20); // 被弾軽減
+                            if (player.passives.includes('p15') && !b.isNormal) {
+                                dmg = Math.max(1, dmg - 15); // 弾幕結界 (スペル被弾-15)
+                            }
+                            if (player.passives.includes('p17') && player.hp <= 300) {
+                                dmg = Math.floor(dmg * 0.80); // 金剛結界 (-20%)
+                            }
+
                             player.pendingDamage += dmg;
-                            
-                            // 被弾時ボム回復パッシブp4 (かけら廃止のため何もしない)
-                            
+                            player.hitLastTurn = true; // 被弾履歴
+
                             bullets.splice(i, 1); continue;
                         }
                         if (!b.grazed && distSq < (player.grazeRadius + bHitR) ** 2) {
@@ -3813,11 +4953,24 @@
                             if (player.passives.includes('p6')) {
                                 player.pendingHeal += 1; // グレイズヒールをp6効果に変更
                             }
+                            
+                            // p21 吸血の牙 (10グレイズごとにHP+10)
+                            if (player.passives.includes('p21') && player.grazeCount % 10 === 0) {
+                                player.hp = Math.min(player.maxHp || 1000, player.hp + 10);
+                            }
+
                             spawnBombPiece(b.x, b.y, 3);
 
                             // パッシブp5の判定 (300グレイズごとに回復に調整)
                             if (player.passives.includes('p5') && player.grazeCount % 300 === 0) {
                                 if (player.bombs < player.maxBombs) player.bombs++;
+                            }
+                            // パッシブp10の判定 (3%でボム回復)
+                            if (player.passives.includes('p10') && Math.random() < 0.03) {
+                                if (player.bombs < player.maxBombs) {
+                                    player.bombs++;
+                                    addBattleEffect("【霊力還元】 ボムが1つ回復！", "#aaffaa");
+                                }
                             }
                         }
                     } else if (b.team === 'PLAYER') {
@@ -3826,13 +4979,48 @@
                             if (!b.grazed && distSq < (cpu.grazeRadius + bHitR) ** 2) {
                                 b.grazed = true; cpu.grazeCount++;
                                 cpu.pendingHeal += 1;
+                                // CPUのパッシブ判定
+                                if (cpu.passives.includes('p5') && cpu.grazeCount % 300 === 0) {
+                                    if (cpu.bombs < cpu.maxBombs) cpu.bombs++;
+                                }
+                                if (cpu.passives.includes('p10') && Math.random() < 0.03) {
+                                    if (cpu.bombs < cpu.maxBombs) {
+                                        cpu.bombs++;
+                                        addBattleEffect("【霊力還元】 相手のボムが回復！", "#ff8888");
+                                    }
+                                }
                             }
                             continue;
                         }
-                        const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
+                         const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
                         if (distSq < (cpu.hitboxRadius + bHitR) ** 2) {
-                            let dmg = b.isNormal ? 1 : 40; // 通常弾は一発1ダメージ固定
+                            let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 1 : 40); // 通常弾は一発1ダメージ固定
+                            // 攻撃側（PLAYER）のパッシブ補正
+                            if (player.passives.includes('p8') && player.bombs === 0) {
+                                dmg = Math.floor(dmg * 1.25);
+                            }
+                            if (player.passives.includes('p14')) {
+                                dmg = Math.floor(dmg * 1.10); // 気炎万丈 (+10%)
+                            }
+                            if (player.passives.includes('p16') && player.hp <= 300) {
+                                dmg = Math.floor(dmg * 1.25); // 背水の陣 (+25%)
+                            }
+                            if (player.p22Buff && player.passives.includes('p22')) {
+                                dmg = Math.floor(dmg * 1.20); // 憤怒の炎 (+20%)
+                            }
+
+                            // 防御側（CPU）のパッシブ補正
+                            if (cpu.passives.includes('p1')) dmg = Math.max(1, dmg - 20); // 被弾軽減
+                            if (cpu.passives.includes('p15') && !b.isNormal) {
+                                dmg = Math.max(1, dmg - 15); // 弾幕結界 (スペル被弾-15)
+                            }
+                            if (cpu.passives.includes('p17') && cpu.hp <= 300) {
+                                dmg = Math.floor(dmg * 0.80); // 金剛結界 (-20%)
+                            }
+
                             cpu.pendingDamage += dmg;
+                            cpu.hitLastTurn = true; // 被弾履歴
+
                             if (b.isNormal) {
                                 if (Math.random() < 0.25) spawnBombPiece(cpu.x, cpu.y, 2); // 25%の確率で2かけら
                             } else {
@@ -3843,6 +5031,22 @@
                         if (!b.grazed && distSq < (cpu.grazeRadius + bHitR) ** 2) {
                             b.grazed = true; cpu.grazeCount++;
                             cpu.pendingHeal += 1;
+                            
+                            // p21 吸血の牙 (10グレイズごとにHP+10)
+                            if (cpu.passives.includes('p21') && cpu.grazeCount % 10 === 0) {
+                                cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + 10);
+                            }
+
+                            // CPUのパッシブ判定
+                            if (cpu.passives.includes('p5') && cpu.grazeCount % 300 === 0) {
+                                if (cpu.bombs < cpu.maxBombs) cpu.bombs++;
+                            }
+                            if (cpu.passives.includes('p10') && Math.random() < 0.03) {
+                                if (cpu.bombs < cpu.maxBombs) {
+                                    cpu.bombs++;
+                                    addBattleEffect("【霊力還元】 相手のボムが回復！", "#ff8888");
+                                }
+                            }
                         }
                     }
                 }
@@ -3853,6 +5057,20 @@
         }
 
         function checkDeath() {
+            // パッシブ p7：豊穣の守り（HPが25%以下になったとき、一度だけHPを300回復）
+            if (turnCount > 1) {
+                if (player.hp > 0 && player.hp <= player.maxHp * 0.25 && player.passives.includes('p7') && !player.p7Triggered) {
+                    player.hp = Math.min(player.maxHp, player.hp + 300);
+                    player.p7Triggered = true;
+                    addBattleEffect("【豊穣の守り】 PLAYER: HPが300自動回復！", "#55ff55");
+                }
+                if (cpu.hp > 0 && cpu.hp <= cpu.maxHp * 0.25 && cpu.passives.includes('p7') && !cpu.p7Triggered) {
+                    cpu.hp = Math.min(cpu.maxHp, cpu.hp + 300);
+                    cpu.p7Triggered = true;
+                    addBattleEffect("【豊穣の守り】 CPU: HPが300自動回復！", "#ff5555");
+                }
+            }
+
             if (player.hp <= 0 || cpu.hp <= 0) {
                 gameState = 'RESULT';
                 battleOverlay.classList.remove('hidden');
@@ -3873,6 +5091,13 @@
         }
 
         function draw() {
+            ctx.save(); // 画面揺れ用のカメラ状態保存
+            if (screenShakeAmount > 0) {
+                let dx = (Math.random() - 0.5) * screenShakeAmount;
+                let dy = (Math.random() - 0.5) * screenShakeAmount;
+                ctx.translate(dx, dy);
+            }
+
             ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             ctx.fillRect(0, 0, PLAY_WIDTH, canvas.height);
 
@@ -3889,7 +5114,7 @@
                     ctx.translate(b.x, b.y);
                     let size = b.pieceValue >= 30 ? 18 : 12;
                     ctx.fillStyle = b.color;
-                    
+
                     ctx.beginPath();
                     for (let k = 0; k < 6; k++) {
                         let angle = (Math.PI / 3) * k;
@@ -3900,7 +5125,7 @@
                     }
                     ctx.closePath();
                     ctx.fill();
-                    
+
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
@@ -3909,6 +5134,106 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('B', 0, 0);
+                    ctx.restore();
+                } else if (b.isBeam) {
+                    if (b.isResting) return;
+                    ctx.save();
+                    ctx.translate(b.x, b.y);
+                    ctx.rotate(b.angle - Math.PI / 2); // 角度可変に対応した回転
+
+                    if (b.isWarning) {
+                        // 予告レーザーの描画：半透明の赤と細い白線で本家風のチャージ警告を表現
+                        let pulseAlpha = 0.08 + Math.abs(Math.sin(performance.now() / 90)) * 0.16;
+                        ctx.fillStyle = `rgba(255, 50, 50, ${pulseAlpha})`;
+                        ctx.fillRect(-b.warningWidth / 2, 0, b.warningWidth, 1200);
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, 1200);
+                        ctx.stroke();
+
+                        // 魔理沙風：キャスターの手元にチャージ魔法陣リングを重ねる
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + Math.random() * 0.5})`;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 35 + Math.random() * 15, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        let grad = ctx.createLinearGradient(-b.radius, 0, b.radius, 0);
+                        let baseHue = (performance.now() / 6) % 360;
+                        grad.addColorStop(0, `hsla(${baseHue}, 100%, 50%, 0.15)`);
+                        grad.addColorStop(0.2, `hsla(${(baseHue + 60) % 360}, 100%, 50%, 0.85)`);
+                        grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.98)');
+                        grad.addColorStop(0.8, `hsla(${(baseHue + 180) % 360}, 100%, 50%, 0.85)`);
+                        grad.addColorStop(1, `hsla(${(baseHue + 240) % 360}, 100%, 50%, 0.15)`);
+
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(-b.radius, 0, b.radius * 2, 1200);
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(-b.radius * 0.35, 0, b.radius * 0.7, 1200);
+
+                        // 飛び散る七色スパーク粒子の量を少し増量して豪華に！
+                        for (let k = 0; k < 4; k++) {
+                            let sparkX = (Math.random() - 0.5) * b.radius * 2.5;
+                            let sparkY = Math.random() * 1200;
+                            ctx.fillStyle = `hsla(${Math.random() * 360}, 100%, 75%, 0.95)`;
+                            ctx.beginPath();
+                            ctx.arc(sparkX, sparkY, 4 + Math.random() * 7, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    ctx.restore();
+                } else if (b.isGungnir) {
+                    ctx.save();
+                    ctx.translate(b.x, b.y);
+                    if (b.state === 0) {
+                        let angle = Math.atan2(b.vy, b.vx);
+                        ctx.rotate(angle);
+                        
+                        ctx.fillStyle = 'rgba(255, 10, 10, 0.2)';
+                        ctx.beginPath();
+                        ctx.moveTo(90, 0);
+                        ctx.lineTo(-65, -45);
+                        ctx.lineTo(-65, 45);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.fillStyle = 'rgba(255, 30, 30, 0.45)';
+                        ctx.beginPath();
+                        ctx.moveTo(80, 0);
+                        ctx.lineTo(-55, -35);
+                        ctx.lineTo(-55, 35);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.fillStyle = '#ff1111';
+                        ctx.beginPath();
+                        ctx.moveTo(70, 0);
+                        ctx.lineTo(-45, -16);
+                        ctx.lineTo(-45, 16);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.moveTo(55, 0);
+                        ctx.lineTo(-30, -6);
+                        ctx.lineTo(-30, 6);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else if (b.state === 1) {
+                        let grad = ctx.createRadialGradient(0, 0, 0, 0, 0, b.radius);
+                        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                        grad.addColorStop(0.2, 'rgba(255, 50, 50, 0.9)');
+                        grad.addColorStop(0.7, 'rgba(255, 0, 0, 0.4)');
+                        grad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, b.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
                     ctx.restore();
                 } else if (b.isNormal && b.team === 'PLAYER') {
                     ctx.save();
@@ -3990,35 +5315,35 @@
                     grad.addColorStop(0.9, 'rgba(255, 80, 120, 0.45)');
                     grad.addColorStop(1, 'rgba(255, 200, 220, 0.8)');
                 }
-                
+
                 ctx.fillStyle = grad;
                 ctx.beginPath();
                 ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
                 ctx.fill();
-                
+
                 ctx.strokeStyle = isPlayer ? 'rgba(150, 255, 200, 0.7)' : 'rgba(255, 150, 180, 0.7)';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
                 ctx.stroke();
-                
+
                 let spellCount = 8;
                 for (let k = 0; k < spellCount; k++) {
                     let spellAngle = (r.timer * 3) + (Math.PI * 2 / spellCount) * k;
                     let sx = r.x + Math.cos(spellAngle) * (r.radius * 0.8);
                     let sy = r.y + Math.sin(spellAngle) * (r.radius * 0.8);
-                    
+
                     ctx.save();
                     ctx.translate(sx, sy);
                     ctx.rotate(spellAngle + Math.PI / 2);
-                    
+
                     if (isPlayer) {
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(-4, -9, 8, 18);
                         ctx.strokeStyle = '#ff3333';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(-4, -9, 8, 18);
-                        
+
                         ctx.fillStyle = '#ff3333';
                         ctx.fillRect(-2, -5, 4, 10);
                     } else {
@@ -4041,17 +5366,17 @@
                 player.optionAngle = (player.optionAngle || 0) + 0.05;
                 let optionCount = bCount - 1;
                 if (bCount >= 4) optionCount = 4;
-                
+
                 for (let k = 0; k < optionCount; k++) {
                     let angle = player.optionAngle + (Math.PI * 2 / optionCount) * k;
                     let radius = 24;
                     let ox = player.x + Math.cos(angle) * radius;
                     let oy = player.y + Math.sin(angle) * radius + 5;
-                    
+
                     ctx.save();
                     ctx.translate(ox, oy);
                     ctx.rotate(angle * 2);
-                    
+
                     ctx.beginPath();
                     ctx.arc(0, 0, 6, 0, Math.PI * 2);
                     ctx.fillStyle = '#ffffff';
@@ -4059,12 +5384,12 @@
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 1;
                     ctx.stroke();
-                    
+
                     ctx.beginPath();
                     ctx.arc(0, 0, 6, -Math.PI / 2, Math.PI / 2);
                     ctx.fillStyle = '#000000';
                     ctx.fill();
-                    
+
                     ctx.beginPath();
                     ctx.arc(0, -3, 3, 0, Math.PI * 2);
                     ctx.fillStyle = '#000000';
@@ -4077,22 +5402,23 @@
                 }
             }
 
-            // 低速移動（Shiftキー）押下時のみ当たり判定とグレイズ範囲を表示
+            // 低速移動（Shiftキー）押下時のみグレイズ範囲を表示
             if (inputState.slow) {
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.grazeRadius, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, player.hitboxRadius + 1.5, 0, Math.PI * 2);
-                ctx.fillStyle = 'red';
-                ctx.fill();
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 1;
-                ctx.stroke();
             }
+
+            // 自機の当たり判定（赤いドット）は常時表示（視認性を究極まで高める）
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.hitboxRadius + 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.stroke();
 
             // 敵機の描画
             let cImg;
@@ -4132,7 +5458,7 @@
                 ctx.save();
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 ctx.fillRect(0, canvas.height / 2 - 60, PLAY_WIDTH, 120);
-                
+
                 let isPlayer = reigekiCutinOwner === 'PLAYER';
                 ctx.strokeStyle = isPlayer ? 'rgba(0, 255, 150, 0.8)' : 'rgba(255, 50, 100, 0.8)';
                 ctx.lineWidth = 3;
@@ -4142,7 +5468,7 @@
                 ctx.moveTo(0, canvas.height / 2 + 60);
                 ctx.lineTo(PLAY_WIDTH, canvas.height / 2 + 60);
                 ctx.stroke();
-                
+
                 ctx.shadowColor = isPlayer ? 'rgba(0, 255, 120, 0.8)' : 'rgba(255, 50, 100, 0.8)';
                 ctx.shadowBlur = 15;
                 ctx.fillStyle = '#ffffff';
@@ -4150,13 +5476,40 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(isPlayer ? '霊 撃 展開' : '敵 霊 撃 展開', PLAY_WIDTH / 2, canvas.height / 2 - 10);
-                
+
                 ctx.shadowBlur = 8;
                 ctx.fillStyle = isPlayer ? '#ffdd33' : '#ff55aa';
                 ctx.font = "bold 16px sans-serif";
                 ctx.fillText(isPlayer ? '- REIGEKI CASTING -' : '- ENEMY REIGEKI CASTING -', PLAY_WIDTH / 2, canvas.height / 2 + 25);
                 ctx.restore();
             }
+
+            // バトルエフェクトの描画
+            if (activeEffects.length > 0) {
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                activeEffects.forEach((eff, idx) => {
+                    let alpha = Math.min(1, eff.timer / 0.5); // フェードアウト
+                    if (eff.timer > eff.maxTime - 0.3) {
+                        alpha = Math.min(1, (eff.maxTime - eff.timer) / 0.3); // フェードイン
+                    }
+                    ctx.fillStyle = eff.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.font = "bold 16px sans-serif";
+                    
+                    // 重ならないようにずらす。かつ、徐々に上にスライドする
+                    let slideY = (eff.maxTime - eff.timer) * 35;
+                    let yPos = canvas.height / 2 - 100 - idx * 24 - slideY;
+                    
+                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                    ctx.shadowBlur = 4;
+                    ctx.fillText(eff.text, PLAY_WIDTH / 2, yPos);
+                });
+                ctx.restore();
+            }
+
+            ctx.restore(); // 画面揺れ用のカメラ状態復元（右側UI描画の前に揺れを停止）
 
             // 右側UI領域の描画
             const UI_X = PLAY_WIDTH + 20;
