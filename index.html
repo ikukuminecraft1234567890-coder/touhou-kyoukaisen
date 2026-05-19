@@ -897,59 +897,81 @@
             </div>
 
             <!-- 5. オンライン対戦画面 -->
+            <!-- 5. オンライン対戦画面 -->
             <div id="screen-online-setup" class="selection-group hidden"
                 style="width: 100%; max-height: 90%; overflow-y: auto; padding: 15px 25px; box-sizing: border-box;">
-                <h3 style="margin-bottom: 5px; font-size: 24px;">オンライン対戦</h3>
-                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">P2P通信で他のプレイヤーと直接対戦します。
+                <h3 style="margin-bottom: 5px; font-size: 24px;">オンライン対戦ロビー</h3>
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">
+                    ロビーで他のプレイヤーの部屋を探すか、パスワードを設定して自分だけの部屋を作成できます。
                 </p>
 
                 <!-- デッキ選択 -->
-                <div style="margin-top: 15px; width: 100%;">
-                    <h4 style="color: #ffb3b3; margin-bottom: 8px; font-size: 15px; text-align: left;">① 使用デッキの選択</h4>
+                <div style="margin-top: 10px; width: 100%;">
+                    <h4 style="color: #ffb3b3; margin-bottom: 6px; font-size: 14px; text-align: left;">① 使用デッキの選択</h4>
                     <div id="online-deck-list-container"
-                        style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 120px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
+                        style="display: flex; flex-direction: column; gap: 8px; width: 95%; max-height: 90px; overflow-y: auto; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px;">
                     </div>
                 </div>
 
-                <!-- ホスト（部屋を作る） -->
-                <div
-                    style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
-                    <h4
-                        style="margin: 0 0 8px 0; color: #00ffcc; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
-                        部屋を作る (HOST)</h4>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div id="my-peer-id"
-                            style="font-size: 14px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px; flex-grow: 1; text-align: center; border: 1px solid rgba(255,255,255,0.1); word-break: break-all; min-height: 20px;">
-                            ID生成中...</div>
-                        <button class="menu-btn" onclick="copyPeerId()"
-                            style="width: 80px; padding: 8px; font-size: 12px; margin: 0;">コピー</button>
-                    </div>
-                    <p style="font-size: 10px; color: #aaa; margin: 6px 0 0 0; text-align: left;">
-                        表示されているIDを対戦相手に伝えてください。相手が接続すると自動でゲームが始まります。</p>
-                </div>
+                <!-- ロビーメイン部分 (2列構成) -->
+                <div style="display: flex; flex-direction: column; gap: 15px; width: 95%; margin: 15px auto 0 auto; box-sizing: border-box;">
+                    
+                    <!-- 部屋を作成するセクション -->
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); text-align: left; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #00ffcc; font-size: 14px; border-bottom: 1px solid rgba(0, 255, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>部屋を立てる (Host Room)</span>
+                            <span style="font-size: 9px; background: rgba(0, 255, 204, 0.1); padding: 2px 6px; border-radius: 4px; color: #00ffcc;">NEW</span>
+                        </h4>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1; min-width: 130px;">
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">あなたのお名前 (Username):</label>
+                                <input type="text" id="online-username" placeholder="プレイヤー" maxlength="12"
+                                    style="font-size: 13px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
+                            </div>
+                            <div style="flex: 1; min-width: 130px;">
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">部屋コード / 部屋名:</label>
+                                <input type="text" id="online-room-code" placeholder="例: 1234" maxlength="10"
+                                    style="font-size: 13px; font-weight: bold; background: rgba(0,0,0,0.4); color: #00ffcc; border: 1px solid rgba(0,255,204,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
+                            </div>
+                            <div style="flex: 1; min-width: 130px;">
+                                <label style="font-size: 10px; color: #ccc; display: block; margin-bottom: 3px;">パスワード (空欄で一般公開):</label>
+                                <input type="password" id="online-room-password" placeholder="秘密のパスワード" maxlength="15"
+                                    style="font-size: 13px; background: rgba(0,0,0,0.4); color: #ff88ff; border: 1px solid rgba(255,85,204,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none;">
+                            </div>
+                        </div>
 
-                <!-- クライアント（部屋に入る） -->
-                <div
-                    style="margin-top: 15px; width: 95%; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; margin: 0 auto;">
-                    <h4
-                        style="margin: 0 0 8px 0; color: #ff8888; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
-                        部屋に入る (CLIENT)</h4>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="text" id="target-peer-id" placeholder="相手のIDを入力してください"
-                            style="font-size: 13px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; flex-grow: 1; box-sizing: border-box; height: 38px;">
-                        <button class="menu-btn" onclick="connectToHost()"
-                            style="width: 100px; padding: 8px; font-size: 12px; margin: 0; background: linear-gradient(135deg, #550044 0%, #220011 100%); border-color: #ff00cc; color: #ff88ff; font-weight: bold;">接続して開始</button>
+                        <button class="menu-btn" onclick="hostRoom()"
+                            style="width: 100%; padding: 11px; font-size: 14px; margin: 0; background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; color: #00ffcc; font-weight: bold; box-shadow: 0 0 10px rgba(0,255,204,0.2); text-shadow: 0 0 5px rgba(0,255,204,0.5);">
+                            部屋を作成して待機する (Create Room)
+                        </button>
                     </div>
+
+                    <!-- 部屋一覧セクション -->
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 0, 204, 0.2); text-align: left; box-sizing: border-box; display: flex; flex-direction: column;">
+                        <h4 style="margin: 0 0 10px 0; color: #ff88ff; font-size: 14px; border-bottom: 1px solid rgba(255, 0, 204, 0.1); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>公開部屋一覧 (Active Rooms)</span>
+                            <button onclick="refreshRoomList()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,85,204,0.3); color: #ff88ff; font-size: 11px; padding: 2px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; outline: none;" onmouseover="this.style.background='rgba(255,85,204,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                                🔄 リスト更新
+                            </button>
+                        </h4>
+
+                        <!-- 部屋リスト表示スクロール領域 -->
+                        <div id="lobby-room-list" style="min-height: 100px; max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); padding: 6px; display: flex; flex-direction: column; gap: 6px;">
+                            <div style="color: #aaa; font-size: 11px; text-align: center; padding: 30px 0;">部屋リストを読み込み中...</div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ステータス表示 -->
                 <div id="online-status"
                     style="font-size: 12px; color: #ffcc00; text-align: center; margin-top: 15px; min-height: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(255,200,0,0.3);">
-                    待機中...
+                    ロビー準備完了
                 </div>
 
                 <!-- アクションボタン -->
-                <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; width: 100%;">
+                <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; width: 100%;">
                     <button class="menu-btn" onclick="disconnectOnline()"
                         style="width: 150px; background: #222;">戻る</button>
                 </div>
@@ -1049,6 +1071,8 @@
         let onlineRole = null; // 'host' or 'client'
         let onlineConnected = false;
         let opponentDeck = null;
+        let connectionTimeoutId = null;
+        let currentHostedRoomCode = null;
 
         // 同期用バッファ
         let receivedState = null;
@@ -1071,7 +1095,32 @@
         function showOnlineSetup() {
             showScreen('screen-online-setup');
             renderOnlineDeckList();
-            initPeer();
+            
+            // ユーザー名の取得と設定
+            let savedUsername = localStorage.getItem('touhou_kyoukaisen_username') || '';
+            if (!savedUsername) {
+                savedUsername = '開拓者_' + Math.floor(100 + Math.random() * 900);
+            }
+            document.getElementById('online-username').value = savedUsername;
+
+            // ランダムな部屋コードの生成と設定
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById('online-room-code').value = randomCode;
+            document.getElementById('online-room-password').value = '';
+
+            document.getElementById('online-status').textContent = 'ロビー準備完了';
+            
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            if (conn) {
+                conn.close();
+                conn = null;
+            }
+
+            // 部屋一覧の初回更新
+            refreshRoomList();
         }
 
         function renderOnlineDeckList() {
@@ -1111,28 +1160,143 @@
             });
         }
 
-        function initPeer() {
-            const myIdEl = document.getElementById('my-peer-id');
-            const statusEl = document.getElementById('online-status');
+        let isRefreshingLobby = false;
+        async function refreshRoomList() {
+            if (isRefreshingLobby) return;
+            isRefreshingLobby = true;
 
-            if (peer) {
-                if (peer.open) {
-                    myIdEl.textContent = peer.id;
-                    statusEl.textContent = '相手からの接続を待っています...';
-                    return;
-                } else {
-                    peer.destroy();
-                    peer = null;
-                }
+            const listContainer = document.getElementById('lobby-room-list');
+            if (!listContainer) {
+                isRefreshingLobby = false;
+                return;
             }
-
-            myIdEl.textContent = 'ID生成中...';
-            statusEl.textContent = 'シグナリングサーバーに接続中...';
+            listContainer.innerHTML = '<div style="color:#aaa; font-size:11px; text-align:center; padding:30px 0;">部屋リストを読み込み中...</div>';
 
             try {
-                // ローカルファイル(file://)や異なるプロトコル間でのシグナリングサーバー不一致を防ぐため、
-                // 常に同じセキュアWSSサーバー(wss://0.peerjs.com:443)に接続するよう明示的に設定します。
-                peer = new Peer({
+                const res = await fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/');
+                if (!res.ok) throw new Error('Failed to fetch bucket keys');
+                
+                const text = await res.text();
+                const keys = text.split('\n').map(k => k.trim()).filter(k => k.startsWith('room_'));
+
+                if (keys.length === 0) {
+                    listContainer.innerHTML = '<div style="color:#888; font-size:11px; text-align:center; padding:30px 0;">現在アクティブな部屋はありません。</div>';
+                    isRefreshingLobby = false;
+                    return;
+                }
+
+                const roomPromises = keys.map(async (key) => {
+                    try {
+                        const roomRes = await fetch('https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/' + key);
+                        if (!roomRes.ok) return null;
+                        const data = await roomRes.json();
+                        if (Date.now() - data.createdAt > 3600000 || !data.active) return null;
+                        return data;
+                    } catch (e) {
+                        return null;
+                    }
+                });
+
+                const rooms = (await Promise.all(roomPromises)).filter(Boolean);
+
+                if (rooms.length === 0) {
+                    listContainer.innerHTML = '<div style="color:#888; font-size:11px; text-align:center; padding:30px 0;">現在アクティブな部屋はありません。</div>';
+                    isRefreshingLobby = false;
+                    return;
+                }
+
+                rooms.sort((a, b) => b.createdAt - a.createdAt);
+
+                listContainer.innerHTML = '';
+                rooms.forEach(room => {
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.padding = '8px 12px';
+                    row.style.background = 'rgba(255,255,255,0.04)';
+                    row.style.border = '1px solid rgba(255,255,255,0.06)';
+                    row.style.borderRadius = '6px';
+                    row.style.marginBottom = '4px';
+
+                    const hasPassword = room.password && room.password.length > 0;
+                    const passwordBadge = hasPassword 
+                        ? '<span style="color:#ff88ff; font-size:9px; background:rgba(255,85,204,0.15); padding:2px 5px; border-radius:3px; font-weight:bold; margin-left:6px;">🔒 密室</span>' 
+                        : '<span style="color:#88ff88; font-size:9px; background:rgba(0,255,100,0.1); padding:2px 5px; border-radius:3px; margin-left:6px;">🔓 公開</span>';
+
+                    row.innerHTML = `
+                        <div>
+                            <div style="font-weight:bold; color:#00ffcc; font-size:12px; display:flex; align-items:center;">部屋: ${room.roomCode} ${passwordBadge}</div>
+                            <div style="font-size:10px; color:#aaa; margin-top:2px;">主: <span style="color:#fff;">${room.hostName}</span></div>
+                        </div>
+                        <button class="join-btn-lobby" style="padding: 5px 12px; font-size: 11px; background: linear-gradient(135deg, #550044 0%, #220011 100%); border: 1px solid #ff00cc; border-radius: 4px; color: #ff88ff; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                            接続
+                        </button>
+                    `;
+
+                    const joinBtn = row.querySelector('.join-btn-lobby');
+                    joinBtn.onmouseover = () => {
+                        joinBtn.style.transform = 'scale(1.04)';
+                        joinBtn.style.boxShadow = '0 0 6px rgba(255,0,204,0.3)';
+                    };
+                    joinBtn.onmouseout = () => {
+                        joinBtn.style.transform = 'scale(1)';
+                        joinBtn.style.boxShadow = 'none';
+                    };
+                    joinBtn.onclick = () => {
+                        if (hasPassword) {
+                            const pwdInput = prompt('この部屋にはパスワードが設定されています。パスワードを入力してください:');
+                            if (pwdInput === null) return;
+                            if (pwdInput !== room.password) {
+                                alert('パスワードが違います！');
+                                return;
+                            }
+                        }
+                        document.getElementById('online-room-code').value = room.roomCode;
+                        joinRoom(room.roomCode);
+                    };
+
+                    listContainer.appendChild(row);
+                });
+
+            } catch (e) {
+                console.error(e);
+                listContainer.innerHTML = '<div style="color:#ff5555; font-size:11px; text-align:center; padding:30px 0;">部屋リストの取得に失敗しました。</div>';
+            }
+
+            isRefreshingLobby = false;
+        }
+
+        function hostRoom() {
+            const roomCode = document.getElementById('online-room-code').value.trim();
+            const statusEl = document.getElementById('online-status');
+
+            if (!roomCode) {
+                alert('部屋コードを入力してください。');
+                return;
+            }
+            if (roomCode.length < 2) {
+                alert('部屋コードは2文字以上で入力してください。');
+                return;
+            }
+
+            statusEl.textContent = '部屋を作成中...';
+
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            if (conn) {
+                conn.close();
+                conn = null;
+            }
+
+            onlineRole = 'host';
+            
+            try {
+                // 衝突を防ぐため専用の接頭辞を付与
+                const hostPeerId = 'touhou-kyoukaisen-room-' + roomCode;
+                peer = new Peer(hostPeerId, {
                     host: '0.peerjs.com',
                     port: 443,
                     secure: true,
@@ -1141,14 +1305,43 @@
                         iceServers: [
                             { urls: 'stun:stun.l.google.com:19302' },
                             { urls: 'stun:stun1.l.google.com:19302' },
-                            { urls: 'stun:stun2.l.google.com:19302' }
+                            { urls: 'stun:stun2.l.google.com:19302' },
+                            {
+                                urls: [
+                                    'turn:openrelay.metered.ca:80',
+                                    'turn:openrelay.metered.ca:443',
+                                    'turn:openrelay.metered.ca:443?transport=tcp'
+                                ],
+                                username: 'openrelayproject',
+                                credential: 'openrelayproject'
+                            }
                         ]
                     }
                 });
 
-                peer.on('open', (id) => {
-                    myIdEl.textContent = id;
-                    statusEl.textContent = '準備完了！相手からの接続を待っています...';
+                peer.on('open', async (id) => {
+                    statusEl.textContent = `部屋「${roomCode}」を作成しました！相手の接続を待っています...`;
+                    currentHostedRoomCode = roomCode;
+
+                    // KVdbに部屋を登録
+                    const username = document.getElementById('online-username').value.trim() || '境界の開拓者';
+                    const password = document.getElementById('online-room-password').value.trim();
+                    localStorage.setItem('touhou_kyoukaisen_username', username);
+
+                    try {
+                        await fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${roomCode}`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                roomCode: roomCode,
+                                password: password,
+                                hostName: username,
+                                createdAt: Date.now(),
+                                active: true
+                            })
+                        });
+                    } catch (e) {
+                        console.error('Failed to register room to KVdb:', e);
+                    }
                 });
 
                 peer.on('connection', (c) => {
@@ -1160,13 +1353,24 @@
                     conn = c;
                     onlineRole = 'host';
                     setupConnection();
+
+                    // 接続されたらKVdbから部屋を削除
+                    if (currentHostedRoomCode) {
+                        try {
+                            fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
+                                method: 'DELETE'
+                            });
+                        } catch (e) {}
+                        currentHostedRoomCode = null;
+                    }
                 });
 
                 peer.on('error', (err) => {
                     console.error('PeerJS Error:', err);
-                    statusEl.textContent = 'エラー: ' + err.type;
-                    if (err.type === 'peer-unavailable') {
-                        statusEl.textContent = '相手のIDが見つかりませんでした。入力IDを確認してください。';
+                    if (err.type === 'unavailable-id') {
+                        statusEl.textContent = `エラー: 部屋コード「${roomCode}」はすでに使用されています。他のプレイヤーが使っている可能性があります。別のコードをお試しください。`;
+                    } else {
+                        statusEl.textContent = 'エラー: ' + err.type;
                     }
                 });
 
@@ -1180,46 +1384,95 @@
             }
         }
 
-        function copyPeerId() {
-            const myId = document.getElementById('my-peer-id').textContent;
-            if (myId && myId !== 'ID生成中...' && myId !== '接続初期化エラー') {
-                navigator.clipboard.writeText(myId).then(() => {
-                    alert('接続IDをクリップボードにコピーしました！');
-                }).catch(err => {
-                    console.error('コピー失敗:', err);
-                });
-            }
-        }
-
-        function connectToHost() {
-            const targetId = document.getElementById('target-peer-id').value.trim();
+        function joinRoom(directCode) {
+            const roomCode = directCode || document.getElementById('online-room-code').value.trim();
             const statusEl = document.getElementById('online-status');
 
-            if (!targetId) {
-                alert('接続相手のIDを入力してください。');
-                return;
-            }
-            if (peer && targetId === peer.id) {
-                alert('自分のIDには接続できません。');
+            if (!roomCode) {
+                alert('部屋コードを入力してください。');
                 return;
             }
 
-            statusEl.textContent = '対戦相手に接続中...';
+            statusEl.textContent = `部屋「${roomCode}」に接続中...`;
 
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
             if (conn) {
                 conn.close();
                 conn = null;
             }
 
+            if (connectionTimeoutId) {
+                clearTimeout(connectionTimeoutId);
+                connectionTimeoutId = null;
+            }
+
             onlineRole = 'client';
-            conn = peer.connect(targetId);
-            setupConnection();
+
+            try {
+                // ゲスト側は衝突を避けるためランダムIDで初期化
+                peer = new Peer({
+                    host: '0.peerjs.com',
+                    port: 443,
+                    secure: true,
+                    debug: 1,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' },
+                            {
+                                urls: [
+                                    'turn:openrelay.metered.ca:80',
+                                    'turn:openrelay.metered.ca:443',
+                                    'turn:openrelay.metered.ca:443?transport=tcp'
+                                ],
+                                username: 'openrelayproject',
+                                credential: 'openrelayproject'
+                            }
+                        ]
+                    }
+                });
+
+                peer.on('open', (id) => {
+                    const hostPeerId = 'touhou-kyoukaisen-room-' + roomCode;
+                    conn = peer.connect(hostPeerId);
+                    setupConnection();
+
+                    // 15秒の接続タイムアウトタイマーを設定
+                    connectionTimeoutId = setTimeout(() => {
+                        if (conn && !onlineConnected) {
+                            conn.close();
+                            conn = null;
+                            statusEl.textContent = `接続タイムアウト。部屋「${roomCode}」のホストが見つからないか、満員、あるいは通信環境（モバイル回線等）の影響でブロックされた可能性があります。`;
+                        }
+                    }, 15000);
+                });
+
+                peer.on('error', (err) => {
+                    console.error('PeerJS Error:', err);
+                    if (err.type === 'peer-unavailable') {
+                        statusEl.textContent = `部屋「${roomCode}」が見つかりませんでした。ホストがまだ部屋を作成していないか、コードが間違っています。`;
+                    } else {
+                        statusEl.textContent = 'エラー: ' + err.type;
+                    }
+                });
+
+            } catch (e) {
+                statusEl.textContent = '接続初期化エラー';
+            }
         }
 
         function setupConnection() {
             const statusEl = document.getElementById('online-status');
 
             conn.on('open', () => {
+                if (connectionTimeoutId) {
+                    clearTimeout(connectionTimeoutId);
+                    connectionTimeoutId = null;
+                }
                 onlineConnected = true;
                 statusEl.textContent = '接続成功！デッキ情報を送信中...';
 
@@ -1291,6 +1544,10 @@
         }
 
         function handleOnlineDisconnect() {
+            if (connectionTimeoutId) {
+                clearTimeout(connectionTimeoutId);
+                connectionTimeoutId = null;
+            }
             if (isGameRunning && isOnlineMode) {
                 alert('対戦相手との通信が切断されました。タイトルに戻ります。');
                 isGameRunning = false;
@@ -1314,6 +1571,10 @@
         }
 
         function disconnectOnline() {
+            if (connectionTimeoutId) {
+                clearTimeout(connectionTimeoutId);
+                connectionTimeoutId = null;
+            }
             isOnlineMode = false;
             onlineConnected = false;
             opponentDeck = null;
@@ -1321,8 +1582,31 @@
                 conn.close();
                 conn = null;
             }
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+
+            // ロビー部屋の削除
+            if (currentHostedRoomCode) {
+                try {
+                    fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, {
+                        method: 'DELETE'
+                    });
+                } catch (e) {}
+                currentHostedRoomCode = null;
+            }
+
             showScreen('screen-menu');
         }
+
+        // ブラウザやタブを閉じる際、ホストしていた部屋をKVdbから非活性化
+        window.addEventListener('beforeunload', () => {
+            if (currentHostedRoomCode) {
+                const data = JSON.stringify({ active: false });
+                navigator.sendBeacon(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${currentHostedRoomCode}`, data);
+            }
+        });
 
         // ==========================================
         // UI・デッキ管理システム (ビジュアル化)
@@ -4102,8 +4386,7 @@
                                 }
 
                                 if (isTargetInBeam && !target.isInvincible) {
-                                    target.hp = Math.max(0, target.hp - 105 * dt); // 極太レーザーの壊滅的持続ダメージ
-                                    checkDeath();
+                                    target.pendingDamage += 105 * dt; // 極太レーザーの壊滅的持続ダメージ
                                 }
                             }
 
@@ -4210,8 +4493,7 @@
                                 if (!b.hasHitTarget) {
                                     b.hasHitTarget = true;
                                     if (!target.isInvincible) {
-                                        target.hp = Math.max(0, target.hp - 100); // 貫通時に100ダメージ！
-                                        checkDeath();
+                                        target.pendingDamage += 100; // 貫通時に100ダメージ！
                                         addBattleEffect("◆ GUNGNIR PIERCE! ◆", "#ff3333");
                                     }
                                 }
@@ -4227,8 +4509,7 @@
  
                                 let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
                                 if (distToTarget < 120 && !target.isInvincible) {
-                                    target.hp = Math.max(0, target.hp - 80); // 爆発時に追加で80ダメージ！
-                                    checkDeath();
+                                    target.pendingDamage += 80; // 爆発時に追加で80ダメージ！
                                 }
  
                                 let ways = 32; // 爆発破片を32方向に増やしてさらにド派手に！
