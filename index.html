@@ -152,16 +152,17 @@
             background: rgba(10, 10, 20, 0.88);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.05);
-            padding: 30px;
+            padding: 20px 15px;
             border-radius: 12px;
-            width: 80%;
-            max-width: 440px;
+            width: 94%;
+            max-width: 500px;
             pointer-events: auto;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-sizing: border-box;
         }
 
         @keyframes scaleIn {
@@ -193,7 +194,7 @@
             border-radius: 8px;
             padding: 12px;
             width: 110px;
-            height: 150px;
+            height: 175px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -450,8 +451,8 @@
 
         .card-selector-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+            gap: 15px;
             overflow-y: auto;
             flex-grow: 1;
             padding: 10px;
@@ -464,12 +465,12 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #0d0d18 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
-            padding: 10px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            height: 120px;
+            height: 170px;
             cursor: pointer;
             transition: all 0.2s;
             box-sizing: border-box;
@@ -694,7 +695,7 @@
 
         /* アスペクト比 8:9 を1ピクセルも狂わせず、スマホ画面にピタッとフィットさせる究極のレスポンシブCSS */
         @media (max-width: 900px),
-        (max-height: 950px) {
+        (max-height: 850px) {
 
             html,
             body {
@@ -769,7 +770,7 @@
 
             /* カードが並ぶコンテナだけを最大高さ230pxに制限してスクロール可能に！ */
             .hand-card-container {
-                max-height: 230px !important;
+                max-height: 280px !important;
                 overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch;
                 /* iOSでの滑らかなスクロール */
@@ -1133,6 +1134,9 @@
                     <span style="font-size: 14px; color: #ffb3b3; font-weight: bold;">デッキ名:</span>
                     <input type="text" id="deck-name-input" placeholder="デッキ名を入力してください"
                         style="width: 180px; padding: 6px 10px; font-size: 13px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; outline: none; text-align: center;">
+                </div>
+                <div id="deck-total-cost" style="margin-bottom: 12px; font-size: 14px; font-weight: bold; color: #00ffff; text-align: center;">
+                    アクティブカード総コスト: 0 / 20
                 </div>
                 <div class="deck-edit-container-layout">
                     <div class="deck-edit-section">
@@ -1805,19 +1809,21 @@
         // ==========================================
         const defaultCards = {
             active: [
-                { id: 'a1', name: '【A】星弓「スターボウ」', duration: 15, pattern: 'starbow', interval: 0.28, desc: '【移植スペル】五方に放たれた虹色の光弾が、光の尾を残しながら美しく大旋回する。' },
-                { id: 'a2', name: '【A】獄符「ヘルカーブ」', duration: 15, pattern: 'hellcurve', interval: 0.15, desc: '【移植スペル】相手に向けて交差するように、赤と黄の対の螺旋を描くカーブ弾を連射する。' },
-                { id: 'a3', name: '【A】狙い3WAY弾', duration: 15, pattern: '3way', interval: 0.12, desc: '相手に向かって扇状に広がる大粒の3方向狙い弾を超高速連射する。' },
-                { id: 'a4', name: '【A】設置弾', duration: 20, pattern: 'place', interval: 0.8, desc: 'ゆっくり漂う巨大な設置型の球体を放つ。' },
-                { id: 'a5', name: '【A】高密度弾', duration: 15, pattern: 'dense', interval: 0.25, desc: '前方へ扇状に密度の高い弾を連射する。' },
+                { id: 'a1', name: '【A】星弓「スターボウ」', duration: 15, pattern: 'starbow', interval: 0.28, cost: 4, desc: '【移植スペル】五方に放たれた虹色の光弾が、光の尾を残しながら美しく大旋回する。' },
+                { id: 'a2', name: '【A】獄符「ヘルカーブ」', duration: 15, pattern: 'hellcurve', interval: 0.15, cost: 2, desc: '【移植スペル】相手に向けて交差するように、赤と黄の対の螺旋を描くカーブ弾を連射する。' },
+                { id: 'a3', name: '【A】狙い3WAY弾', duration: 15, pattern: '3way', interval: 0.12, cost: 1, desc: '相手に向かって扇状に広がる大粒の3方向狙い弾を超高速連射する。' },
+                { id: 'a4', name: '【A】設置弾', duration: 20, pattern: 'place', interval: 0.8, cost: 1, desc: 'ゆっくり漂う巨大な設置型の球体を放つ。' },
+                { id: 'a5', name: '【A】高密度弾', duration: 15, pattern: 'dense', interval: 0.25, cost: 2, desc: '前方へ扇状に密度の高い弾を連射する。' },
                 // 靈刻門からの移植スペル
-                { id: 'a6', name: '【A】エボリューション', duration: 16, pattern: 'evolution', interval: 0.45, desc: '【靈刻門】直進する親弾から左右に子弾が分裂する。' },
-                { id: 'a7', name: '【A】消える魔球', duration: 14, pattern: 'vanishing', interval: 0.5, desc: '【靈刻門】静止後、赤く輝き超高速で相手を再追尾する。' },
-                { id: 'a8', name: '【A】スパイラル', duration: 10, pattern: 'spiral', interval: 0.08, desc: '【靈刻門】回転しながら全方位へ放ち、途中で逆回転する。' },
-                { id: 'a9', name: '【A】クロスカーブ', duration: 15, pattern: 'cross', interval: 0.9, desc: '【新スペル】発射時の相手方向を基準に、後方から放たれた大量の弾がゆっくりカーブして美しくX字クロスする。' },
-                { id: 'a10', name: '【A】霊符「夢想妙珠」', duration: 15, pattern: 'myouju', interval: 3.5, desc: '【博麗霊夢】自機の周囲を回転しながら広がり、その後相手を強力に自動追尾する虹色の光弾を放つ。' },
-                { id: 'a11', name: '【A】恋符「マスタースパーク」', duration: 26, pattern: 'masterspark', interval: 99.0, desc: '【霧雨魔理沙】移動速度が激減する代わりに、画面を埋め尽くす極太の七色ビームを前方に照射する。' },
-                { id: 'a12', name: '【A】神槍「スピア・オブ・グングニル」', duration: 8, pattern: 'gungnir', interval: 1.2, desc: '【レミリア】全てを貫通する超高速の紅い槍を投げ、衝突時に大爆発を起こして破片を撒き散らす。' }
+                { id: 'a6', name: '【A】エボリューション', duration: 16, pattern: 'evolution', interval: 0.45, cost: 3, desc: '【靈刻門】直進する親弾から左右に子弾が分裂する。' },
+                { id: 'a7', name: '【A】消える魔球', duration: 14, pattern: 'vanishing', interval: 0.5, cost: 2, desc: '【靈刻門】静止後、赤く輝き超高速で相手を再追尾する。' },
+                { id: 'a8', name: '【A】スパイラル', duration: 10, pattern: 'spiral', interval: 0.08, cost: 1, desc: '【靈刻門】回転しながら全方位へ放ち、途中で逆回転する。' },
+                { id: 'a9', name: '【A】クロスカーブ', duration: 15, pattern: 'cross', interval: 0.9, cost: 2, desc: '【新スペル】発射時の相手方向を基準に、後方から放たれた大量の弾がゆっくりカーブして美しくX字クロスする。' },
+                { id: 'a10', name: '【A】霊符「夢想妙珠」', duration: 15, pattern: 'myouju', interval: 3.5, cost: 5, desc: '【博麗霊夢】自機の周囲を回転しながら広がり、その後相手を強力に自動追尾する虹色の光弾を放つ。' },
+                { id: 'a11', name: '【A】恋符「マスタースパーク」', duration: 26, pattern: 'masterspark', interval: 99.0, cost: 4, desc: '【霧雨魔理沙】移動速度が激減する代わりに、画面を埋め尽くす極太の七色ビームを前方に照射する。' },
+                { id: 'a12', name: '【A】神槍「スピア・オブ・グングニル」', duration: 8, pattern: 'gungnir', interval: 1.2, cost: 7, desc: '【レミリア】全てを貫通する超高速の紅い槍を投げ、衝突時に大爆発を起こして破片を撒き散らす。' },
+                { id: 'a13', name: '【A】突符「チャージ曲がり角」', duration: 15, pattern: 'charge_corner', interval: 0.3, cost: 7, desc: '【靈刻門】放射状に放たれた弾が一度静止し、直角に分裂して急加速する。' },
+                { id: 'a14', name: '【A】「オーバードライブ」', duration: 20, pattern: 'overdrive', interval: 22.0, cost: 6, desc: '【靈刻門】極限の弾幕。周囲を回る赤弾のチャージ突進、交差する格子弾幕、最後に跳ね返る桜弾の3フェーズを連続展開する。' }
             ],
             ability: [
                 { id: 'ab1', name: '【急】霊力充填', desc: '【即時アビリティ】自身のボム（霊撃）を即座に1つ回復する。' },
@@ -2493,7 +2499,7 @@
 
                 slot.className = cardData ? 'deck-slot filled' : 'deck-slot';
                 slot.innerHTML = cardData
-                    ? `<span style="font-size:10px;color:#00ffff;">枠 ${i + 1}</span><span style="margin-top:4px;">${cardData.name.replace('【A】', '')}</span>`
+                    ? `<span style="font-size:10px;color:#00ffff;">枠 ${i + 1} (コスト:${cardData.cost})</span><span style="margin-top:4px;">${cardData.name.replace('【A】', '')}</span>`
                     : `<span>スロット ${i + 1}<br>(未設定)</span>`;
 
                 slot.onclick = () => openCardSelector('active', i);
@@ -2562,7 +2568,7 @@
 
                 let statsHtml = '';
                 if (type === 'active') {
-                    statsHtml = `<div class="item-desc">持続:${card.duration}s 間隔:${card.interval}s</div>`;
+                    statsHtml = `<div class="item-desc">持続:${card.duration}s 間隔:${card.interval}s <span style="color:#00ffff; font-weight:bold;">(コスト: ${card.cost})</span></div>`;
                 }
 
                 item.innerHTML = `
@@ -2600,7 +2606,23 @@
         function checkDeckValid() {
             const isActFull = currentEditingDeck.active.every(v => v !== "");
             const isPasFull = currentEditingDeck.passive.every(v => v !== "");
-            document.getElementById('save-deck-btn').disabled = !(isActFull && isPasFull);
+            
+            let totalCost = 0;
+            currentEditingDeck.active.forEach(cardId => {
+                const card = defaultCards.active.find(c => c.id === cardId);
+                if (card) totalCost += (card.cost || 0);
+            });
+            
+            const costLimit = 20;
+            const isCostOk = totalCost <= costLimit;
+            
+            document.getElementById('save-deck-btn').disabled = !(isActFull && isPasFull && isCostOk);
+
+            const costEl = document.getElementById('deck-total-cost');
+            if (costEl) {
+                costEl.textContent = `アクティブカード総コスト: ${totalCost} / ${costLimit}`;
+                costEl.style.color = isCostOk ? '#00ffff' : '#ff5555';
+            }
         }
 
         function saveDeck() {
@@ -3265,8 +3287,20 @@
 
             // CPUのデッキ・アビリティ・パッシブをプレイヤーと同じ枚数制限に設定してバランス調整
             let allActiveIds = defaultCards.active.map(c => c.id);
-            let shuffledActives = [...allActiveIds].sort(() => Math.random() - 0.5);
-            cpu.deck = shuffledActives.slice(0, 6);
+            let cpuDeck = [];
+            while (true) {
+                let shuffledActives = [...allActiveIds].sort(() => Math.random() - 0.5);
+                let candidateDeck = shuffledActives.slice(0, 6);
+                let totalCost = candidateDeck.reduce((sum, id) => {
+                    const card = defaultCards.active.find(c => c.id === id);
+                    return sum + (card ? card.cost : 0);
+                }, 0);
+                if (totalCost <= 20) {
+                    cpuDeck = candidateDeck;
+                    break;
+                }
+            }
+            cpu.deck = cpuDeck;
             cpu.hand = [...cpu.deck];
 
             let allAbilityIds = defaultCards.ability.map(c => c.id);
@@ -3772,7 +3806,7 @@
             const cardsWrapper = document.createElement('div');
             cardsWrapper.style.display = 'flex';
             cardsWrapper.style.justifyContent = 'center';
-            cardsWrapper.style.gap = '15px';
+            cardsWrapper.style.gap = '10px';
             cardsWrapper.style.flexWrap = 'wrap';
 
             // focusedCardIndex の調整（手札が減った場合のバグ防止）
@@ -4207,6 +4241,139 @@
                 }
                 return res;
             },
+            'charge_corner': (attacker, target) => {
+                // 突符「チャージ曲がり角」の移植・回転高速化版 (15倍速・逆回転・長鎖対応)
+                attacker.speed = 27; // マスパのさらに半分 (80 / 2) の 2/3
+                attacker.slowSpeed = 10; // マスパのさらに半分 (30 / 2) の 2/3
+
+                let res = [];
+                let lines = 8; // 8 lines
+                let bulletsPerLine = 8; // 8 bullets per line for perfect spacing
+                
+                // Rotation angle increment (reversed: subtraction instead of addition)
+                attacker.chargeCornerAngle = (attacker.chargeCornerAngle || 0) - 0.16;
+                let baseAngle = attacker.chargeCornerAngle;
+                
+                let minSpeed = 20; // 30 * 2/3
+                let maxSpeed = 410; // 620 * 2/3
+                let accelSpd = 120; // 180 * 2/3
+
+                // Throttled charge sound
+                if (typeof attacker.lastChargeCornerSound === 'undefined' || actionTimer - attacker.lastChargeCornerSound > 1.2) {
+                    attacker.lastChargeCornerSound = actionTimer;
+                    if (typeof playSound === 'function') {
+                        playSound('charge');
+                    }
+                }
+
+                // Define local functions to reuse for this invocation (captures current context)
+                const ccChildUpdate = (cb, cdt) => {
+                    cb.vx += cb.accelX * cdt;
+                    cb.vy += cb.accelY * cdt;
+                };
+
+                const ccMainUpdate = (b, dt) => {
+                    b.lifeTimer += dt;
+                    if (b.state === 0) {
+                        // Decelerate quickly but allow spreading out
+                        b.vx *= 0.95;
+                        b.vy *= 0.95;
+                        if (b.lifeTimer >= 0.8) {
+                            b.state = 1;
+                            b.vx = 0;
+                            b.vy = 0;
+                            b.color = b.colorIndex % 2 === 0 ? '#ff3366' : '#33ffaa'; // alternating colors
+                        }
+                    } else if (b.state === 1) {
+                        // Shrink slightly to indicate splitting
+                        if (b.radius > 3) {
+                            b.radius -= 12 * dt;
+                        }
+                        if (b.lifeTimer >= 1.1) {
+                            b.state = 2;
+                            
+                            // Throttled kawaru sound
+                            if (typeof playSound === 'function') {
+                                let now = Date.now();
+                                if (typeof attacker.lastKawaruTime === 'undefined' || now - attacker.lastKawaruTime > 120) {
+                                    attacker.lastKawaruTime = now;
+                                    playSound('kawaru');
+                                }
+                            }
+                            
+                            // Spawn two child bullets splitting perpendicular (90 degrees) to original trajectory
+                            let splitAngle1 = b.initAngle + Math.PI / 2;
+                            let splitAngle2 = b.initAngle - Math.PI / 2;
+                            
+                            let child1 = {
+                                x: b.x,
+                                y: b.y,
+                                vx: Math.cos(splitAngle1) * 40, // 60 * 2/3
+                                vy: Math.sin(splitAngle1) * 40, // 60 * 2/3
+                                radius: 3.75, // half of 7.5
+                                team: b.team,
+                                color: b.color,
+                                accelX: Math.cos(splitAngle1) * b.accelSpeed,
+                                accelY: Math.sin(splitAngle1) * b.accelSpeed,
+                                update: ccChildUpdate
+                            };
+                            
+                            let child2 = {
+                                x: b.x,
+                                y: b.y,
+                                vx: Math.cos(splitAngle2) * 40, // 60 * 2/3
+                                vy: Math.sin(splitAngle2) * 40, // 60 * 2/3
+                                radius: 3.75, // half of 7.5
+                                team: b.team,
+                                color: b.color,
+                                accelX: Math.cos(splitAngle2) * b.accelSpeed,
+                                accelY: Math.sin(splitAngle2) * b.accelSpeed,
+                                update: ccChildUpdate
+                            };
+                            
+                            bullets.push(child1, child2);
+                            
+                            b.x = -9999;
+                            b.y = -9999;
+                        }
+                    }
+                };
+
+                for (let i = 0; i < lines; i++) {
+                    let lineAngle = baseAngle + (Math.PI * 2 / lines) * i;
+                    for (let j = 0; j < bulletsPerLine; j++) {
+                        let angle = lineAngle + (Math.random() - 0.5) * 0.01;
+                        let speed = minSpeed + (maxSpeed - minSpeed) * (j / (bulletsPerLine - 1));
+                        
+                        res.push({
+                            x: attacker.x,
+                            y: attacker.y,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            radius: 7.5,
+                            team: attacker.team,
+                            color: '#ffffff', // white bullet
+                            lifeTimer: 0,
+                            state: 0, // 0: moving & decelerating, 1: stopped, 2: split
+                            initAngle: angle,
+                            accelSpeed: accelSpd,
+                            colorIndex: i,
+                            update: ccMainUpdate
+                        });
+                    }
+                }
+                
+                // Throttled shot sound
+                if (typeof playSound === 'function') {
+                    let now = Date.now();
+                    if (typeof attacker.lastCCShotTime === 'undefined' || now - attacker.lastCCShotTime > 150) {
+                        attacker.lastCCShotTime = now;
+                        playSound('shot');
+                    }
+                }
+                
+                return res;
+            },
             'cross': (attacker, target) => {
                 // 交符「クロスカーブ・レクイエム」
                 // さらに後ろめで、大量の70発が一斉にばらけながら射出。
@@ -4321,6 +4488,243 @@
                         }
                     });
                 }
+                return res;
+            },
+            'overdrive': (attacker, target) => {
+                // 「オーバードライブ」の移植・プレミアム版
+                let res = [];
+                res.push({
+                    x: PLAY_WIDTH / 2,
+                    y: canvas.height / 2,
+                    vx: 0,
+                    vy: 0,
+                    radius: 0.1,
+                    team: attacker.team,
+                    color: 'transparent',
+                    isNormal: false,
+                    lifeTimer: 0,
+                    phase: 0, // 0: charge, 1: dash, 2: mesh, 3: bounce burst
+                    phaseTimer: 0,
+                    shootTimer: 0,
+                    placedBullets: [],
+                    dashVx: 0,
+                    dashVy: 0,
+                    shootAngle: 0,
+                    update: (b, dt) => {
+                        b.lifeTimer += dt;
+                        b.phaseTimer += dt;
+
+                        if (b.lifeTimer >= 20.0) {
+                            b.x = -9999;
+                            b.y = -9999;
+                            return;
+                        }
+
+                        // Keep controller bullet inside boundaries so it is never cleaned up
+                        b.x = PLAY_WIDTH / 2;
+                        b.y = canvas.height / 2;
+
+                        // Phase 0: Charge (0s - 2.0s)
+                        if (b.phase === 0) {
+                            b.shootTimer -= dt;
+                            if (b.shootTimer <= 0) {
+                                b.shootTimer = 0.08;
+                                if (typeof playSound === 'function') {
+                                    playSound('charge');
+                                }
+                                let angle = Math.random() * Math.PI * 2;
+                                let dist = 50 + Math.random() * 50;
+                                let orbBullet = {
+                                    x: attacker.x + Math.cos(angle) * dist,
+                                    y: attacker.y + Math.sin(angle) * dist,
+                                    vx: 0,
+                                    vy: 0,
+                                    radius: 6,
+                                    team: b.team,
+                                    color: '#ff3344',
+                                    isOrbit: true,
+                                    angle: angle,
+                                    dist: dist,
+                                    orbitSpeed: 3.5,
+                                    update: (ob, odt) => {
+                                        if (ob.isOrbit) {
+                                            ob.angle += ob.orbitSpeed * odt;
+                                            ob.x = attacker.x + Math.cos(ob.angle) * ob.dist;
+                                            ob.y = attacker.y + Math.sin(ob.angle) * ob.dist;
+                                        }
+                                    }
+                                };
+                                bullets.push(orbBullet);
+                                b.placedBullets.push(orbBullet);
+                            }
+
+                            if (b.phaseTimer >= 2.0) {
+                                b.phase = 1;
+                                b.phaseTimer = 0;
+                                b.shootTimer = 0;
+                                
+                                if (typeof playSound === 'function') {
+                                    playSound('bomb_explode');
+                                }
+                                let aimAngle = Math.atan2(target.y - attacker.y, target.x - attacker.x);
+                                let dashSpeed = 550;
+                                b.dashVx = Math.cos(aimAngle) * dashSpeed;
+                                b.dashVy = Math.sin(aimAngle) * dashSpeed;
+
+                                // Launch the charged bullets forward
+                                for (let ob of b.placedBullets) {
+                                    if (ob && bullets.includes(ob)) {
+                                        ob.isOrbit = false;
+                                        ob.update = null;
+                                        let spread = Math.PI / 3;
+                                        let obAngle = aimAngle + (Math.random() - 0.5) * spread;
+                                        let obSpd = 200 + Math.random() * 250;
+                                        ob.vx = Math.cos(obAngle) * obSpd;
+                                        ob.vy = Math.sin(obAngle) * obSpd;
+                                    }
+                                }
+                                b.placedBullets = [];
+                            }
+                        }
+                        // Phase 1: Dash (2.0s - 5.0s)
+                        else if (b.phase === 1) {
+                            // Dash movement
+                            attacker.x += b.dashVx * dt;
+                            attacker.y += b.dashVy * dt;
+
+                            // Keep caster within play area boundaries
+                            let limitMinY = b.team === 'PLAYER' ? boundaryY + 15 : 15;
+                            let limitMaxY = b.team === 'PLAYER' ? canvas.height - 15 : boundaryY - 15;
+                            attacker.x = Math.max(15, Math.min(PLAY_WIDTH - 15, attacker.x));
+                            attacker.y = Math.max(limitMinY, Math.min(limitMaxY, attacker.y));
+
+                            b.shootTimer -= dt;
+                            if (b.shootTimer <= 0) {
+                                b.shootTimer = 0.06;
+                                if (typeof playSound === 'function') {
+                                    playSound('shot');
+                                }
+                                let ways = 3;
+                                for (let i = 0; i < ways; i++) {
+                                    let angle = Math.random() * Math.PI * 2;
+                                    let speed = 90 + Math.random() * 120;
+                                    bullets.push({
+                                        x: attacker.x,
+                                        y: attacker.y,
+                                        vx: Math.cos(angle) * speed,
+                                        vy: Math.sin(angle) * speed,
+                                        radius: 5.5,
+                                        team: b.team,
+                                        color: '#ffaa00'
+                                    });
+                                }
+                            }
+
+                            if (b.phaseTimer >= 3.0) {
+                                b.phase = 2;
+                                b.phaseTimer = 0;
+                                b.shootTimer = 0;
+                                // Reset position
+                                let startX = PLAY_WIDTH / 2;
+                                let startY = b.team === 'PLAYER' ? canvas.height * 0.8 : canvas.height * 0.2;
+                                attacker.x = startX;
+                                attacker.y = startY;
+                            }
+                        }
+                        // Phase 2: Mesh / Cross patterns (5.0s - 12.0s)
+                        else if (b.phase === 2) {
+                            b.shootTimer -= dt;
+                            if (b.shootTimer <= 0) {
+                                b.shootTimer = 0.12;
+                                if (typeof playSound === 'function') {
+                                    playSound('shot');
+                                }
+                                b.shootAngle += 0.08;
+
+                                let ways = 4;
+                                let speed = 160;
+
+                                let spawnCircle = (cx, cy, ways, angle, speed, color) => {
+                                    for (let i = 0; i < ways; i++) {
+                                        let a = angle + (Math.PI * 2 / ways) * i;
+                                        bullets.push({
+                                            x: cx,
+                                            y: cy,
+                                            vx: Math.cos(a) * speed,
+                                            vy: Math.sin(a) * speed,
+                                            radius: 6,
+                                            team: b.team,
+                                            color: color
+                                        });
+                                    }
+                                };
+
+                                spawnCircle(attacker.x, attacker.y, ways, b.shootAngle, speed, '#00ffff');
+                                spawnCircle(attacker.x, attacker.y, ways, -b.shootAngle, speed, '#3366ff');
+
+                                // Extra side-spawners
+                                let topY = b.team === 'PLAYER' ? boundaryY + 20 : 20;
+                                spawnCircle(20, topY, 2, b.shootAngle * 0.5, speed * 0.8, '#00ffff');
+                                spawnCircle(PLAY_WIDTH - 20, topY, 2, -b.shootAngle * 0.5, speed * 0.8, '#3366ff');
+                            }
+
+                            if (b.phaseTimer >= 7.0) {
+                                b.phase = 3;
+                                b.phaseTimer = 0;
+                                b.shootTimer = 0;
+                            }
+                        }
+                        // Phase 3: Bouncing Burst (12.0s - 20.0s)
+                        else if (b.phase === 3) {
+                            b.shootTimer -= dt;
+                            if (b.shootTimer <= 0) {
+                                b.shootTimer = 0.6;
+                                if (typeof playSound === 'function') {
+                                    playSound('shot');
+                                }
+                                let ways = 16;
+                                let speed = 150;
+                                let bx = attacker.x + (Math.random() - 0.5) * 80;
+                                let by = attacker.y + (Math.random() - 0.5) * 80;
+
+                                for (let i = 0; i < ways; i++) {
+                                    let angle = (Math.PI * 2 / ways) * i;
+                                    bullets.push({
+                                        x: bx,
+                                        y: by,
+                                        vx: Math.cos(angle) * speed,
+                                        vy: Math.sin(angle) * speed,
+                                        radius: 6,
+                                        team: b.team,
+                                        color: '#ff33aa',
+                                        reflectCount: 0,
+                                        maxReflect: 1,
+                                        update: (mb, mdt) => {
+                                            let margin = mb.radius;
+                                            let hitWall = false;
+                                            
+                                            if (mb.x < margin && mb.vx < 0) { mb.vx = -mb.vx; hitWall = true; }
+                                            if (mb.x > PLAY_WIDTH - margin && mb.vx > 0) { mb.vx = -mb.vx; hitWall = true; }
+                                            
+                                            let minY = 0;
+                                            let maxY = canvas.height;
+                                            if (mb.y < minY + margin && mb.vy < 0) { mb.vy = -mb.vy; hitWall = true; }
+                                            if (mb.y > maxY - margin && mb.vy > 0) { mb.vy = -mb.vy; hitWall = true; }
+
+                                            if (hitWall) {
+                                                mb.reflectCount++;
+                                                if (mb.reflectCount > mb.maxReflect) {
+                                                    mb.x = -9999;
+                                                    mb.y = -9999;
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
                 return res;
             },
             'myouju': (attacker, target) => {
