@@ -5211,6 +5211,7 @@
                             player.bombs -= 1;
                         }
                         player.isInvincible = true;
+                        player.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
 
                         // p19 乾坤一擲
                         if (turnCount > 1 && player.passives.includes('p19')) {
@@ -5262,9 +5263,11 @@
                                 addBattleEffect("【霊力節約】 相手のボムが消費されなかった！", "#ffaacc");
                             }
                             if (consumed) {
-                                cpu.bombs -= 1;
-                            }
-                            cpu.isInvincible = true;
+                                    cpu.bombs -= 1;
+                                }
+                                cpu.isInvincible = true;
+                                cpu.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
+                            cpu.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
 
                             // p19 乾坤一擲
                             if (turnCount > 1 && cpu.passives.includes('p19')) {
@@ -5465,7 +5468,7 @@
                     }
                     cpu.prevX = cpu.x;
                 } else {
-                    // 通常のCPUの自律移動（予測ベースのAI）
+                    // 通常のCPUの自律移動
                     let isDanger = false;
 
                     // 難易度に応じた思考タイミングの管理
@@ -5473,139 +5476,389 @@
                     cpu.thinkTimer++;
                     let shouldThink = (cpu.thinkTimer % cpu.thinkInterval === 0);
 
-                    for (let b of bullets) {
-                        // 通常弾は無視して攻める。かつ難易度に応じた「弾の見落とし確率」を適用
-                        if (b.team === 'PLAYER' && !b.isNormal) {
-                            // 初級・中級等では、弾ごとに確率で見落とす（回避のトリガーにしない）
-                            if (Math.random() < cpu.ignoreChance) continue;
+                    if (cpuDifficulty === 'HARD' || cpuDifficulty === 'LUNATIC') {
+                        // ========================================================
+                        // 【HARD / LUNATIC 専用】新生AIアルゴリズム：未来予測サンプリング方式
+                        // 東方れいこくもん (thjisaku01.html) の自動プレイAIを移植・改造
+                        // ========================================================
 
-                            if (b.isBeam) {
-                                // 角度可変レーザービームの危険検知！
-                                let rx = cpu.x - b.x;
-                                let ry = cpu.y - b.y;
-                                let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
-                                let distPerp = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
-
-                                if (distAlong > 0 && distAlong < 1200 && Math.abs(distPerp) < b.radius + 80) {
-                                    isDanger = true;
-                                    break;
-                                }
-                            } else {
-                                if (Math.abs(b.x - cpu.x) < 200 && Math.abs(b.y - cpu.y) < 250) {
+                        // 危険判定（思考トリガー：周囲にプレイヤーの弾があるか）
+                        for (let b of bullets) {
+                            if (b.team === 'PLAYER') {
+                                if (Math.abs(b.x - cpu.x) < 220 && Math.abs(b.y - cpu.y) < 280) {
                                     isDanger = true; break;
                                 }
                             }
                         }
-                    }
 
-                    if (shouldThink && (isDanger || cpu.evadeTimer <= 0)) {
-                        let bestScore = -Infinity;
-                        let bestTx = cpu.x;
-                        let bestTy = cpu.y;
+                        if (shouldThink) {
+                            // 未来シミュレーションのタイムステップ
+                            const T_steps = cpuDifficulty === 'LUNATIC'
+                                ? [0.03, 0.06, 0.1, 0.15, 0.2, 0.3, 0.45, 0.6, 0.8]
+                                : [0.05, 0.1, 0.2, 0.35, 0.55, 0.8];
 
-                        const moveAngles = [0, Math.PI / 4, Math.PI / 2, Math.PI * 3 / 4, Math.PI, -Math.PI * 3 / 4, -Math.PI / 2, -Math.PI / 4];
-                        const moveDists = [0, 10, 20, 40, 70]; // 現在地を含む複数距離（遠くまで探索）
+                            // 1. 【極めて重要】全弾道シミュレーション（1フレーム内で1回だけ実行）
+                            // プレイヤーが発射した全弾（isNormalに関わらず）を対象に、その未来軌道を一括で計算
+                            let opponentBullets = bullets.filter(b => b.team === 'PLAYER');
+                            let simulatedPositions = {};
+                            for (let t of T_steps) {
+                                simulatedPositions[t] = [];
+                            }
 
-                        for (let d of moveDists) {
-                            let angles = d === 0 ? [0] : moveAngles;
-                            for (let a of angles) {
-                                let tx = cpu.x + Math.cos(a) * d;
-                                let ty = cpu.y + Math.sin(a) * d;
+                            // --- サンドボックス退避エリア ---
+                            const playerBackup = {
+                                x: player.x,
+                                y: player.y,
+                                speed: player.speed,
+                                slowSpeed: player.slowSpeed,
+                                pendingDamage: player.pendingDamage
+                            };
+                            const cpuBackup = {
+                                x: cpu.x,
+                                y: cpu.y,
+                                speed: cpu.speed,
+                                slowSpeed: cpu.slowSpeed,
+                                pendingDamage: cpu.pendingDamage
+                            };
+                            const originalScreenShake = typeof screenShakeAmount !== 'undefined' ? screenShakeAmount : 0;
+                            const originalAddBattleEffect = typeof addBattleEffect !== 'undefined' ? addBattleEffect : undefined;
 
-                                // 画面外や境畍線越えの座標は除外
-                                if (tx < cpu.hitboxRadius + 10 || tx > PLAY_WIDTH - cpu.hitboxRadius - 10) continue;
-                                if (ty < cpu.hitboxRadius + 10 || ty > boundaryY - cpu.hitboxRadius - 10) continue;
+                            // 副作用を無効化するモック
+                            if (typeof addBattleEffect !== 'undefined') {
+                                addBattleEffect = () => {};
+                            }
 
-                                let minTDist = Infinity;
+                            // 弾のクローンを作成して物理挙動をエミュレート
+                            let clonedBullets = opponentBullets.map(b => {
+                                let copy = { ...b };
+                                if (b.placedBullets) {
+                                    copy.placedBullets = [...b.placedBullets];
+                                }
+                                return copy;
+                            });
 
-                                // 未来位置予測（0.1s, 0.2s, 0.3s, 0.4s後）
-                                for (let t = 0.1; t <= 0.4; t += 0.1) {
-                                    // CPUの仮想位置（目標座標に向かって移動していると仮定）
-                                    let pCpuX = cpu.x + Math.cos(a) * (d / 0.4) * t;
-                                    let pCpuY = cpu.y + Math.sin(a) * (d / 0.4) * t;
+                            let maxTime = T_steps[T_steps.length - 1];
+                            let simDt = 0.02; // 20ms刻み
+                            let currentSimTime = 0;
+                            let dummyBullets = [];
+                            let originalBullets = bullets;
 
-                                    for (let b of bullets) {
-                                        if (b.team === 'PLAYER' && !b.isNormal) { // 通常弾は予測から外す
-                                            // 思考計算中も、確率で弾の軌道を計算からサボる
-                                            if (Math.random() < cpu.ignoreChance) continue;
+                            // update関数内で bullets.push される分裂弾をダミー配列に回収するハック
+                            bullets = dummyBullets;
 
-                                            if (b.isBeam) {
-                                                // 将来の仮想CPU位置(pCpuX, pCpuY)と、ビームの軸からの垂直距離を計算
-                                                let rx = pCpuX - b.x;
-                                                let ry = pCpuY - b.y;
-                                                let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
-                                                let distPerp = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
+                            try {
+                                while (currentSimTime < maxTime) {
+                                    for (let b of clonedBullets) {
+                                        if (b.update) {
+                                            b.update(b, simDt);
+                                        }
+                                        if (b.vx !== undefined && b.vy !== undefined) {
+                                            b.x += b.vx * simDt;
+                                            b.y += b.vy * simDt;
+                                        }
+                                    }
 
-                                                if (distAlong > 0 && distAlong < 1200) {
-                                                    let dist = Math.abs(distPerp) - (b.isWarning ? 90 : b.radius) - cpu.hitboxRadius;
-                                                    if (dist < minTDist) minTDist = dist;
+                                    // 分裂などで新しく生成された弾をシミュレーションに追加
+                                    if (dummyBullets.length > 0) {
+                                        for (let newB of dummyBullets) {
+                                            clonedBullets.push({
+                                                ...newB
+                                            });
+                                        }
+                                        dummyBullets.length = 0;
+                                    }
+
+                                    currentSimTime += simDt;
+
+                                    // T_stepsに最も近いタイミングの座標を記録
+                                    for (let t of T_steps) {
+                                        if (Math.abs(currentSimTime - t) < simDt * 0.51) {
+                                            for (let b of clonedBullets) {
+                                                if (b.x < -150 || b.x > PLAY_WIDTH + 150 || b.y < -150 || b.y > canvas.height + 150) {
+                                                    continue; // 画面外の弾は無視
                                                 }
-                                            } else {
-                                                let pBx = b.x + b.vx * t;
-                                                let pBy = b.y + b.vy * t;
-                                                let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
-                                                let dist = Math.sqrt((pBx - pCpuX) ** 2 + (pBy - pCpuY) ** 2) - bHitR - cpu.hitboxRadius;
-
-                                                if (dist < minTDist) minTDist = dist;
+                                                simulatedPositions[t].push({
+                                                    x: b.x,
+                                                    y: b.y,
+                                                    radius: b.radius,
+                                                    hitRadius: b.hitRadius,
+                                                    isBeam: b.isBeam,
+                                                    angle: b.angle,
+                                                    isNormal: b.isNormal,
+                                                    customDmg: b.customDmg
+                                                });
                                             }
                                         }
                                     }
                                 }
-
-                                if (minTDist === Infinity) minTDist = 10000; // 弾がない時は十分に大きい値にしてバグを防ぐ
-
-                                let score = minTDist;
-
-                                // 弾を避けられる（ある程度距離がある）なら、プレイヤーを狙う＆基本位置に戻る
-                                if (minTDist > 30) {
-                                    score -= Math.abs(tx - player.x) * 0.05; // プレイヤーのX座標に合わせる
-                                    score -= Math.abs(ty - canvas.height * 0.2) * 0.1; // 高さ20%付近を維持
+                            } catch (e) {
+                                console.error("CPU Sim error:", e);
+                            } finally {
+                                // 状態の完全復元（サンドボックス復元エリア）
+                                bullets = originalBullets;
+                                if (typeof addBattleEffect !== 'undefined') {
+                                    addBattleEffect = originalAddBattleEffect;
+                                }
+                                if (typeof screenShakeAmount !== 'undefined') {
+                                    screenShakeAmount = originalScreenShake;
                                 }
 
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                    bestTx = tx;
-                                    bestTy = ty;
+                                player.x = playerBackup.x;
+                                player.y = playerBackup.y;
+                                player.speed = playerBackup.speed;
+                                player.slowSpeed = playerBackup.slowSpeed;
+                                player.pendingDamage = playerBackup.pendingDamage;
+
+                                cpu.x = cpuBackup.x;
+                                cpu.y = cpuBackup.y;
+                                cpu.speed = cpuBackup.speed;
+                                cpu.slowSpeed = cpuBackup.slowSpeed;
+                                cpu.pendingDamage = cpuBackup.pendingDamage;
+                            }
+
+                            // 2. 移動候補の生成（チョン避け付き）
+                            const rawDirs = [
+                                {x:0,y:0},{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0},
+                                {x:-1,y:-1},{x:1,y:-1},{x:-1,y:1},{x:1,y:1}
+                            ];
+                            let candidates = [];
+                            for (let d of rawDirs) {
+                                let nx = d.x, ny = d.y;
+                                if (nx !== 0 && ny !== 0) { nx *= Math.SQRT1_2; ny *= Math.SQRT1_2; }
+                                // 通常移動
+                                candidates.push({ dx: nx, dy: ny, useSlow: false, rawDx: d.x, rawDy: d.y, stopTime: Infinity });
+                                if (d.x !== 0 || d.y !== 0) {
+                                    // 低速移動（精密）
+                                    candidates.push({ dx: nx, dy: ny, useSlow: true, rawDx: d.x, rawDy: d.y, stopTime: Infinity });
+                                    // チョン避け（一瞬だけ動いて止まる）
+                                    candidates.push({ dx: nx, dy: ny, useSlow: true, rawDx: d.x, rawDy: d.y, stopTime: 0.05 });
+                                    candidates.push({ dx: nx, dy: ny, useSlow: true, rawDx: d.x, rawDy: d.y, stopTime: 0.15 });
+                                }
+                            }
+
+                            // Hard難易度は候補をランダムに間引いて性能をナーフ
+                            if (cpuDifficulty === 'HARD') {
+                                candidates = candidates.filter(() => Math.random() > 0.3);
+                                if (candidates.length === 0) candidates.push({ dx: 0, dy: 0, useSlow: false, rawDx: 0, rawDy: 0, stopTime: Infinity });
+                            }
+
+                            let bestScore = -Infinity;
+                            let bestCandidate = candidates[0];
+
+                            // 3. 各候補のスコアリング評価
+                            for (let cand of candidates) {
+                                let pSpeed = cand.useSlow ? cpu.slowSpeed : cpu.speed;
+                                let minHitTime = Infinity;
+                                let minClearance = Infinity;
+                                let hitBulletDmgWeight = 1;
+                                let finalPx = cpu.x, finalPy = cpu.y;
+                                let hitOccurred = false;
+
+                                for (let t of T_steps) {
+                                    let moveT = Math.min(t, cand.stopTime);
+                                    let futPx = cpu.x + cand.dx * pSpeed * moveT;
+                                    let futPy = cpu.y + cand.dy * pSpeed * moveT;
+                                    finalPx = futPx; finalPy = futPy;
+
+                                    // 画面外または境畍線を超えてしまう候補は除外（被弾扱い）
+                                    if (futPx < cpu.hitboxRadius + 8 || futPx > PLAY_WIDTH - cpu.hitboxRadius - 8 ||
+                                        futPy < cpu.hitboxRadius + 8 || futPy > boundaryY - cpu.hitboxRadius - 8) {
+                                        minHitTime = Math.min(minHitTime, t);
+                                        hitBulletDmgWeight = 100; // 重いペナルティ
+                                        hitOccurred = true;
+                                        break;
+                                    }
+
+                                    let hit = false;
+                                    let simBullets = simulatedPositions[t] || [];
+
+                                    for (let b of simBullets) {
+                                        let clearance = Infinity;
+                                        if (b.isBeam) {
+                                            let rx = futPx - b.x, ry = futPy - b.y;
+                                            let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
+                                            let distPerp  = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
+                                            if (distAlong > 0 && distAlong < 1200) {
+                                                clearance = Math.abs(distPerp) - b.radius - cpu.hitboxRadius;
+                                                if (clearance < 0) hit = true;
+                                            }
+                                        } else {
+                                            let bHitR = (b.hitRadius !== undefined ? b.hitRadius : b.radius);
+                                            clearance = Math.sqrt((futPx - b.x) ** 2 + (futPy - b.y) ** 2) - bHitR - cpu.hitboxRadius;
+                                            if (clearance < 0) hit = true;
+                                        }
+
+                                        if (clearance < minClearance) {
+                                            minClearance = clearance;
+                                        }
+
+                                        if (hit) {
+                                            // 通常ショットは1ダメージなのでペナルティ低め
+                                            // スペル弾や危険弾は40〜50ダメージなのでペナルティ高め
+                                            let dmgWeight = (b.isNormal && b.customDmg === undefined) ? 1 : 100;
+                                            if (t < minHitTime) {
+                                                minHitTime = t;
+                                                hitBulletDmgWeight = dmgWeight;
+                                            }
+                                            hitOccurred = true;
+                                        }
+                                    }
+                                    if (hit) break;
+                                }
+
+                                let cScore;
+                                if (hitOccurred) {
+                                    cScore = -10000 * hitBulletDmgWeight + minHitTime * 1000 + (minClearance === Infinity ? 0 : Math.max(0, minClearance));
+                                } else {
+                                    let safeBonus = Math.min(minClearance === Infinity ? 60 : minClearance, 60);
+
+                                    // 目標位置（プレイヤーのX軸に合わせる、かつ画面上部20%をキープ）
+                                    let targetPenalty = Math.abs(finalPx - player.x) * 0.05
+                                                      + Math.abs(finalPy - canvas.height * 0.2) * 0.1;
+
+                                    cScore = safeBonus * 10 - targetPenalty;
+
+                                    // 近接ペナルティ
+                                    if (minClearance < 60) {
+                                        cScore -= (60 - minClearance) * 5;
+                                    }
+
+                                    // 低速、静止、入力継続ボーナス
+                                    if (cand.useSlow) cScore += 2.0;
+                                    if (cand.rawDx === 0 && cand.rawDy === 0) cScore += 10.0;
+                                    if (cpu.lastAutoDx !== undefined &&
+                                        cand.rawDx === cpu.lastAutoDx && cand.rawDy === cpu.lastAutoDy &&
+                                        cand.useSlow === cpu.lastAutoSlow) {
+                                        cScore += 15.0;
+                                    }
+                                }
+
+                                if (cScore > bestScore) {
+                                    bestScore = cScore;
+                                    bestCandidate = cand;
+                                }
+                            }
+
+                            // 選択結果の記録
+                            cpu.lastAutoDx   = bestCandidate.rawDx;
+                            cpu.lastAutoDy   = bestCandidate.rawDy;
+                            cpu.lastAutoSlow = bestCandidate.useSlow;
+                            cpu.aiCandidate  = bestCandidate;
+                        }
+
+                        // 移動
+                        if (cpu.aiCandidate) {
+                            let cand = cpu.aiCandidate;
+                            let pSpeed = cand.useSlow ? cpu.slowSpeed : cpu.speed;
+                            cpu.isSlow = cand.useSlow;
+                            cpu.x += cand.dx * pSpeed * dt;
+                            cpu.y += cand.dy * pSpeed * dt;
+                        }
+
+                        cpu.x = Math.max(cpu.hitboxRadius + 8, Math.min(PLAY_WIDTH - cpu.hitboxRadius - 8, cpu.x));
+                        cpu.y = Math.max(cpu.hitboxRadius + 8, Math.min(boundaryY - cpu.hitboxRadius - 8, cpu.y));
+
+                    } else {
+                        // ========================================================
+                        // 【EASY / NORMAL】既存の単純AIをそのまま使用
+                        // ========================================================
+                        for (let b of bullets) {
+                            if (b.team === 'PLAYER' && !b.isNormal) {
+                                if (Math.random() < cpu.ignoreChance) continue;
+                                if (b.isBeam) {
+                                    let rx = cpu.x - b.x, ry = cpu.y - b.y;
+                                    let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
+                                    let distPerp  = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
+                                    if (distAlong > 0 && distAlong < 1200 && Math.abs(distPerp) < b.radius + 80) {
+                                        isDanger = true; break;
+                                    }
+                                } else {
+                                    if (Math.abs(b.x - cpu.x) < 200 && Math.abs(b.y - cpu.y) < 250) {
+                                        isDanger = true; break;
+                                    }
                                 }
                             }
                         }
 
-                        cpu.targetX = bestTx;
-                        cpu.targetY = bestTy;
-                        if (isDanger) cpu.evadeTimer = 0.5;
-                    }
+                        if (shouldThink && (isDanger || cpu.evadeTimer <= 0)) {
+                            let bestScore = -Infinity;
+                            let bestTx = cpu.x, bestTy = cpu.y;
+                            const moveAngles = [0, Math.PI/4, Math.PI/2, Math.PI*3/4, Math.PI, -Math.PI*3/4, -Math.PI/2, -Math.PI/4];
+                            const moveDists = [0, 10, 20, 40, 70];
 
-                    if (cpu.evadeTimer > 0) cpu.evadeTimer -= dt;
-                    if (!isDanger && cpu.evadeTimer <= 0) {
-                        if (Math.random() < 0.03) {
-                            cpu.targetX = player.x + (Math.random() - 0.5) * 100;
-                            cpu.targetY = canvas.height * 0.2 + (Math.random() - 0.5) * 50;
-                            cpu.evadeTimer = 0.5; // フェイントとして0.5秒間ふらふら移動させる
+                            for (let d of moveDists) {
+                                let angles = d === 0 ? [0] : moveAngles;
+                                for (let a of angles) {
+                                    let tx = cpu.x + Math.cos(a) * d;
+                                    let ty = cpu.y + Math.sin(a) * d;
+                                    if (tx < cpu.hitboxRadius + 10 || tx > PLAY_WIDTH - cpu.hitboxRadius - 10) continue;
+                                    if (ty < cpu.hitboxRadius + 10 || ty > boundaryY - cpu.hitboxRadius - 10) continue;
+                                    let minTDist = Infinity;
+                                    for (let t = 0.1; t <= 0.4; t += 0.1) {
+                                        let pCpuX = cpu.x + Math.cos(a) * (d / 0.4) * t;
+                                        let pCpuY = cpu.y + Math.sin(a) * (d / 0.4) * t;
+                                        for (let b of bullets) {
+                                            if (b.team === 'PLAYER' && !b.isNormal) {
+                                                if (Math.random() < cpu.ignoreChance) continue;
+                                                if (b.isBeam) {
+                                                    let rx = pCpuX - b.x, ry = pCpuY - b.y;
+                                                    let distAlong = rx * Math.cos(b.angle) + ry * Math.sin(b.angle);
+                                                    let distPerp  = -rx * Math.sin(b.angle) + ry * Math.cos(b.angle);
+                                                    if (distAlong > 0 && distAlong < 1200) {
+                                                        let dist = Math.abs(distPerp) - (b.isWarning ? 90 : b.radius) - cpu.hitboxRadius;
+                                                        if (dist < minTDist) minTDist = dist;
+                                                    }
+                                                } else {
+                                                    let pBx = b.x + b.vx * t, pBy = b.y + b.vy * t;
+                                                    let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
+                                                    let dist = Math.sqrt((pBx - pCpuX) ** 2 + (pBy - pCpuY) ** 2) - bHitR - cpu.hitboxRadius;
+                                                    if (dist < minTDist) minTDist = dist;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (minTDist === Infinity) minTDist = 10000;
+                                    let score = minTDist;
+                                    if (minTDist > 30) {
+                                        score -= Math.abs(tx - player.x) * 0.05;
+                                        score -= Math.abs(ty - canvas.height * 0.2) * 0.1;
+                                    }
+                                    if (score > bestScore) { bestScore = score; bestTx = tx; bestTy = ty; }
+                                }
+                            }
+                            cpu.targetX = bestTx;
+                            cpu.targetY = bestTy;
+                            if (isDanger) cpu.evadeTimer = 0.5;
                         }
-                    }
 
-                    cpu.targetX = Math.max(cpu.hitboxRadius + 10, Math.min(PLAY_WIDTH - cpu.hitboxRadius - 10, cpu.targetX));
-                    cpu.targetY = Math.max(cpu.hitboxRadius + 10, Math.min(boundaryY - cpu.hitboxRadius - 10, cpu.targetY));
+                        if (cpu.evadeTimer > 0) cpu.evadeTimer -= dt;
+                        if (!isDanger && cpu.evadeTimer <= 0) {
+                            if (Math.random() < 0.03) {
+                                cpu.targetX = player.x + (Math.random() - 0.5) * 100;
+                                cpu.targetY = canvas.height * 0.2 + (Math.random() - 0.5) * 50;
+                                cpu.evadeTimer = 0.5;
+                            }
+                        }
 
-                    let cdx = cpu.targetX - cpu.x;
-                    let cdy = cpu.targetY - cpu.y;
-                    let cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+                        cpu.targetX = Math.max(cpu.hitboxRadius + 10, Math.min(PLAY_WIDTH - cpu.hitboxRadius - 10, cpu.targetX));
+                        cpu.targetY = Math.max(cpu.hitboxRadius + 10, Math.min(boundaryY - cpu.hitboxRadius - 10, cpu.targetY));
 
-                    // 目標地点が近い場合は精密動作（低速モード）を使用する（EASY難易度では常に大雑把に動かして被弾しやすくする）
-                    if (cpuDifficulty === 'EASY') {
-                        cpu.isSlow = false;
-                    } else {
-                        cpu.isSlow = isDanger && cdist > 0 && cdist < 30;
-                    }
-                    let currentCpuSpeed = cpu.isSlow ? cpu.speed * 0.4 : cpu.speed;
-
-                    let moveDist = currentCpuSpeed * dt;
-                    if (cdist > moveDist) {
-                        cpu.x += (cdx / cdist) * moveDist;
-                        cpu.y += (cdy / cdist) * moveDist;
-                    } else {
-                        cpu.x = cpu.targetX;
-                        cpu.y = cpu.targetY;
+                        let cdx = cpu.targetX - cpu.x, cdy = cpu.targetY - cpu.y;
+                        let cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+                        if (cpuDifficulty === 'EASY') {
+                            cpu.isSlow = false;
+                        } else {
+                            cpu.isSlow = isDanger && cdist > 0 && cdist < 30;
+                        }
+                        let currentCpuSpeed = cpu.isSlow ? cpu.speed * 0.4 : cpu.speed;
+                        let moveDist = currentCpuSpeed * dt;
+                        if (cdist > moveDist) {
+                            cpu.x += (cdx / cdist) * moveDist;
+                            cpu.y += (cdy / cdist) * moveDist;
+                        } else {
+                            cpu.x = cpu.targetX;
+                            cpu.y = cpu.targetY;
+                        }
                     }
 
                     if (cpu.x < cpu.prevX - 0.1) {
