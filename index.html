@@ -451,7 +451,7 @@
 
         .card-selector-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 15px;
             overflow-y: auto;
             flex-grow: 1;
@@ -465,12 +465,14 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #0d0d18 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
-            padding: 12px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
-            height: 170px;
+            gap: 10px;
+            height: auto;
+            min-height: 240px;
             cursor: pointer;
             transition: all 0.2s;
             box-sizing: border-box;
@@ -489,17 +491,29 @@
         }
 
         .selector-card-item .item-name {
-            font-size: 12px;
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
             color: #fff;
         }
 
         .selector-card-item .item-desc {
-            font-size: 9px;
-            color: #aaa;
+            font-size: 15px;
+            color: #e0e0e0;
             text-align: center;
             margin-top: 4px;
+            line-height: 1.45;
+        }
+
+        .selector-card-item .item-stats {
+            font-size: 13px;
+            color: #ffdd88;
+            text-align: center;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 8px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .deck-card {
@@ -2557,7 +2571,10 @@
             const clearItem = document.createElement('div');
             clearItem.className = 'selector-card-item';
             clearItem.style.borderColor = '#ff5555';
-            clearItem.innerHTML = `<span style="color:#ff8888; font-weight:bold;">外す</span><span style="font-size:9px;color:#aaa;">スロットを空にします</span>`;
+            clearItem.innerHTML = `
+                <span class="item-name" style="color:#ff8888; font-weight:bold;">外す</span>
+                <span class="item-desc" style="color:#aaa;">スロットを空にします</span>
+            `;
             clearItem.onclick = () => selectCard(null);
             container.appendChild(clearItem);
 
@@ -2568,12 +2585,12 @@
 
                 let statsHtml = '';
                 if (type === 'active') {
-                    statsHtml = `<div class="item-desc">持続:${card.duration}s 間隔:${card.interval}s <span style="color:#00ffff; font-weight:bold;">(コスト: ${card.cost})</span></div>`;
+                    statsHtml = `<div class="item-stats">持続:${card.duration}s 間隔:${card.interval}s <span style="color:#00ffff; font-weight:bold;">(コスト: ${card.cost})</span></div>`;
                 }
 
                 item.innerHTML = `
                     <span class="item-name">${card.name}</span>
-                    <span class="item-desc" style="font-size:8px; line-height:1.2;">${card.desc}</span>
+                    <span class="item-desc">${card.desc}</span>
                     ${statsHtml}
                 `;
 
@@ -2763,6 +2780,7 @@
             team: 'PLAYER',
             x: PLAY_WIDTH / 2, y: canvas.height * 0.8,
             hp: 1000, maxHp: 1000, grazeCount: 0, pendingDamage: 0, pendingHeal: 0,
+            recentHits: [], // 被弾履歴 (デスボム用)
             hitboxRadius: 2.25, grazeRadius: 30, speed: 405, slowSpeed: 135,
             deck: [], hand: [], passives: [],
             bombs: 3,
@@ -2777,6 +2795,7 @@
             team: 'CPU',
             x: PLAY_WIDTH / 2, y: canvas.height * 0.2,
             hp: 1000, maxHp: 1000, pendingDamage: 0, pendingHeal: 0, grazeCount: 0,
+            recentHits: [], // 被弾履歴 (デスボム用)
             hitboxRadius: 4, grazeRadius: 30, speed: 200,
             deck: [], hand: [], passives: [], targetX: PLAY_WIDTH / 2, targetY: 180,
             prevX: PLAY_WIDTH / 2, moveDir: 0,
@@ -3138,7 +3157,7 @@
             }
 
             // プレイヤー初期化
-            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
+            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0; player.recentHits = []; player.recentHits = [];
             player.x = PLAY_WIDTH / 2; player.y = canvas.height * 0.8;
             player.isInvincible = false;
             player.invincibleTimer = 0;
@@ -3178,7 +3197,7 @@
                 cpu.hp = 1000;
             }
 
-            cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.pendingHeal = 0;
+            cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.recentHits = []; cpu.recentHits = [];
             cpu.maxBombs = cpu.passives.includes('p4') ? 4 : 3;
             cpu.bombs = cpu.maxBombs;
             cpu.bombCooldown = 0;
@@ -3253,7 +3272,7 @@
                 cpu.hp = 1000;
             }
 
-            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0;
+            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0; player.recentHits = []; player.recentHits = [];
 
             // パッシブ効果の適用
             if (player.passives.includes('p4')) {
@@ -3278,7 +3297,7 @@
             activeEffects = []; // エフェクト配列のクリア
             player.p7Triggered = false; // HP25%以下自動回復フラグ
             cpu.p7Triggered = false;
-            cpu.hp = 1000; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.grazeCount = 0; cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
+            cpu.hp = 1000; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.grazeCount = 0; cpu.recentHits = []; cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
             cpu.targetX = cpu.x; cpu.targetY = cpu.y;
             bullets = [];
             gameState = 'BATTLE';
@@ -3611,7 +3630,8 @@
                     }
                     if (cpuDmg > 0 && cpu.passives.includes('p1')) {
                         let reduce = Math.min(cpuDmg, 20); cpuDmg -= reduce;
-                        pMsg.push(`[CPU] パッシブ被弾軽減: ダメージ${reduce}軽減`);
+                        let oppLabel = isOnlineMode ? 'ENEMY' : 'CPU';
+                        pMsg.push(`[${oppLabel}] パッシブ被弾軽減: ダメージ${reduce}軽減`);
                     }
                 }
 
@@ -3626,7 +3646,8 @@
                     let prevDmg = cpuDmg;
                     cpuDmg = Math.floor(cpuDmg / 2);
                     cpu.ab3Shield = false; // 消費
-                    pMsg.push(`[CPU] 【急】精神統一シールド：ダメージ${prevDmg - cpuDmg}軽減(半減)`);
+                    let oppLabel = isOnlineMode ? 'ENEMY' : 'CPU';
+                    pMsg.push(`[${oppLabel}] 【急】精神統一シールド：ダメージ${prevDmg - cpuDmg}軽減(半減)`);
                 }
 
                 player.hp -= playerDmg;
@@ -3646,18 +3667,21 @@
                     cpu.p25Triggered = true;
                     cpu.isInvincible = true;
                     cpu.invincibleTimer = 1.5;
-                    pMsg.push(`[CPU] 【絶体絶命】 発動！ 一度だけHP1で踏みとどまり完全無敵！`);
+                    let oppLabel = isOnlineMode ? 'ENEMY' : 'CPU';
+                    pMsg.push(`[${oppLabel}] 【絶体絶命】 発動！ 一度だけHP1で踏みとどまり完全無敵！`);
                 }
 
                 player.hp = Math.min(player.maxHp || 1000, player.hp + playerHeal);
                 cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + cpuHeal);
                 player.pendingDamage = 0; cpu.pendingDamage = 0; player.pendingHeal = 0; cpu.pendingHeal = 0;
+                player.recentHits = []; cpu.recentHits = [];
 
                 let html = `<span style="font-family:'Noto Serif JP',serif; font-size:24px; color:#ffcc00; letter-spacing:2px;">精算フェーズ</span><br>`;
                 if (t > 0) html += `<span style="font-size:12px; color:#cccccc;">【境界の歪み】 ダメージ ${baseDmgMult.toFixed(2)}倍 / 回復量 -${Math.floor(healReducePercent)}%</span><br>`;
                 html += `<br><span style="font-size:18px; color:#ff8888;">PLAYER: -${playerDmg} DMG</span>`;
                 if (playerHeal > 0) html += ` <span style="font-size:18px; color:#88ff88;">(+${playerHeal} HP)</span>`;
-                html += `<br><span style="font-size:18px; color:#ff8888;">CPU: -${cpuDmg} DMG</span>`;
+                let oppLabel = isOnlineMode ? 'ENEMY' : 'CPU';
+                html += `<br><span style="font-size:18px; color:#ff8888;">${oppLabel}: -${cpuDmg} DMG</span>`;
                 if (cpuHeal > 0) html += ` <span style="font-size:18px; color:#88ff88;">(+${cpuHeal} HP)</span>`;
                 html += `<br>`;
 
@@ -5054,6 +5078,8 @@
                                     b.hasHitTarget = true;
                                     if (!target.isInvincible) {
                                         target.pendingDamage += 100; // 貫通時に100ダメージ！
+                                        if (!target.recentHits) target.recentHits = [];
+                                        target.recentHits.push({ damage: 100, timestamp: performance.now() });
                                         addBattleEffect("◆ GUNGNIR PIERCE! ◆", "#ff3333");
                                     }
                                 }
@@ -5070,6 +5096,8 @@
                                 let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
                                 if (distToTarget < 120 && !target.isInvincible) {
                                     target.pendingDamage += 80; // 爆発時に追加で80ダメージ！
+                                    if (!target.recentHits) target.recentHits = [];
+                                    target.recentHits.push({ damage: 80, timestamp: performance.now() });
                                 }
 
                                 let ways = 32; // 爆発破片を32方向に増やしてさらにド派手に！
@@ -5125,6 +5153,16 @@
                 if (activeEffects[i].timer <= 0) {
                     activeEffects.splice(i, 1);
                 }
+            }
+
+            // 被弾履歴タイマーの更新
+            if (player.recentHits) {
+                let now = performance.now();
+                player.recentHits = player.recentHits.filter(h => now - h.timestamp <= 250);
+            }
+            if (cpu.recentHits) {
+                let now = performance.now();
+                cpu.recentHits = cpu.recentHits.filter(h => now - h.timestamp <= 250);
             }
 
             // 画面揺れ（スクリーンの振動）の減衰更新
@@ -5211,7 +5249,12 @@
                             player.bombs -= 1;
                         }
                         player.isInvincible = true;
-                        player.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
+                        let now = performance.now();
+                        let refund = player.recentHits ? player.recentHits
+                            .filter(h => now - h.timestamp <= 250)
+                            .reduce((sum, h) => sum + h.damage, 0) : 0;
+                        player.pendingDamage = Math.max(0, player.pendingDamage - refund);
+                        player.recentHits = [];
 
                         // p19 乾坤一擲
                         if (turnCount > 1 && player.passives.includes('p19')) {
@@ -5266,8 +5309,12 @@
                                     cpu.bombs -= 1;
                                 }
                                 cpu.isInvincible = true;
-                                cpu.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
-                            cpu.pendingDamage = 0; // 食らいボム：溜まっていた被弾ダメージを帳消しにする！
+                                let now = performance.now();
+                                let refund = cpu.recentHits ? cpu.recentHits
+                                    .filter(h => now - h.timestamp <= 250)
+                                    .reduce((sum, h) => sum + h.damage, 0) : 0;
+                                cpu.pendingDamage = Math.max(0, cpu.pendingDamage - refund);
+                                cpu.recentHits = [];
 
                             // p19 乾坤一擲
                             if (turnCount > 1 && cpu.passives.includes('p19')) {
@@ -5311,6 +5358,12 @@
                                     cpu.bombs -= 1;
                                 }
                                 cpu.isInvincible = true;
+                                let now = performance.now();
+                                let refund = cpu.recentHits ? cpu.recentHits
+                                    .filter(h => now - h.timestamp <= 250)
+                                    .reduce((sum, h) => sum + h.damage, 0) : 0;
+                                cpu.pendingDamage = Math.max(0, cpu.pendingDamage - refund);
+                                cpu.recentHits = [];
 
                                 // p19 乾坤一擲
                                 if (turnCount > 1 && cpu.passives.includes('p19')) {
@@ -5511,14 +5564,16 @@
                                 y: player.y,
                                 speed: player.speed,
                                 slowSpeed: player.slowSpeed,
-                                pendingDamage: player.pendingDamage
+                                pendingDamage: player.pendingDamage,
+                                recentHits: player.recentHits ? player.recentHits.map(h => ({ ...h })) : []
                             };
                             const cpuBackup = {
                                 x: cpu.x,
                                 y: cpu.y,
                                 speed: cpu.speed,
                                 slowSpeed: cpu.slowSpeed,
-                                pendingDamage: cpu.pendingDamage
+                                pendingDamage: cpu.pendingDamage,
+                                recentHits: cpu.recentHits ? cpu.recentHits.map(h => ({ ...h })) : []
                             };
                             const originalScreenShake = typeof screenShakeAmount !== 'undefined' ? screenShakeAmount : 0;
                             const originalAddBattleEffect = typeof addBattleEffect !== 'undefined' ? addBattleEffect : undefined;
@@ -5608,12 +5663,14 @@
                                 player.speed = playerBackup.speed;
                                 player.slowSpeed = playerBackup.slowSpeed;
                                 player.pendingDamage = playerBackup.pendingDamage;
+                                player.recentHits = playerBackup.recentHits;
 
                                 cpu.x = cpuBackup.x;
                                 cpu.y = cpuBackup.y;
                                 cpu.speed = cpuBackup.speed;
                                 cpu.slowSpeed = cpuBackup.slowSpeed;
                                 cpu.pendingDamage = cpuBackup.pendingDamage;
+                                cpu.recentHits = cpuBackup.recentHits;
                             }
 
                             // 2. 移動候補の生成（チョン避け付き）
@@ -6054,6 +6111,8 @@
                             }
 
                             player.pendingDamage += dmg;
+                            if (!player.recentHits) player.recentHits = [];
+                            player.recentHits.push({ damage: dmg, timestamp: performance.now() });
                             player.hitLastTurn = true; // 被弾履歴
 
                             bullets.splice(i, 1); continue;
@@ -6115,6 +6174,8 @@
                             }
 
                             cpu.pendingDamage += dmg;
+                            if (!cpu.recentHits) cpu.recentHits = [];
+                            cpu.recentHits.push({ damage: dmg, timestamp: performance.now() });
                             cpu.hitLastTurn = true; // 被弾履歴
 
                             if (b.isNormal) {
@@ -6166,7 +6227,8 @@
                 if (cpu.hp > 0 && cpu.hp <= cpu.maxHp * 0.25 && cpu.passives.includes('p7') && !cpu.p7Triggered) {
                     cpu.hp = Math.min(cpu.maxHp, cpu.hp + 300);
                     cpu.p7Triggered = true;
-                    addBattleEffect("【豊穣の守り】 CPU: HPが300自動回復！", "#ff5555");
+                    let oppLabel = isOnlineMode ? "ENEMY" : "CPU";
+                    addBattleEffect(`【豊穣の守り】 ${oppLabel}: HPが300自動回復！`, "#ff5555");
                 }
             }
 
@@ -6658,7 +6720,7 @@
             // CPU情報
             ctx.fillStyle = '#fff';
             ctx.font = '20px sans-serif';
-            ctx.fillText('CPU', UI_X, 40);
+            ctx.fillText(isOnlineMode ? 'ENEMY' : 'CPU', UI_X, 40);
 
             // CPUのボム（スペル）残数表示 (星マーク) - 表示位置は 75 (HPの上)
             ctx.fillStyle = '#ff3366';
