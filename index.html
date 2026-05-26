@@ -3528,70 +3528,73 @@
                             }
                         }
 
-                        if (chosenAbiId) {
-                            // アビリティをキャスト
-                            let idx = cpu.hand.indexOf(chosenAbiId);
-                            cpu.hand.splice(idx, 1); // 手札から消費
+                        let selectedIds = [];
 
-                            // 効果適用
-                            applyAbilityEffect(chosenAbiId, 'CPU');
-
-                            // 手札補充
-                            fillHandAbilities('CPU');
-
-                            // 即ターン移行
-                            changePhase('RESOLUTION', 'CPU');
-                            resolutionTimer = 0.8;
-                        } else {
-                            // 通常のアクティブカードをキャスト
-                            let activeCardsInHand = cpu.hand.filter(id => id && !id.startsWith('ab'));
-
-                            // アクティブカードがない場合はフォールバックでアビリティを使う
-                            if (activeCardsInHand.length === 0 && abIdsInHand.length > 0) {
-                                let abiId = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
-                                let idx = cpu.hand.indexOf(abiId);
-                                cpu.hand.splice(idx, 1);
-                                applyAbilityEffect(abiId, 'CPU');
-                                fillHandAbilities('CPU');
-                                changePhase('RESOLUTION', 'CPU');
-                                resolutionTimer = 0.8;
-                                return;
+                        if (turnCount >= 7) {
+                            // 2枚選ぶ
+                            if (chosenAbiId) {
+                                selectedIds.push(chosenAbiId);
                             }
-
-                            if (turnCount >= 7) {
-                                // 2枚選ぶ
-                                let selectedIds = [];
-                                for (let i = 0; i < 2; i++) {
-                                    let actives = cpu.hand.filter(id => id && !id.startsWith('ab'));
-                                    if (actives.length === 0) break;
-                                    const rIdx = Math.floor(Math.random() * actives.length);
-                                    let picked = actives[rIdx];
-                                    let realIdx = cpu.hand.indexOf(picked);
-                                    selectedIds.push(cpu.hand.splice(realIdx, 1)[0]); // 消費する
-                                }
-                                if (selectedIds.length > 0) {
-                                    startActionPhase(selectedIds);
+                            let needed = 2 - selectedIds.length;
+                            for (let i = 0; i < needed; i++) {
+                                let remaining = cpu.hand.filter(id => id && !selectedIds.includes(id));
+                                if (remaining.length === 0) break;
+                                // アクティブカードを優先
+                                let actives = remaining.filter(id => !id.startsWith('ab'));
+                                if (actives.length > 0) {
+                                    let picked = actives[Math.floor(Math.random() * actives.length)];
+                                    selectedIds.push(picked);
                                 } else {
-                                    // 6ターンごとの一括リロードまで手札の即時強制リロードは行わない
-                                    fillHandAbilities('CPU');
-                                    changePhase('RESOLUTION', 'CPU');
-                                    resolutionTimer = 0.5;
+                                    let picked = remaining[Math.floor(Math.random() * remaining.length)];
+                                    selectedIds.push(picked);
                                 }
+                            }
+                        } else {
+                            // 1枚選ぶ
+                            if (chosenAbiId) {
+                                selectedIds.push(chosenAbiId);
                             } else {
                                 let actives = cpu.hand.filter(id => id && !id.startsWith('ab'));
                                 if (actives.length > 0) {
-                                    const rIdx = Math.floor(Math.random() * actives.length);
-                                    let picked = actives[rIdx];
-                                    let realIdx = cpu.hand.indexOf(picked);
-                                    const selectedCardId = cpu.hand.splice(realIdx, 1)[0]; // 消費する
-                                    startActionPhase(selectedCardId);
-                                } else {
-                                    // 6ターンごとの一括リロードまで手札の即時強制リロードは行わない
-                                    fillHandAbilities('CPU');
-                                    changePhase('RESOLUTION', 'CPU');
-                                    resolutionTimer = 0.5;
+                                    let picked = actives[Math.floor(Math.random() * actives.length)];
+                                    selectedIds.push(picked);
+                                } else if (abIdsInHand.length > 0) {
+                                    let picked = abIdsInHand[Math.floor(Math.random() * abIdsInHand.length)];
+                                    selectedIds.push(picked);
                                 }
                             }
+                        }
+
+                        if (selectedIds.length > 0) {
+                            // 手札から消費
+                            selectedIds.forEach(id => {
+                                let idx = cpu.hand.indexOf(id);
+                                if (idx !== -1) {
+                                    cpu.hand.splice(idx, 1);
+                                }
+                            });
+
+                            let abilityIds = selectedIds.filter(id => id && id.startsWith('ab'));
+                            let activeIds = selectedIds.filter(id => id && !id.startsWith('ab'));
+
+                            if (abilityIds.length > 0) {
+                                abilityIds.forEach(id => {
+                                    applyAbilityEffect(id, 'CPU');
+                                });
+                            }
+
+                            fillHandAbilities('CPU');
+
+                            if (activeIds.length > 0) {
+                                startActionPhase(activeIds);
+                            } else {
+                                changePhase('RESOLUTION', 'CPU');
+                                resolutionTimer = 0.8;
+                            }
+                        } else {
+                            fillHandAbilities('CPU');
+                            changePhase('RESOLUTION', 'CPU');
+                            resolutionTimer = 0.5;
                         }
                     }, 1500);
                 }
@@ -3766,29 +3769,26 @@
                 });
             }
 
-            // アビリティカードが1枚でも含まれているかの検知
-            let hasAbility = cardIds.some(id => id && id.startsWith('ab'));
+            let abilityIds = cardIds.filter(id => id && id.startsWith('ab'));
+            let activeIds = cardIds.filter(id => id && !id.startsWith('ab'));
 
-            if (hasAbility) {
+            if (abilityIds.length > 0) {
                 // アビリティの効果を即時適用
-                cardIds.forEach(id => {
-                    if (id && id.startsWith('ab')) {
-                        applyAbilityEffect(id, 'PLAYER');
-                    } else if (id) {
-                        // アビリティと同時に選ばれたアクティブカードは手札から消費されて捨札へ
-                    }
+                abilityIds.forEach(id => {
+                    applyAbilityEffect(id, 'PLAYER');
                 });
+            }
 
-                // 減った手札枠をアビリティカードで即座に補充
-                fillHandAbilities('PLAYER');
-                renderHand();
+            // 減った手札枠をアビリティカードで即座に補充
+            fillHandAbilities('PLAYER');
+            renderHand();
 
-                // 即座に精算フェーズ（タイマーを極小の0.8秒にしてテンポ良く）に移行し、相手にターンを渡す
+            if (activeIds.length > 0) {
+                startActionPhase(activeIds);
+            } else {
+                // アビリティのみの場合は即座に精算フェーズ（タイマーを極小の0.8秒にしてテンポ良く）に移行し、相手にターンを渡す
                 changePhase('RESOLUTION', 'PLAYER');
                 resolutionTimer = 0.8;
-            } else {
-                // 通常のアクティブカードの場合は通常通り弾幕アクションフェーズを開始
-                startActionPhase(cardIds);
             }
         }
 
@@ -3869,16 +3869,20 @@
                 if (shortcutKey === ' ') shortcutKey = 'Space';
 
                 if (isAbility) {
+                    let descText = cardData.desc ? cardData.desc.replace('【即時アビリティ】', '') : '';
                     cardEl.innerHTML = `
                         <div class="card-shortcut" style="background:#ffcc00; color:#000;">${shortcutKey}</div>
-                        <div class="card-name" style="color:#ffcc00;">${cardData.name.replace('【急】', '')}</div>
-                        <div class="card-stats" style="font-size:9px; color:#ffdd88; line-height:1.2; padding:2px;">即時アビリティ<br>発動後相手ターン</div>
+                        <div class="card-name" style="color:#ffcc00; font-size:12px; margin-top:4px;">${cardData.name.replace('【急】', '')}</div>
+                        <div class="card-desc" style="font-size:8.5px; color:#ffdd88; line-height:1.25; padding:4px 2px; text-align:center; flex-grow:1; display:flex; align-items:center; justify-content:center; word-break:break-all;">${descText}</div>
+                        <div class="card-stats" style="font-size:9px; color:#ffcc00; border-top:1px solid rgba(255,204,0,0.2); padding-top:4px;">即時アビリティ</div>
                     `;
                 } else {
+                    let descText = cardData.desc ? cardData.desc.replace('【移植スペル】', '').replace('【靈刻門】', '').replace('【新スペル】', '').replace('【博麗霊夢】', '').replace('【霧雨魔理沙】', '').replace('【レミリア】', '') : '';
                     cardEl.innerHTML = `
                         <div class="card-shortcut">${shortcutKey}</div>
-                        <div class="card-name">${cardData.name.replace('【A】', '')}</div>
-                        <div class="card-stats">時間 ${cardData.duration}s<br>間隔 ${cardData.interval}s</div>
+                        <div class="card-name" style="font-size:12px; margin-top:4px;">${cardData.name.replace('【A】', '')}</div>
+                        <div class="card-desc" style="font-size:8.5px; color:#ccc; line-height:1.25; padding:4px 2px; text-align:center; flex-grow:1; display:flex; align-items:center; justify-content:center; word-break:break-all;">${descText}</div>
+                        <div class="card-stats" style="font-size:9px; padding-top:4px;">時間 ${cardData.duration}s<br>間隔 ${cardData.interval}s</div>
                     `;
                 }
 
@@ -5204,37 +5208,36 @@
                     let cardIds = receivedCastIds;
                     receivedCastIds = null; // リセット
 
-                    let hasAbility = cardIds.some(id => id && id.startsWith('ab'));
-                    if (hasAbility) {
+                    // 相手手札から消費
+                    cardIds.forEach(id => {
+                        if (cpu.hand && id) {
+                            let idx = cpu.hand.indexOf(id);
+                            if (idx !== -1) cpu.hand.splice(idx, 1);
+                        }
+                    });
+
+                    let abilityIds = cardIds.filter(id => id && id.startsWith('ab'));
+                    let activeIds = cardIds.filter(id => id && !id.startsWith('ab'));
+
+                    if (abilityIds.length > 0) {
                         // 相手側のアビリティ効果を即時適用
-                        cardIds.forEach(id => {
-                            if (id && id.startsWith('ab')) {
-                                applyAbilityEffect(id, 'CPU');
-                                // 相手手札から消費
-                                if (cpu.hand) {
-                                    let idx = cpu.hand.indexOf(id);
-                                    if (idx !== -1) cpu.hand.splice(idx, 1);
-                                }
-                            }
+                        abilityIds.forEach(id => {
+                            applyAbilityEffect(id, 'CPU');
                         });
+                    }
 
-                        // 相手の手札を補充
-                        fillHandAbilities('CPU');
+                    // 相手の手札を補充
+                    fillHandAbilities('CPU');
 
+                    if (activeIds.length > 0) {
+                        startActionPhase(activeIds);
+                    } else {
                         // 精算フェーズへ直行
                         changePhase('RESOLUTION', 'CPU');
                         resolutionTimer = 0.8;
-                    } else {
-                        // 通常キャスト
-                        cardIds.forEach(id => {
-                            if (cpu.hand) {
-                                let idx = cpu.hand.indexOf(id);
-                                if (idx !== -1) cpu.hand.splice(idx, 1);
-                            }
-                        });
-                        startActionPhase(cardIds);
                     }
                 }
+
                 // 霊撃の発動処理 (回避側で戦闘フェーズ中のみ)
                 if (battlePhase === 'ACTION' && turnOwner === 'CPU') {
                     let bombTriggered = (inputState.bomb && !prevBombInput) || mobileBombTriggered;
@@ -6087,6 +6090,9 @@
                         const distSq = (player.x - b.x) ** 2 + (player.y - b.y) ** 2;
                         if (distSq < (player.hitboxRadius + bHitR) ** 2) {
                             let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 2 : 50);
+                            if (!b.isNormal && activeCards.length >= 2) {
+                                dmg = Math.floor(dmg / 2);
+                            }
                             // 攻撃側（CPU）のパッシブ補正
                             if (turnCount > 1 && cpu.passives.includes('p8') && cpu.bombs === 0) {
                                 dmg = Math.floor(dmg * 1.25);
@@ -6150,6 +6156,9 @@
                         const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
                         if (distSq < (cpu.hitboxRadius + bHitR) ** 2) {
                             let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 1 : 40); // 通常弾は一発1ダメージ固定
+                            if (!b.isNormal && activeCards.length >= 2) {
+                                dmg = Math.floor(dmg / 2);
+                            }
                             // 攻撃側（PLAYER）のパッシブ補正
                             if (turnCount > 1 && player.passives.includes('p8') && player.bombs === 0) {
                                 dmg = Math.floor(dmg * 1.25);
