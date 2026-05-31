@@ -836,6 +836,54 @@
                 border-radius: 6px !important;
                 flex-shrink: 0 !important;
             }
+
+            /* スマホ時のデッキ編集画面の最適化 */
+            .deck-edit-container-layout {
+                max-height: 180px !important;
+                gap: 8px !important;
+                padding: 6px !important;
+            }
+            .deck-edit-section {
+                padding: 8px !important;
+            }
+            .deck-edit-section h4 {
+                font-size: 11px !important;
+                margin-bottom: 4px !important;
+                padding-bottom: 4px !important;
+                text-align: center !important;
+            }
+            .deck-slots-grid {
+                gap: 6px !important;
+            }
+            .deck-slot {
+                width: 54px !important;
+                height: 64px !important;
+                font-size: 8px !important;
+                padding: 2px !important;
+                border-radius: 4px !important;
+            }
+            .deck-slot span {
+                font-size: 8px !important;
+                transform: scale(0.9);
+            }
+            #deck-name-input {
+                width: 140px !important;
+                padding: 4px 8px !important;
+                font-size: 11px !important;
+            }
+            #deck-total-cost {
+                font-size: 11px !important;
+                margin-bottom: 6px !important;
+            }
+            #screen-deck-edit h3 {
+                font-size: 18px !important;
+                margin-bottom: 4px !important;
+            }
+            #screen-deck-edit .menu-btn {
+                width: 100px !important;
+                padding: 6px !important;
+                font-size: 11px !important;
+            }
         }
     </style>
 </head>
@@ -1184,11 +1232,7 @@
         </div>
     </div>
 
-    <p class="guide">
-        操作: [矢印キー] 移動 / [Shift] 低速移動 / [1]～[6] 手札カードのクイック選択<br>
-        ※中央の青い線（境畍線）を越えることはできません。<br>
-        ※弾幕の周りの白い枠（グレイズ判定）に掠ることでHPが回復します。
-    </p>
+
 
     <script>
         // ==========================================
@@ -1833,7 +1877,7 @@
                 { id: 'a7', name: '【A】消える魔球', duration: 14, pattern: 'vanishing', interval: 0.5, cost: 2, desc: '【靈刻門】静止後、赤く輝き超高速で相手を再追尾する。' },
                 { id: 'a8', name: '【A】スパイラル', duration: 10, pattern: 'spiral', interval: 0.08, cost: 1, desc: '【靈刻門】回転しながら全方位へ放ち、途中で逆回転する。' },
                 { id: 'a9', name: '【A】クロスカーブ', duration: 15, pattern: 'cross', interval: 0.9, cost: 2, desc: '【新スペル】発射時の相手方向を基準に、後方から放たれた大量の弾がゆっくりカーブして美しくX字クロスする。' },
-                { id: 'a10', name: '【A】霊符「夢想妙珠」', duration: 15, pattern: 'myouju', interval: 3.5, cost: 5, desc: '【博麗霊夢】自機の周囲を回転しながら広がり、その後相手を強力に自動追尾する虹色の光弾を放つ。' },
+                { id: 'a10', name: '【A】霊符「夢想妙珠」', duration: 15, pattern: 'myouju', interval: 3.5, cost: 4, desc: '【博麗霊夢】自機の周囲を回転しながら広がり、その後相手を強力に自動追尾する虹色の光弾を放つ。' },
                 { id: 'a11', name: '【A】恋符「マスタースパーク」', duration: 26, pattern: 'masterspark', interval: 99.0, cost: 4, desc: '【霧雨魔理沙】移動速度が激減する代わりに、画面を埋め尽くす極太の七色ビームを前方に照射する。' },
                 { id: 'a12', name: '【A】神槍「スピア・オブ・グングニル」', duration: 8, pattern: 'gungnir', interval: 1.2, cost: 7, desc: '【レミリア】全てを貫通する超高速の紅い槍を投げ、衝突時に大爆発を起こして破片を撒き散らす。' },
                 { id: 'a13', name: '【A】突符「チャージ曲がり角」', duration: 15, pattern: 'charge_corner', interval: 0.3, cost: 7, desc: '【靈刻門】放射状に放たれた弾が一度静止し、直角に分裂して急加速する。' },
@@ -2378,6 +2422,16 @@
             document.querySelectorAll('.selection-group').forEach(s => s.classList.add('hidden'));
             const screen = document.getElementById(screenId);
             if (screen) screen.classList.remove('hidden');
+
+            const logo = document.getElementById('gameLogo');
+            if (logo) {
+                if (screenId === 'screen-menu') {
+                    logo.classList.remove('hidden');
+                } else {
+                    logo.classList.add('hidden');
+                }
+            }
+
             activeConfiguringKey = null;
             activeConfiguringGamepadAction = null;
             setTimeout(scanUIFocusElements, 100);
@@ -2460,6 +2514,7 @@
         }
 
         function startGame() {
+            resetZoom();
             document.getElementById('titleScreen').style.display = 'none';
             isGameRunning = true;
             initBattle();
@@ -4173,6 +4228,7 @@
                     radius: 12,
                     team: attacker.team,
                     color: '#ffcc00', // 親弾は金色
+                    customDmg: 30,
                     splitTimer: 0,
                     update: (b, dt) => {
                         b.splitTimer += dt;
@@ -4183,8 +4239,8 @@
                             let rightAngle = Math.atan2(b.vy, b.vx) - Math.PI / 2;
                             let childSpeed = 160;
                             bullets.push(
-                                { x: b.x, y: b.y, vx: Math.cos(leftAngle) * childSpeed, vy: Math.sin(leftAngle) * childSpeed, radius: 5.5, team: b.team, color: '#ff55aa' },
-                                { x: b.x, y: b.y, vx: Math.cos(rightAngle) * childSpeed, vy: Math.sin(rightAngle) * childSpeed, radius: 5.5, team: b.team, color: '#ff55aa' }
+                                { x: b.x, y: b.y, vx: Math.cos(leftAngle) * childSpeed, vy: Math.sin(leftAngle) * childSpeed, radius: 5.5, team: b.team, color: '#ff55aa', customDmg: 15 },
+                                { x: b.x, y: b.y, vx: Math.cos(rightAngle) * childSpeed, vy: Math.sin(rightAngle) * childSpeed, radius: 5.5, team: b.team, color: '#ff55aa', customDmg: 15 }
                             );
                         }
                     }
@@ -4973,7 +5029,7 @@
                                 }
 
                                 if (isTargetInBeam && !target.isInvincible) {
-                                    target.pendingDamage += 105 * dt; // 極太レーザーの壊滅的持続ダメージ
+                                    target.pendingDamage += 75 * dt; // 極太レーザーの壊滅的持続ダメージ
                                 }
                             }
 
@@ -5059,8 +5115,8 @@
                                 let perpAngle2 = moveAngle - Math.PI / 2 + (Math.random() - 0.5) * 0.4;
                                 let spd = 60 + Math.random() * 80;
                                 bullets.push(
-                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle1) * spd, vy: Math.sin(perpAngle1) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false },
-                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle2) * spd, vy: Math.sin(perpAngle2) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false }
+                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle1) * spd, vy: Math.sin(perpAngle1) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false, customDmg: 15 },
+                                    { x: b.x, y: b.y, vx: Math.cos(perpAngle2) * spd, vy: Math.sin(perpAngle2) * spd, radius: 6.5, team: b.team, color: '#ff3344', isNormal: false, customDmg: 15 }
                                 );
                             }
 
@@ -5081,9 +5137,9 @@
                                 if (!b.hasHitTarget) {
                                     b.hasHitTarget = true;
                                     if (!target.isInvincible) {
-                                        target.pendingDamage += 100; // 貫通時に100ダメージ！
+                                        target.pendingDamage += 50; // 貫通時に50ダメージ！
                                         if (!target.recentHits) target.recentHits = [];
-                                        target.recentHits.push({ damage: 100, timestamp: performance.now() });
+                                        target.recentHits.push({ damage: 50, timestamp: performance.now() });
                                         addBattleEffect("◆ GUNGNIR PIERCE! ◆", "#ff3333");
                                     }
                                 }
@@ -5099,12 +5155,12 @@
 
                                 let distToTarget = Math.hypot(target.x - b.x, target.y - b.y);
                                 if (distToTarget < 120 && !target.isInvincible) {
-                                    target.pendingDamage += 80; // 爆発時に追加で80ダメージ！
+                                    target.pendingDamage += 30; // 爆発時に追加で30ダメージ！
                                     if (!target.recentHits) target.recentHits = [];
-                                    target.recentHits.push({ damage: 80, timestamp: performance.now() });
+                                    target.recentHits.push({ damage: 30, timestamp: performance.now() });
                                 }
 
-                                let ways = 32; // 爆発破片を32方向に増やしてさらにド派手に！
+                                let ways = 16; // 爆発破片を16方向に減らしてダメージを抑える
                                 let fragmentSpeed = 300;
                                 for (let i = 0; i < ways; i++) {
                                     let fragAngle = (Math.PI * 2 / ways) * i;
@@ -5116,7 +5172,8 @@
                                         radius: 6,
                                         team: b.team,
                                         color: '#ff3355',
-                                        isNormal: false
+                                        isNormal: false,
+                                        customDmg: 15
                                     });
                                 }
                             }
@@ -6835,60 +6892,82 @@
                 phaseMsg.addEventListener('touchend', stopTouchPropagation, { passive: true });
             }
 
+            // 共通ドラッグ処理関数
+            const onDragStart = (clientX, clientY) => {
+                if (!isGameRunning || gameState !== 'BATTLE') return;
+                // カード選択中（PLANNINGフェーズ）はドラッグ移動を行わない
+                if (battlePhase === 'PLANNING') return;
+
+                touchStartX = clientX;
+                touchStartY = clientY;
+                touchStartPlayerX = player.x;
+                touchStartPlayerY = player.y;
+                mobileTargetX = player.x;
+                mobileTargetY = player.y;
+                isDragging = true;
+            };
+
+            const onDragMove = (clientX, clientY) => {
+                if (!isGameRunning || gameState !== 'BATTLE' || !isDragging) return;
+                if (battlePhase === 'PLANNING') return;
+
+                const deltaX = clientX - touchStartX;
+                const deltaY = clientY - touchStartY;
+
+                const scaleX = PLAY_WIDTH / canvas.clientWidth;
+                const scaleY = canvas.height / canvas.clientHeight;
+
+                const sensitivity = 1.28;
+                const newX = touchStartPlayerX + deltaX * scaleX * sensitivity;
+                const newY = touchStartPlayerY + deltaY * scaleY * sensitivity;
+
+                mobileTargetX = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, newX));
+                mobileTargetY = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, newY));
+            };
+
+            const onDragEnd = () => {
+                isDragging = false;
+                mobileTargetX = null;
+                mobileTargetY = null;
+            };
+
             // 1. 自機のドラッグ（スライド）移動操作 (container全体で検知して前面UIとの干渉を完全に防ぐ)
             container.addEventListener('touchstart', (e) => {
                 // 開発者ツールなどのエミュレータ対策としてタッチ開始時にも強制付与
                 document.body.classList.add('mobile-mode');
 
-                if (!isGameRunning || gameState !== 'BATTLE') return;
-                // カード選択中（PLANNINGフェーズ）はドラッグ移動を行わない
-                if (battlePhase === 'PLANNING') return;
-
                 if (e.touches.length > 0) {
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                    touchStartPlayerX = player.x;
-                    touchStartPlayerY = player.y;
-                    mobileTargetX = player.x;
-                    mobileTargetY = player.y;
-                    isDragging = true;
+                    onDragStart(e.touches[0].clientX, e.touches[0].clientY);
                 }
             }, { passive: false });
 
             container.addEventListener('touchmove', (e) => {
-                if (!isGameRunning || gameState !== 'BATTLE' || !isDragging) return;
-                // カード選択中（PLANNINGフェーズ）はドラッグ移動を行わない
-                if (battlePhase === 'PLANNING') return;
-
-                e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
-
                 if (e.touches.length > 0) {
-                    const currentX = e.touches[0].clientX;
-                    const currentY = e.touches[0].clientY;
-
-                    const deltaX = currentX - touchStartX;
-                    const deltaY = currentY - touchStartY;
-
-                    // スマホ画面サイズとキャンバス論理解像度の比率
-                    const scaleX = PLAY_WIDTH / canvas.clientWidth;
-                    const scaleY = canvas.height / canvas.clientHeight;
-
-                    // ドラッグ感度を1.28倍に高め、もっさり感を完全に解消して指の動きに俊敏に追従させる
-                    const sensitivity = 1.28;
-                    const newX = touchStartPlayerX + deltaX * scaleX * sensitivity;
-                    const newY = touchStartPlayerY + deltaY * scaleY * sensitivity;
-
-                    // 瞬間移動（ワープ）させず、目標座標 (mobileTargetX / Y) にセットしてupdateループ側で最高速度制限をかけます
-                    mobileTargetX = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, newX));
-                    mobileTargetY = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, newY));
+                    e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
+                    onDragMove(e.touches[0].clientX, e.touches[0].clientY);
                 }
             }, { passive: false });
 
             window.addEventListener('touchend', (e) => {
-                isDragging = false;
-                mobileTargetX = null;
-                mobileTargetY = null;
+                onDragEnd();
             }, { passive: false });
+
+            // PCマウスでのドラッグ操作にも完全対応！
+            container.addEventListener('mousedown', (e) => {
+                onDragStart(e.clientX, e.clientY);
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    onDragMove(e.clientX, e.clientY);
+                }
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (isDragging) {
+                    onDragEnd();
+                }
+            });
 
             // 2. スマホ用「スマート霊撃 (BOMB)」フローティングボタン (タップ即時反応の超レスポンス仕様)
             const btnBomb = document.getElementById('mobileBombBtn');
@@ -6904,8 +6983,97 @@
             }
         }
 
+        // ==========================================
+        // 戦闘中以外のピンチズーム・ドラッグ移動システム
+        // ==========================================
+        let currentScale = 1.0;
+        let startScale = 1.0;
+        let startDistance = 0;
+        let zoomOffsetX = 0;
+        let zoomOffsetY = 0;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let isZoomDragging = false;
+
+        function applyZoom() {
+            const container = document.getElementById('gameContainer');
+            if (!container) return;
+            container.style.transformOrigin = 'center center';
+            container.style.transform = `scale(${currentScale}) translate(${zoomOffsetX}px, ${zoomOffsetY}px)`;
+        }
+
+        function resetZoom() {
+            currentScale = 1.0;
+            zoomOffsetX = 0;
+            zoomOffsetY = 0;
+            applyZoom();
+        }
+
+        function initZoomControls() {
+            window.addEventListener('touchstart', (e) => {
+                if (isGameRunning) {
+                    resetZoom();
+                    return;
+                }
+
+                if (e.touches.length === 2) {
+                    isZoomDragging = false;
+                    startDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    startScale = currentScale;
+                } else if (e.touches.length === 1 && currentScale > 1.0) {
+                    isZoomDragging = true;
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                }
+            }, { passive: false });
+
+            window.addEventListener('touchmove', (e) => {
+                if (isGameRunning) return;
+
+                if (e.touches.length === 2) {
+                    e.preventDefault(); // デフォルトスクロール防止
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    if (startDistance > 0) {
+                        const factor = dist / startDistance;
+                        currentScale = Math.min(2.5, Math.max(1.0, startScale * factor));
+                        if (currentScale === 1.0) {
+                            zoomOffsetX = 0;
+                            zoomOffsetY = 0;
+                        }
+                        applyZoom();
+                    }
+                } else if (e.touches.length === 1 && isZoomDragging && currentScale > 1.0) {
+                    e.preventDefault();
+                    const touchX = e.touches[0].clientX;
+                    const touchY = e.touches[0].clientY;
+                    // スケールに応じてドラッグ量を調整
+                    zoomOffsetX += (touchX - lastTouchX) / currentScale;
+                    zoomOffsetY += (touchY - lastTouchY) / currentScale;
+                    lastTouchX = touchX;
+                    lastTouchY = touchY;
+                    applyZoom();
+                }
+            }, { passive: false });
+
+            window.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    startDistance = 0;
+                }
+                if (e.touches.length === 0) {
+                    isZoomDragging = false;
+                }
+            });
+        }
+
         // スマホ操作の自動初期化
         initTouchControls();
+        initZoomControls();
     </script>
 </body>
 
