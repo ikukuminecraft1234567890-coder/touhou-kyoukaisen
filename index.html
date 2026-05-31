@@ -6942,9 +6942,11 @@
             }, { passive: false });
 
             container.addEventListener('touchmove', (e) => {
-                if (e.touches.length > 0) {
-                    e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
-                    onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+                if (isGameRunning && gameState === 'BATTLE' && battlePhase !== 'PLANNING' && isDragging) {
+                    if (e.touches.length > 0) {
+                        e.preventDefault(); // スクロールやスワイプバウンスを防ぐ
+                        onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+                    }
                 }
             }, { passive: false });
 
@@ -6998,8 +7000,23 @@
         function applyZoom() {
             const container = document.getElementById('gameContainer');
             if (!container) return;
+            
+            let maxOffsetX = 0;
+            let maxOffsetY = 0;
+            const origWidth = container.clientWidth || 480;
+            const origHeight = container.clientHeight || 540;
+
+            if (currentScale > 1.0) {
+                // コンテナがはみ出る最大距離をバウンディング上限に設定
+                maxOffsetX = (origWidth * (currentScale - 1)) / 2;
+                maxOffsetY = (origHeight * (currentScale - 1)) / 2;
+            }
+
+            zoomOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, zoomOffsetX));
+            zoomOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, zoomOffsetY));
+
             container.style.transformOrigin = 'center center';
-            container.style.transform = `scale(${currentScale}) translate(${zoomOffsetX}px, ${zoomOffsetY}px)`;
+            container.style.transform = `translate(${zoomOffsetX}px, ${zoomOffsetY}px) scale(${currentScale})`;
         }
 
         function resetZoom() {
@@ -7052,9 +7069,9 @@
                     e.preventDefault();
                     const touchX = e.touches[0].clientX;
                     const touchY = e.touches[0].clientY;
-                    // スケールに応じてドラッグ量を調整
-                    zoomOffsetX += (touchX - lastTouchX) / currentScale;
-                    zoomOffsetY += (touchY - lastTouchY) / currentScale;
+                    // 指の移動距離そのものをオフセットに加算することで、ドラッグの追従性を100%一致させる
+                    zoomOffsetX += (touchX - lastTouchX);
+                    zoomOffsetY += (touchY - lastTouchY);
                     lastTouchX = touchX;
                     lastTouchY = touchY;
                     applyZoom();
