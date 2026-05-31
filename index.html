@@ -7040,6 +7040,8 @@
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     startScale = currentScale;
+                    lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 } else if (e.touches.length === 1 && currentScale > 1.0) {
                     isZoomDragging = true;
                     lastTouchX = e.touches[0].clientX;
@@ -7056,15 +7058,31 @@
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
+                    const touchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const touchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
                     if (startDistance > 0) {
                         const factor = dist / startDistance;
-                        currentScale = Math.min(2.5, Math.max(1.0, startScale * factor));
-                        if (currentScale === 1.0) {
-                            zoomOffsetX = 0;
-                            zoomOffsetY = 0;
+                        const nextScale = Math.min(2.5, Math.max(1.0, startScale * factor));
+                        
+                        if (nextScale !== currentScale) {
+                            const scaleRatio = nextScale / currentScale;
+                            // タッチされた二本指の中央位置を基準に変形原点のズレをオフセットに反映 (数学的に正しいズーム原点追従)
+                            zoomOffsetX = touchCenterX - (touchCenterX - zoomOffsetX) * scaleRatio;
+                            zoomOffsetY = touchCenterY - (touchCenterY - zoomOffsetY) * scaleRatio;
+                            currentScale = nextScale;
                         }
-                        applyZoom();
+
+                        // ズームしながらの二本指での並行スライド移動 (パン) も反映
+                        zoomOffsetX += (touchCenterX - lastTouchX);
+                        zoomOffsetY += (touchCenterY - lastTouchY);
                     }
+                    
+                    startDistance = dist;
+                    startScale = currentScale;
+                    lastTouchX = touchCenterX;
+                    lastTouchY = touchCenterY;
+                    applyZoom();
                 } else if (e.touches.length === 1 && isZoomDragging && currentScale > 1.0) {
                     e.preventDefault();
                     const touchX = e.touches[0].clientX;
