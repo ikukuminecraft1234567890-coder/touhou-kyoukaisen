@@ -7067,9 +7067,12 @@
                         
                         if (nextScale !== currentScale) {
                             const scaleRatio = nextScale / currentScale;
-                            // タッチされた二本指の中央位置を基準に変形原点のズレをオフセットに反映 (数学的に正しいズーム原点追従)
-                            zoomOffsetX = touchCenterX - (touchCenterX - zoomOffsetX) * scaleRatio;
-                            zoomOffsetY = touchCenterY - (touchCenterY - zoomOffsetY) * scaleRatio;
+                            // 画面中央（変形基準点 center center）からの相対的なタッチ中心点
+                            const relTouchX = touchCenterX - window.innerWidth / 2;
+                            const relTouchY = touchCenterY - window.innerHeight / 2;
+                            // 画面中央を基準とした数学的に正しいズーム中心追従計算
+                            zoomOffsetX = relTouchX - (relTouchX - zoomOffsetX) * scaleRatio;
+                            zoomOffsetY = relTouchY - (relTouchY - zoomOffsetY) * scaleRatio;
                             currentScale = nextScale;
                         }
 
