@@ -884,6 +884,404 @@
                 padding: 6px !important;
                 font-size: 11px !important;
             }
+        /* ==========================================
+           自作カード作成画面（エディタ）用スタイル
+           ========================================== */
+        #screen-card-maker {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            background: rgba(12, 10, 25, 0.98) !important;
+            border: none !important;
+            border-radius: 0px !important;
+            box-shadow: none !important;
+            padding: 15px !important;
+            display: flex;
+            flex-direction: column !important;
+            color: #fff !important;
+            box-sizing: border-box !important;
+            z-index: 100 !important;
+        }
+        .code-textarea {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 250px !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            color: #00ffcc !important;
+            border: 1px solid rgba(0, 255, 200, 0.2) !important;
+            border-radius: 6px !important;
+            padding: 12px !important;
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+            resize: none !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+        }
+        .code-textarea:focus {
+            border-color: #00ffcc !important;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 8px rgba(0, 255, 200, 0.3) !important;
+        }
+        .maker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        .maker-metadata {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .metadata-input {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #fff !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            outline: none !important;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .metadata-input:focus {
+            border-color: #00ffcc !important;
+            box-shadow: 0 0 8px rgba(0, 255, 200, 0.3) !important;
+        }
+        .maker-layout {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            overflow: hidden;
+            min-height: 0;
+            width: 100%;
+        }
+        .palette-panel {
+            width: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .workspace-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            padding: 6px 12px !important;
+            font-size: 11px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 4px !important;
+            color: #888 !important;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: rgba(0, 255, 200, 0.15) !important;
+            border-color: #00ffcc !important;
+            color: #00ffcc !important;
+            font-weight: bold !important;
+        }
+        .workspace-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .palette-group-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+            margin-top: 5px;
+            margin-bottom: 2px;
+            border-left: 3px solid #00ffcc;
+            padding-left: 5px;
+            font-weight: bold;
+        }
+        .palette-btn {
+            width: 100% !important;
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 6px !important;
+            cursor: pointer;
+            text-align: left !important;
+            transition: all 0.2s;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .palette-btn:hover {
+            transform: translateX(3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            filter: brightness(1.2);
+        }
+        /* カテゴリカラー */
+        .color-motion { background: #2980b9 !important; }
+        .color-control { background: #d35400 !important; }
+        .color-vars { background: #8e44ad !important; }
+        .color-action { background: #c0392b !important; }
+
+        .maker-block {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 6px 10px;
+            padding-right: 130px !important; /* 操作ボタン用の固定右余白 */
+            border-radius: 6px;
+            color: #fff;
+            font-size: 11px;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            min-height: 38px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            flex-shrink: 0 !important; /* 親コンテナの高さが足りない場合にブロックが潰れるのを防ぐ */
+            transition: all 0.15s ease;
+        }
+        .maker-block:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .maker-block input[type="text"] {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fff !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            width: 45px !important;
+            text-align: center !important;
+            outline: none !important;
+            font-size: 11px !important;
+            transition: border-color 0.2s;
+        }
+        .maker-block input[type="text"]:focus {
+            border-color: #00ffcc !important;
+        }
+        .maker-block select {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fff !important;
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            outline: none !important;
+            font-size: 11px !important;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .maker-block select:focus {
+            border-color: #00ffcc !important;
+        }
+        .block-controls {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 3px;
+        }
+        .block-ctrl-btn {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: none !important;
+            color: #fff !important;
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            font-size: 9px !important;
+            transition: all 0.15s;
+        }
+        .block-ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(1.1);
+        }
+        .block-ctrl-btn.btn-delete {
+            background: rgba(255, 50, 50, 0.2) !important;
+        }
+        .block-ctrl-btn.btn-delete:hover {
+            background: rgba(255, 50, 50, 0.6) !important;
+        }
+        /* 自作カード管理画面用カードアイテム */
+        .custom-card-item {
+            background: linear-gradient(135deg, rgba(20, 20, 35, 0.9) 0%, rgba(10, 10, 20, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            width: 95%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .custom-card-item:hover {
+            border-color: rgba(0, 255, 200, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 255, 200, 0.15);
+        }
+        .custom-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .custom-card-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .custom-card-desc {
+            font-size: 11px;
+            color: #aaa;
+        }
+        .custom-card-cost-badge {
+            font-size: 11px;
+            color: #00ffcc;
+            font-weight: bold;
+            border: 1px solid #00ffcc;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,255,200,0.05);
+            margin-left: 10px;
+        }
+        .custom-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+        .custom-card-act-btn {
+            padding: 6px 12px !important;
+            font-size: 11px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            font-weight: bold !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            background: #222 !important;
+            color: #fff !important;
+            transition: all 0.2s;
+        }
+        .custom-card-act-btn:hover {
+            background: #444 !important;
+        }
+        .custom-card-act-btn.btn-edit {
+            border-color: #00ffcc !important;
+            color: #00ffcc !important;
+            background: rgba(0,255,200,0.05) !important;
+        }
+        .custom-card-act-btn.btn-edit:hover {
+            background: rgba(0,255,200,0.2) !important;
+            color: #fff !important;
+        }
+        .custom-card-act-btn.btn-delete {
+            border-color: #ff5555 !important;
+            color: #ff5555 !important;
+            background: rgba(255,85,85,0.05) !important;
+        }
+        .custom-card-act-btn.btn-delete:hover {
+            background: rgba(255,85,85,0.2) !important;
+            color: #fff !important;
+        }
+
+        /* スマホ向け縦画面対応 */
+        @media (max-width: 768px), (max-height: 600px) {
+            #screen-card-maker {
+                width: 100vw !important;
+                height: 100vh !important;
+                padding: 8px !important;
+                top: 0 !important;
+                left: 0 !important;
+                border-radius: 0 !important;
+            }
+            .maker-layout {
+                flex-direction: column !important;
+                overflow-y: auto !important;
+            }
+            .palette-panel {
+                width: 100% !important;
+                max-height: 140px !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+                padding: 5px !important;
+            }
+            .palette-group-title {
+                width: 100%;
+                margin-top: 2px;
+                font-size: 8px;
+            }
+            .palette-btn {
+                width: calc(33.3% - 4px) !important;
+                padding: 4px 6px !important;
+                font-size: 9px !important;
+            }
+            .workspace-panel {
+                min-height: 240px !important;
+                padding: 6px !important;
+            }
+            .metadata-input {
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+            }
+            .maker-block {
+                font-size: 9px !important;
+                padding: 4px 6px !important;
+                padding-right: 100px !important;
+                flex-wrap: wrap !important;
+            }
+            .maker-block input[type="text"] {
+                width: 32px !important;
+                font-size: 9px !important;
+            }
+            .maker-block select {
+                font-size: 9px !important;
+                padding: 1px 2px !important;
+            }
+            .block-ctrl-btn {
+                width: 16px !important;
+                height: 16px !important;
+                font-size: 8px !important;
+            }
+            #palette-bounce-hint {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -915,7 +1313,7 @@
                 <button class="menu-btn" onclick="showScreen('screen-deck-list'); renderDeckList();">デッキ構築</button>
                 <button class="menu-btn"
                     onclick="showScreen('screen-key-config'); renderKeyConfig(); renderGamepadConfig();">キー＆パッド設定</button>
-                <button class="menu-btn" disabled style="opacity: 0.5;">カード獲得 (未実装)</button>
+                <button class="menu-btn" onclick="showScreen('screen-card-maker'); renderCardMakerList();">自作カード作成</button>
             </div>
 
             <!-- 4. 対戦準備画面 -->
@@ -1228,6 +1626,123 @@
                 <div class="card-selector-grid" id="selector-cards-container"></div>
                 <button class="menu-btn" onclick="closeCardSelector()"
                     style="width: 120px; align-self: center; padding: 8px; font-size: 14px;">キャンセル</button>
+            </div>
+
+            <!-- 6. 自作カード作成・管理画面 -->
+            <div id="screen-card-maker" class="selection-group hidden">
+                <!-- 自作カード一覧ビュー -->
+                <div id="card-maker-list-view" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                    <h3 style="margin-bottom: 5px;">自作カード管理</h3>
+                    <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0 0 10px 0;">
+                        Scratch風のエディットでオリジナルのスペルカードを作成できます。<br>
+                        作ったカードはノー被弾クリア（ボム禁止）することで実戦で使用可能になります。
+                    </p>
+                    <button class="menu-btn" onclick="customCardMakerOpenEditor(null)" style="background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6); font-weight: bold; width: 260px;">
+                        新しいスペルカードを作成
+                    </button>
+                    <div id="custom-cards-list-container" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 260px; overflow-y: auto; margin-top: 10px; padding: 5px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                    </div>
+                    <button class="menu-btn" onclick="showScreen('screen-menu')" style="margin-top: 15px; background: #222;">メインメニューに戻る</button>
+                </div>
+
+                <!-- 自作カード編集ワークスペース -->
+                <div id="card-maker-editor-view" class="hidden" style="width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0;">
+                    <datalist id="var-suggestions">
+                        <option value="speed">弾速 (speed)</option>
+                        <option value="angle">角度 (angle)</option>
+                        <option value="warningTime">ビーム警告時間 (warningTime)</option>
+                        <option value="activeTime">ビーム照射時間 (activeTime)</option>
+                        <option value="x">弾のX座標 (x)</option>
+                        <option value="y">弾のY座標 (y)</option>
+                        <option value="tx">ターゲットのX座標 (tx)</option>
+                        <option value="ty">ターゲットのY座標 (ty)</option>
+                        <option value="timer">弾のタイマー (timer)</option>
+                        <option value="isBounced">壁接触フラグ (isBounced)</option>
+                    </datalist>
+                    <datalist id="val-suggestions">
+                        <option value="angle">現在の角度 (angle)</option>
+                        <option value="angle + 30">角度 + 30度 (angle + 30)</option>
+                        <option value="angle - 30">角度 - 30度 (angle - 30)</option>
+                        <option value="speed">現在の速度 (speed)</option>
+                        <option value="speed + 50">速度 + 50 (speed + 50)</option>
+                        <option value="timer">生存タイマー (timer)</option>
+                        <option value="x">現在のX座標 (x)</option>
+                        <option value="y">現在のY座標 (y)</option>
+                        <option value="dist">ターゲットとの距離 (dist)</option>
+                        <option value="isBounced">壁接触フラグ (isBounced)</option>
+                    </datalist>
+                    <div class="maker-header">
+                        <h3 id="card-editor-title" style="margin: 0; font-size: 20px;">スペルカード編集</h3>
+                        <div id="custom-card-cost-indicator" style="font-size: 14px; font-weight: bold; padding: 4px 10px; border-radius: 4px; background: rgba(0,255,200,0.1); border: 1px solid #00ffcc;">
+                            合計コスト: <span id="custom-card-cost">0</span> / 15
+                        </div>
+                    </div>
+                    
+                    <div class="maker-metadata">
+                        <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 11px; color: #aaa;">スペル名 (Name)</label>
+                            <input type="text" id="custom-card-name" class="metadata-input" placeholder="例: 「スターブレイカー」" oninput="saveCustomCardDraft(false)">
+                        </div>
+                        <div style="flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 11px; color: #aaa;">説明文 (Description)</label>
+                            <input type="text" id="custom-card-desc" class="metadata-input" placeholder="カードの効果やフレーバーテキスト" oninput="saveCustomCardDraft(false)">
+                        </div>
+                    </div>
+
+                    <div class="maker-layout">
+                        <!-- ブロックパレット -->
+                        <div class="palette-panel">
+                            <div class="palette-group-title" id="palette-title-control">制御 (Control)</div>
+                            <button class="palette-btn color-control" id="palette-btn-repeat" onclick="customCardMakerAddBlock('repeat')">くりかえす [N] 回</button>
+                            <button class="palette-btn color-control" id="palette-btn-forever" onclick="customCardMakerAddBlock('forever')">ずっとくりかえす</button>
+                            <button class="palette-btn color-control" id="palette-btn-wait" onclick="customCardMakerAddBlock('wait')">[T] 秒待つ</button>
+                            <button class="palette-btn color-control" id="palette-btn-if" onclick="customCardMakerAddBlock('if')">もし [条件] なら</button>
+                            <button class="palette-btn color-control" id="palette-btn-once" onclick="customCardMakerAddBlock('once')">1度だけ実行する</button>
+                            
+                            <div class="palette-group-title" id="palette-title-vars">変数 (Variables)</div>
+                            <button class="palette-btn color-vars" id="palette-btn-setvar" onclick="customCardMakerAddBlock('set_var')">変数を [値] にする</button>
+                            <button class="palette-btn color-vars" id="palette-btn-changevar" onclick="customCardMakerAddBlock('change_var')">変数を [値] 増やす</button>
+                            <button class="palette-btn color-vars" id="palette-btn-setlaser" onclick="customCardMakerAddBlock('set_laser')">設置レーザー設定</button>
+                            
+                            <div class="palette-group-title" id="palette-title-motion">動作 (Motion / Actions)</div>
+                            <button class="palette-btn color-motion" id="palette-btn-aim" onclick="customCardMakerAddBlock('aim_at_target')">相手の方向を向く</button>
+                            <button class="palette-btn color-action" id="palette-btn-spawn" onclick="customCardMakerAddBlock('spawn_bullet')">弾を発射する</button>
+                            <button class="palette-btn color-action" id="palette-btn-spawn-ring" onclick="customCardMakerAddBlock('spawn_ring')">全方位円形弾を発射</button>
+                            <button class="palette-btn color-action" id="palette-btn-spawn-way" onclick="customCardMakerAddBlock('spawn_way')">Way弾を発射</button>
+                            <button class="palette-btn color-motion" id="palette-btn-homing" onclick="customCardMakerAddBlock('homing')">相手を追尾する</button>
+                        </div>
+
+                        <!-- ワークスペース -->
+                        <div class="workspace-panel">
+                            <div class="tabs-header">
+                                <button id="tab-btn-emitter" class="tab-btn active" onclick="customCardMakerSwitchTab('emitter')">コアの挙動 (Emitter)</button>
+                                <button id="tab-btn-bullet" class="tab-btn" onclick="customCardMakerSwitchTab('bullet')">弾の挙動 (Bullet)</button>
+                                <div style="flex-grow: 1;"></div>
+                                <button id="mode-btn-block" class="tab-btn active" onclick="customCardMakerSwitchMode('block')" style="font-size: 11px; padding: 4px 10px; margin-left: 2px;">ブロック</button>
+                                <button id="mode-btn-code" class="tab-btn" onclick="customCardMakerSwitchMode('code')" style="font-size: 11px; padding: 4px 10px; margin-left: 2px;">JSコード</button>
+                            </div>
+                            <div class="workspace-scroll" id="workspace-blocks-container">
+                            </div>
+                            <textarea id="workspace-code-textarea" class="code-textarea hidden" oninput="customCardMakerOnCodeInput()" placeholder="// ここにJSコードを記述してください...&#10;// 例 (コア挙動):&#10;// spawnRing(&quot;normal&quot;, &quot;#ff3333&quot;, 6, 200, 12)&#10;//&#10;// 例 (弾の挙動):&#10;// bounce()&#10;// if (isBounced)&#10;//     aimAtTarget()&#10;//     bulletType = &quot;laser&quot;&#10;//     speed = 350"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; width: 100%; flex-wrap: wrap;">
+                        <button class="menu-btn" id="custom-card-test-btn" onclick="startCustomCardTest()" style="width: 160px; background: linear-gradient(135deg, #3c0055 0%, #1a0022 100%); border-color: #d800ff; text-shadow: 0 0 8px rgba(216, 0, 255, 0.6);">
+                            テストプレイ
+                        </button>
+                        <button class="menu-btn" id="custom-card-save-btn" onclick="registerCustomCard()" disabled style="width: 160px; background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6);">
+                            カード登録
+                        </button>
+                        <button class="menu-btn" id="custom-card-draft-save-btn" onclick="saveCustomCardDraft(true)" style="width: 110px; background: #333; border-color: #aaa;">
+                            一時保存
+                        </button>
+                        <button class="menu-btn" id="custom-card-draft-load-btn" onclick="loadCustomCardDraft()" style="width: 140px; background: #111; border-color: #00ffcc; color: #00ffcc; display: none;">
+                            一時保存から復元
+                        </button>
+                        <button class="menu-btn" onclick="customCardMakerCloseEditor()" style="width: 120px; background: #222;">キャンセル</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1920,6 +2435,107 @@
                 { id: 'p26', name: '【P】霊素調和', desc: 'ターン開始時に20%の確率でボムが1回復する。' }
             ]
         };
+
+        // --- CUSTOM SPELL CARD SYSTEM ---
+        let customCards = [];
+        let isCustomCardTesting = false;
+        let customCardMaker = {
+            editingId: null,
+            name: 'カスタムスペル',
+            desc: 'オリジナルの弾幕パターン。',
+            activeTab: 'emitter', // 'emitter' or 'bullet' or 'bounce'
+            emitterScript: [
+                { type: 'repeat', params: { count: '12' }, indent: 0 },
+                { type: 'spawn_bullet', params: { bulletType: 'normal', color: '#ff3333', radius: '6', speed: '200', angle: 'angle' }, indent: 1 },
+                { type: 'change_var', params: { name: 'angle', value: '30' }, indent: 1 },
+                { type: 'wait', params: { duration: '0.2' }, indent: 1 }
+            ],
+            bulletScript: [],
+            bounceScript: [],
+            testPassed: false
+        };
+
+        function migrateOldCustomCard(cc) {
+            let changed = false;
+            let migratedBullet = [];
+            
+            if (cc.bulletScript && cc.bulletScript.length > 0) {
+                cc.bulletScript.forEach(b => {
+                    if (b.type === 'bounce') {
+                        changed = true;
+                        const baseIndent = b.indent || 0;
+                        migratedBullet.push(
+                            { type: 'if', params: { cond: 'x < 10' }, indent: baseIndent },
+                            { type: 'set_var', params: { name: 'angle', value: '180 - angle' }, indent: baseIndent + 1 },
+                            { type: 'if', params: { cond: 'x > 790' }, indent: baseIndent },
+                            { type: 'set_var', params: { name: 'angle', value: '180 - angle' }, indent: baseIndent + 1 },
+                            { type: 'if', params: { cond: 'y < 10' }, indent: baseIndent },
+                            { type: 'set_var', params: { name: 'angle', value: '-angle' }, indent: baseIndent + 1 },
+                            { type: 'if', params: { cond: 'y > 890' }, indent: baseIndent },
+                            { type: 'set_var', params: { name: 'angle', value: '-angle' }, indent: baseIndent + 1 }
+                        );
+                    } else {
+                        migratedBullet.push(b);
+                    }
+                });
+                cc.bulletScript = migratedBullet;
+            }
+            
+            if (cc.bounceScript && cc.bounceScript.length > 0) {
+                changed = true;
+                const conds = ['x < 10', 'x > 790', 'y < 10', 'y > 890'];
+                const angles = ['180 - angle', '180 - angle', '-angle', '-angle'];
+                
+                let combinedList = [];
+                for (let i = 0; i < 4; i++) {
+                    combinedList.push({ type: 'if', params: { cond: conds[i] }, indent: 0 });
+                    combinedList.push({ type: 'set_var', params: { name: 'angle', value: angles[i] }, indent: 1 });
+                    cc.bounceScript.forEach(b => {
+                        let newB = JSON.parse(JSON.stringify(b));
+                        newB.indent = (newB.indent || 0) + 1;
+                        combinedList.push(newB);
+                    });
+                }
+                
+                cc.bulletScript.push(...combinedList);
+                cc.bounceScript = [];
+            }
+            
+            if (changed) {
+                cc.cost = calculateCustomCardCost(cc.emitterScript, cc.bulletScript);
+            }
+            return cc;
+        }
+
+        try {
+            const saved = localStorage.getItem('touhou_kyoukaisen_custom_cards');
+            if (saved) {
+                customCards = JSON.parse(saved).map(migrateOldCustomCard);
+            }
+        } catch(e) {}
+
+        function integrateCustomCards() {
+            // Remove existing custom cards in defaultCards.active first
+            defaultCards.active = defaultCards.active.filter(c => !c.isCustom);
+            
+            customCards.forEach(cc => {
+                let migrated = migrateOldCustomCard(cc);
+                defaultCards.active.push({
+                    id: migrated.id,
+                    name: migrated.name,
+                    duration: migrated.duration || 15,
+                    pattern: migrated.id,
+                    interval: 0.1, // dummy
+                    cost: migrated.cost,
+                    desc: migrated.desc,
+                    isCustom: true,
+                    emitterScript: migrated.emitterScript,
+                    bulletScript: migrated.bulletScript
+                });
+            });
+        }
+        integrateCustomCards();
+        // --------------------------------
 
         let editingDeckIndex = -1; // -1:新規作成, >=0:編集中のデッキインデックス
         let activeEffects = []; // 戦闘中のパッシブ等の発動エフェクト表示用
@@ -3049,6 +3665,17 @@
             keyboardState[e.key] = false;
         });
 
+        // ウィンドウのフォーカスが外れた瞬間に全キーをリセット
+        // （被弾エフェクト等の演出でフォーカスが移動し keyup が届かない "スタック" バグの防止）
+        window.addEventListener('blur', () => {
+            for (let k in keyboardState) keyboardState[k] = false;
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                for (let k in keyboardState) keyboardState[k] = false;
+            }
+        });
+
         function updateInputState() {
             // 1. キーボード入力をマッピング
             inputState.up = keyboardState[keyConfig.moveUp] || false;
@@ -3971,11 +4598,16 @@
 
         function startActionPhase(cardIds) {
             let ids = Array.isArray(cardIds) ? cardIds : [cardIds];
+            let attacker = turnOwner === 'PLAYER' ? player : cpu;
+            let target = turnOwner === 'PLAYER' ? cpu : player;
             activeCards = ids.map(id => {
                 let found = defaultCards.active.find(c => c.id === id);
                 if (found) {
-                    // 独立した timer プロパティを持たせるために浅くコピー
-                    return { ...found, spawnTimer: found.interval };
+                    let copy = { ...found, spawnTimer: found.interval };
+                    if (copy.isCustom) {
+                        copy.emitterState = initEmitterState(copy.emitterScript, attacker, target);
+                    }
+                    return copy;
                 }
                 return null;
             }).filter(Boolean);
@@ -5298,6 +5930,7 @@
                 // 霊撃の発動処理 (回避側で戦闘フェーズ中のみ)
                 if (battlePhase === 'ACTION' && turnOwner === 'CPU') {
                     let bombTriggered = (inputState.bomb && !prevBombInput) || mobileBombTriggered;
+                    if (isCustomCardTesting) bombTriggered = false;
                     mobileBombTriggered = false; // 消費
                     if (bombTriggered && player.bombs >= 1 && !player.isInvincible) {
                         let consumed = true;
@@ -5998,20 +6631,26 @@
                         let target = turnOwner === 'PLAYER' ? cpu : player;
 
                         activeCards.forEach(c => {
-                            c.spawnTimer += dt;
-                            let currentInterval = c.interval;
-                            if (turnOwner === 'CPU') {
-                                if (cpuDifficulty === 'EASY') {
-                                    currentInterval = c.interval * 1.25; // 弾幕が25%まばらに
-                                } else if (cpuDifficulty === 'HARD') {
-                                    currentInterval = c.interval * 0.8; // 20%短縮 (弾幕密度アップ)
-                                } else if (cpuDifficulty === 'LUNATIC') {
-                                    currentInterval = c.interval * 0.6; // 40%短縮 (超高密度弾幕)
+                            if (c.isCustom) {
+                                if (c.emitterState) {
+                                    stepEmitter(c, c.emitterState, attacker, target, dt);
                                 }
-                            }
-                            if (c.spawnTimer >= currentInterval) {
-                                c.spawnTimer -= currentInterval;
-                                bullets.push(...CardLogic[c.pattern](attacker, target));
+                            } else {
+                                c.spawnTimer += dt;
+                                let currentInterval = c.interval;
+                                if (turnOwner === 'CPU') {
+                                    if (cpuDifficulty === 'EASY') {
+                                        currentInterval = c.interval * 1.25; // 弾幕が25%まばらに
+                                    } else if (cpuDifficulty === 'HARD') {
+                                        currentInterval = c.interval * 0.8; // 20%短縮 (弾幕密度アップ)
+                                    } else if (cpuDifficulty === 'LUNATIC') {
+                                        currentInterval = c.interval * 0.6; // 40%短縮 (超高密度弾幕)
+                                    }
+                                }
+                                if (c.spawnTimer >= currentInterval) {
+                                    c.spawnTimer -= currentInterval;
+                                    bullets.push(...CardLogic[c.pattern](attacker, target));
+                                }
                             }
                         });
 
@@ -6020,7 +6659,7 @@
                         if (normalShotTimer >= 0.2) {
                             normalShotTimer = 0;
                             // スペル発動中（ターンオーナー）は通常攻撃を撃たない（防御側のみ反撃）
-                            if (turnOwner !== 'PLAYER') {
+                            if (turnOwner !== 'PLAYER' && !isCustomCardTesting) {
                                 let bCount = player.bombs;
                                 if (bCount <= 1) {
                                     bullets.push({ x: player.x, y: player.y - 15, vx: 0, vy: -650, radius: 3.5, team: 'PLAYER', isNormal: true });
@@ -6123,7 +6762,7 @@
                         continue;
                     }
 
-                    let bHitR = b.hitRadius !== undefined ? b.hitRadius : b.radius;
+                    let bHitR = b.isLaser ? 8 : 6;
 
                     if (b.isBombPiece) {
                         let distSq = (player.x - b.x) ** 2 + (player.y - b.y) ** 2;
@@ -6141,10 +6780,52 @@
                             continue;
                         }
                     } else if (b.team === 'CPU') {
-                        if (player.isInvincible) {
+                        if (player.isInvincible || b.isWarningLaser) {
                             continue;
                         }
-                        const distSq = (player.x - b.x) ** 2 + (player.y - b.y) ** 2;
+                        let distSq;
+                        if (b.isLaser) {
+                            let x1 = b.x;
+                            let y1 = b.y;
+                            let x2, y2;
+                            if (b.isCustomBeam && b.bulletState) {
+                                let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                                x2 = b.x + Math.cos(rad) * 1200;
+                                y2 = b.y + Math.sin(rad) * 1200;
+                            } else {
+                                let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                                let dx = b.vx / (speed || 1);
+                                let dy = b.vy / (speed || 1);
+                                let len = 80;
+                                x2 = b.x - dx * len;
+                                y2 = b.y - dy * len;
+                            }
+                            
+                            let A = player.x - x1;
+                            let B = player.y - y1;
+                            let C = x2 - x1;
+                            let D = y2 - y1;
+                            
+                            let dot = A * C + B * D;
+                            let lenSq = C * C + D * D;
+                            let param = -1;
+                            if (lenSq !== 0) param = dot / lenSq;
+                            
+                            let xx, yy;
+                            if (param < 0) {
+                                xx = x1;
+                                yy = y1;
+                            } else if (param > 1) {
+                                xx = x2;
+                                yy = y2;
+                            } else {
+                                xx = x1 + param * C;
+                                yy = y1 + param * D;
+                            }
+                            distSq = (player.x - xx) ** 2 + (player.y - yy) ** 2;
+                        } else {
+                            distSq = (player.x - b.x) ** 2 + (player.y - b.y) ** 2;
+                        }
                         if (distSq < (player.hitboxRadius + bHitR) ** 2) {
                             let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 2 : 50);
                             if (!b.isNormal && activeCards.length >= 2) {
@@ -6207,10 +6888,52 @@
                             }
                         }
                     } else if (b.team === 'PLAYER') {
-                        if (cpu.isInvincible) {
+                        if (cpu.isInvincible || b.isWarningLaser) {
                             continue;
                         }
-                        const distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
+                        let distSq;
+                        if (b.isLaser) {
+                            let x1 = b.x;
+                            let y1 = b.y;
+                            let x2, y2;
+                            if (b.isCustomBeam && b.bulletState) {
+                                let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                                x2 = b.x + Math.cos(rad) * 1200;
+                                y2 = b.y + Math.sin(rad) * 1200;
+                            } else {
+                                let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                                let dx = b.vx / (speed || 1);
+                                let dy = b.vy / (speed || 1);
+                                let len = 80;
+                                x2 = b.x - dx * len;
+                                y2 = b.y - dy * len;
+                            }
+                            
+                            let A = cpu.x - x1;
+                            let B = cpu.y - y1;
+                            let C = x2 - x1;
+                            let D = y2 - y1;
+                            
+                            let dot = A * C + B * D;
+                            let lenSq = C * C + D * D;
+                            let param = -1;
+                            if (lenSq !== 0) param = dot / lenSq;
+                            
+                            let xx, yy;
+                            if (param < 0) {
+                                xx = x1;
+                                yy = y1;
+                            } else if (param > 1) {
+                                xx = x2;
+                                yy = y2;
+                            } else {
+                                xx = x1 + param * C;
+                                yy = y1 + param * D;
+                            }
+                            distSq = (cpu.x - xx) ** 2 + (cpu.y - yy) ** 2;
+                        } else {
+                            distSq = (cpu.x - b.x) ** 2 + (cpu.y - b.y) ** 2;
+                        }
                         if (distSq < (cpu.hitboxRadius + bHitR) ** 2) {
                             let dmg = b.customDmg !== undefined ? b.customDmg : (b.isNormal ? 1 : 40); // 通常弾は一発1ダメージ固定
                             if (!b.isNormal && activeCards.length >= 2) {
@@ -6275,6 +6998,17 @@
                             }
                         }
                     }
+                }
+            }
+
+            if (isCustomCardTesting) {
+                if (player.pendingDamage > 0) {
+                    endCustomCardTest(false);
+                    return;
+                }
+                if (actionTimer <= 0) {
+                    endCustomCardTest(true);
+                    return;
                 }
             }
 
@@ -6410,6 +7144,110 @@
                             ctx.arc(sparkX, sparkY, 4 + Math.random() * 7, 0, Math.PI * 2);
                             ctx.fill();
                         }
+                    }
+                    ctx.restore();
+                } else if (b.isWarningLaser && b.bulletState) {
+                    // 予告線（ガイドライン）の描画 - 東方STG風
+                    ctx.save();
+                    let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                    let x2 = b.x + Math.cos(rad) * 1200;
+                    let y2 = b.y + Math.sin(rad) * 1200;
+                    
+                    let warnT = parseFloat(b.bulletState.variables.warningTime) || 1.0;
+                    let elapsed = b.bulletState.variables.timer;
+                    let progress = Math.min(1.0, elapsed / warnT);
+                    
+                    // パルス（点滅）効果
+                    let pulse = 0.5 + 0.5 * Math.sin(performance.now() / 80);
+                    let lineAlpha = (0.15 + 0.25 * progress) * (0.6 + 0.4 * pulse);
+                    
+                    // 弾の色のグロー
+                    ctx.shadowBlur = 6 + 4 * pulse;
+                    ctx.shadowColor = b.color || '#ff3333';
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${lineAlpha})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(b.x, b.y);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    
+                    // 射出位置に小さなチャージ円（progress に応じて拡大）
+                    let ringR = 3 + 5 * progress + pulse * 2;
+                    ctx.strokeStyle = b.color || '#ff3333';
+                    ctx.lineWidth = 1.5;
+                    ctx.globalAlpha = 0.5 + 0.5 * progress;
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, ringR, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1.0;
+                    ctx.restore();
+                } else if (b.isLaser) {
+                    ctx.save();
+                    if (b.isCustomBeam && b.bulletState) {
+                        // 設置ビーム（ビーム状レーザー）の描画 - 東方STG風
+                        let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                        let x2 = b.x + Math.cos(rad) * 1200;
+                        let y2 = b.y + Math.sin(rad) * 1200;
+                        
+                        let elapsed = b.bulletState.variables.timer - parseFloat(b.bulletState.variables.warningTime);
+                        let actT = parseFloat(b.bulletState.variables.activeTime) || 1.0;
+                        
+                        // アニメーション：開始0.08秒で太くなり、終了前0.15秒で細くなる
+                        let widthFactor = 1.0;
+                        if (elapsed < 0.08) {
+                            widthFactor = elapsed / 0.08;
+                        } else {
+                            let timeLeft = actT - elapsed;
+                            if (timeLeft < 0.15) {
+                                widthFactor = Math.max(0, timeLeft / 0.15);
+                            }
+                        }
+                        
+                        // 外側：弾の色で発光する広めのグロー
+                        ctx.shadowBlur = 18;
+                        ctx.shadowColor = b.color || '#ff3333';
+                        ctx.strokeStyle = b.color || '#ff3333';
+                        ctx.lineWidth = Math.max(0.1, 6 * widthFactor);
+                        ctx.globalAlpha = 0.5;
+                        ctx.lineCap = 'butt';
+                        ctx.beginPath();
+                        ctx.moveTo(b.x, b.y);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                        
+                        // 内側：細い白いコア
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = '#ffffff';
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = Math.max(0.1, 2.5 * widthFactor);
+                        ctx.globalAlpha = 1.0;
+                        ctx.beginPath();
+                        ctx.moveTo(b.x, b.y);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                        
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1.0;
+                    } else {
+                        // 通常の移動レーザーの描画
+                        let speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                        let dx = b.vx / (speed || 1);
+                        let dy = b.vy / (speed || 1);
+                        let len = 80;
+                        
+                        ctx.shadowBlur = 12;
+                        ctx.shadowColor = b.color || '#00ffff';
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 6; // 移動レーザーは少し細めの 6px
+                        ctx.lineCap = 'round';
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(b.x, b.y);
+                        ctx.lineTo(b.x - dx * len, b.y - dy * len);
+                        ctx.stroke();
+                        
+                        ctx.shadowBlur = 0;
                     }
                     ctx.restore();
                 } else if (b.isGungnir) {
@@ -6767,6 +7605,22 @@
                 ctx.restore();
             }
 
+            if (isCustomCardTesting) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(255, 0, 50, 0.2)';
+                ctx.fillRect(0, 0, PLAY_WIDTH, 40);
+                ctx.strokeStyle = 'rgba(255, 0, 50, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(0, 40); ctx.lineTo(PLAY_WIDTH, 40); ctx.stroke();
+                
+                ctx.fillStyle = '#ff3366';
+                ctx.font = "bold 15px 'Noto Serif JP', sans-serif";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText("◆ 自作弾幕テストプレイ中 (被弾・ボム禁止) ◆", PLAY_WIDTH / 2, 20);
+                ctx.restore();
+            }
+
             ctx.restore(); // 画面揺れ用のカメラ状態復元（右側UI描画の前に揺れを停止）
 
             // 右側UI領域の描画
@@ -7107,6 +7961,1999 @@
                     isZoomDragging = false;
                 }
             });
+        }
+
+        // ==========================================
+        // 自作カード用ブロックコンパイラ＆インタプリタ
+        // ==========================================
+        function compileIndentedBlocks(flatBlocks) {
+            let root = [];
+            let stack = [{ indent: -1, children: root }];
+            let onceCounter = 0;
+            
+            // Clamp indent levels first to prevent gaps
+            for (let i = 0; i < flatBlocks.length; i++) {
+                if (i === 0) {
+                    flatBlocks[i].indent = 0;
+                } else {
+                    flatBlocks[i].indent = Math.min(flatBlocks[i].indent || 0, flatBlocks[i - 1].indent + 1);
+                }
+            }
+
+            for (let block of flatBlocks) {
+                let b = {
+                    type: block.type,
+                    params: { ...block.params },
+                    children: []
+                };
+                if (block.type === 'once') {
+                    b.onceId = 'once_' + (onceCounter++);
+                }
+                
+                // Find parent in stack
+                while (stack.length > 1 && stack[stack.length - 1].indent >= block.indent) {
+                    stack.pop();
+                }
+                
+                let parent = stack[stack.length - 1];
+                parent.children.push(b);
+                
+                if (block.type === 'repeat' || block.type === 'forever' || block.type === 'if' || block.type === 'once') {
+                    stack.push({ indent: block.indent, children: b.children });
+                }
+            }
+            return root;
+        }
+
+        function evalExpr(expr, variables) {
+            if (typeof expr === 'number') return expr;
+            let s = String(expr).trim();
+            if (s === '') return 0;
+            
+            if (variables[s] !== undefined) return variables[s];
+            
+            let resolved = s;
+            for (let varName in variables) {
+                let val = variables[varName];
+                let re = new RegExp('\\b' + varName + '\\b', 'g');
+                resolved = resolved.replace(re, val);
+            }
+            
+            try {
+                if (/^[0-9.+\-*/() <>=!&| ]+$/.test(resolved)) {
+                    return Function('"use strict"; return (' + resolved + ')')();
+                }
+            } catch(e) {}
+            
+            let num = parseFloat(resolved);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function initEmitterState(script, attacker, target) {
+            let variables = {
+                angle: 0,
+                speed: 200,
+                x_offset: 0,
+                y_offset: 0
+            };
+            let dx = target.x - attacker.x;
+            let dy = target.y - attacker.y;
+            variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+            let compiledBlocks = compileIndentedBlocks(JSON.parse(JSON.stringify(script || [])));
+
+            return {
+                blocks: compiledBlocks,
+                pc: 0,
+                waitTimer: 0,
+                stack: [],
+                variables: variables,
+                finished: false
+            };
+        }
+
+        function stepEmitter(c, state, attacker, target, dt) {
+            if (!state) return;
+            
+            // コアの現在位置、ターゲットの現在位置、および距離情報を毎フレーム同期
+            state.variables.x = attacker.x;
+            state.variables.y = attacker.y;
+            state.variables.tx = target.x;
+            state.variables.ty = target.y;
+            
+            let dx = target.x - attacker.x;
+            let dy = target.y - attacker.y;
+            state.variables.dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (state.finished) return;
+            
+            if (state.waitTimer > 0) {
+                state.waitTimer -= dt;
+                if (state.waitTimer > 0) return;
+            }
+            
+            let safetyCounter = 0;
+            while (safetyCounter < 1000) {
+                safetyCounter++;
+                
+                let currentBlocks = state.stack.length > 0 ? state.stack[state.stack.length - 1].blocks : state.blocks;
+                let currentPC = state.stack.length > 0 ? state.stack[state.stack.length - 1].pc : state.pc;
+                
+                if (currentPC >= currentBlocks.length) {
+                    if (state.stack.length > 0) {
+                        let loopState = state.stack[state.stack.length - 1];
+                        if (loopState.forever) {
+                            loopState.pc = 0;
+                            continue;
+                        } else {
+                            loopState.iterationsLeft--;
+                            if (loopState.iterationsLeft > 0) {
+                                loopState.pc = 0;
+                                continue;
+                            } else {
+                                state.stack.pop();
+                                if (state.stack.length > 0) {
+                                    state.stack[state.stack.length - 1].pc++;
+                                } else {
+                                    state.pc++;
+                                }
+                                continue;
+                            }
+                        }
+                    } else {
+                        state.finished = true;
+                        return;
+                    }
+                }
+                
+                let block = currentBlocks[currentPC];
+                if (!block) {
+                    state.finished = true;
+                    return;
+                }
+                
+                let advancePC = true;
+                
+                switch (block.type) {
+                    case 'wait': {
+                        let dur = evalExpr(block.params.duration, state.variables);
+                        state.waitTimer = Math.max(0.01, dur);
+                        break;
+                    }
+                    case 'repeat': {
+                        let count = Math.round(evalExpr(block.params.count, state.variables));
+                        state.stack.push({
+                            type: 'repeat',
+                            pc: 0,
+                            iterationsLeft: Math.max(1, count),
+                            forever: false,
+                            blocks: block.children || []
+                        });
+                        advancePC = false;
+                        break;
+                    }
+                    case 'forever': {
+                        state.stack.push({
+                            type: 'forever',
+                            pc: 0,
+                            iterationsLeft: 999999,
+                            forever: true,
+                            blocks: block.children || []
+                        });
+                        advancePC = false;
+                        break;
+                    }
+                    case 'set_var': {
+                        let varName = block.params.name;
+                        let val = evalExpr(block.params.value, state.variables);
+                        state.variables[varName] = val;
+                        break;
+                    }
+                    case 'change_var': {
+                        let varName = block.params.name;
+                        let val = evalExpr(block.params.value, state.variables);
+                        state.variables[varName] = (state.variables[varName] || 0) + val;
+                        break;
+                    }
+                    case 'aim_at_target': {
+                        let dx = target.x - (attacker.x + (state.variables.x_offset || 0));
+                        let dy = target.y - (attacker.y + (state.variables.y_offset || 0));
+                        state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        break;
+                    }
+                    case 'spawn_bullet': {
+                        let speed = evalExpr(block.params.speed, state.variables);
+                        let angle = evalExpr(block.params.angle, state.variables);
+                        let bColor = block.params.color || '#ff3333';
+                        
+                        let spawnX = attacker.x + (state.variables.x_offset || 0);
+                        let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        let angleRad = angle * Math.PI / 180;
+                        
+                        let newBullet = {
+                            x: spawnX,
+                            y: spawnY,
+                            startX: spawnX, // 初期位置保存
+                            startY: spawnY,
+                            vx: Math.cos(angleRad) * speed,
+                            vy: Math.sin(angleRad) * speed,
+                            radius: 6, // 弾の大きさは6に固定
+                            team: attacker.team,
+                            color: bColor,
+                            customDmg: 20, // custom card damage balanced to 20
+                            isCustom: true,
+                            update: null
+                        };
+                        
+                        if (block.params.bulletType === 'laser') {
+                            newBullet.isLaser = true;
+                        }
+
+                        if (c.bulletScript && c.bulletScript.length > 0) {
+                            newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
+                            newBullet.update = (b, bdt) => {
+                                runCustomBulletScript(b, bdt, attacker, target);
+                            };
+                        }
+                        
+                        bullets.push(newBullet);
+                        break;
+                    }
+                    case 'spawn_ring': {
+                        let speed = evalExpr(block.params.speed, state.variables);
+                        let bColor = block.params.color || '#ff3333';
+                        let count = Math.max(3, Math.min(36, parseInt(evalExpr(block.params.count || '12', state.variables))));
+                        
+                        let spawnX = attacker.x + (state.variables.x_offset || 0);
+                        let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        
+                        for (let k = 0; k < count; k++) {
+                            let angle = (360 / count) * k;
+                            let angleRad = angle * Math.PI / 180;
+                            
+                            let newBullet = {
+                                x: spawnX,
+                                y: spawnY,
+                                startX: spawnX, // 初期位置保存
+                                startY: spawnY,
+                                vx: Math.cos(angleRad) * speed,
+                                vy: Math.sin(angleRad) * speed,
+                                radius: 6, // 弾の大きさは6に固定
+                                team: attacker.team,
+                                color: bColor,
+                                customDmg: 20,
+                                isCustom: true,
+                                update: null
+                            };
+                            
+                            if (block.params.bulletType === 'laser') {
+                                newBullet.isLaser = true;
+                            }
+                            
+                            if (c.bulletScript && c.bulletScript.length > 0) {
+                                newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
+                                newBullet.update = (b, bdt) => {
+                                    runCustomBulletScript(b, bdt, attacker, target);
+                                };
+                            }
+                            
+                            bullets.push(newBullet);
+                        }
+                        break;
+                    }
+                    case 'spawn_way': {
+                        let speed = evalExpr(block.params.speed, state.variables);
+                        let centerAngle = evalExpr(block.params.angle || 'angle', state.variables);
+                        let bColor = block.params.color || '#ff3333';
+                        let count = Math.max(1, Math.min(15, parseInt(evalExpr(block.params.count || '3', state.variables))));
+                        let spread = evalExpr(block.params.spread || '15', state.variables);
+                        
+                        let spawnX = attacker.x + (state.variables.x_offset || 0);
+                        let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        
+                        let startAngle = centerAngle - (spread * (count - 1)) / 2;
+                        
+                        for (let k = 0; k < count; k++) {
+                            let angle = startAngle + spread * k;
+                            let angleRad = angle * Math.PI / 180;
+                            
+                            let newBullet = {
+                                x: spawnX,
+                                y: spawnY,
+                                startX: spawnX, // 初期位置保存
+                                startY: spawnY,
+                                vx: Math.cos(angleRad) * speed,
+                                vy: Math.sin(angleRad) * speed,
+                                radius: 6, // 弾の大きさは6に固定
+                                team: attacker.team,
+                                color: bColor,
+                                customDmg: 20,
+                                isCustom: true,
+                                update: null
+                            };
+                            
+                            if (block.params.bulletType === 'laser') {
+                                newBullet.isLaser = true;
+                            }
+                            
+                            if (c.bulletScript && c.bulletScript.length > 0) {
+                                newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
+                                newBullet.update = (b, bdt) => {
+                                    runCustomBulletScript(b, bdt, attacker, target);
+                                };
+                            }
+                            
+                            bullets.push(newBullet);
+                        }
+                        break;
+                    }
+                }
+                
+                if (advancePC) {
+                    if (state.stack.length > 0) {
+                        state.stack[state.stack.length - 1].pc++;
+                    } else {
+                        state.pc++;
+                    }
+                }
+                
+                if (state.waitTimer > 0) {
+                    break;
+                }
+            }
+        }
+
+        function initBulletState(script, initialSpeed, initialAngle, attacker, target) {
+            let variables = {
+                speed: initialSpeed,
+                angle: initialAngle,
+                timer: 0,
+                isBounced: 0,
+                isTouchWall: 0,
+                warningTime: 0,
+                activeTime: 0
+            };
+            let compiledBlocks = compileIndentedBlocks(JSON.parse(JSON.stringify(script || [])));
+
+            return {
+                blocks: compiledBlocks,
+                pc: 0,
+                waitTimer: 0,
+                stack: [],
+                variables: variables,
+                executedBlocks: new Set(),
+                finished: false
+            };
+        }
+
+        function runCustomBulletScript(b, dt, attacker, target) {
+            let state = b.bulletState;
+            if (!state) return;
+            
+            // 毎フレーム壁との接触を判定（左・右・上端のみ。下端は除外）
+            // 連続トリガーによるチャタリングや多重実行を防ぐため、壁に触れた瞬間（1フレーム目）のみ 1 にする
+            let currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10);
+            let wallTouchTrigger = (currentlyTouching && !b.wasTouchingWall) ? 1 : 0;
+            state.variables.isBounced = wallTouchTrigger;
+            state.variables.isTouchWall = wallTouchTrigger;
+            b.wasTouchingWall = currentlyTouching;
+            
+            // 初回フレームのみの初期化処理
+            if (state.variables.timer === 0) {
+                if (b.isLaser && (parseFloat(state.variables.warningTime) || 0) === 0) {
+                    state.variables.warningTime = 1.0;
+                    state.variables.activeTime = 1.5;
+                }
+            }
+            
+            state.variables.timer += dt;
+            
+            // Expose physics & environment variables in real-time
+            state.variables.x = b.x;
+            state.variables.y = b.y;
+            state.variables.speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+            state.variables.tx = target.x;
+            state.variables.ty = target.y;
+            
+            let dx = target.x - b.x;
+            let dy = target.y - b.y;
+            state.variables.dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (!state.finished) {
+                if (state.waitTimer > 0) {
+                    state.waitTimer -= dt;
+                }
+                
+                if (state.waitTimer <= 0) {
+                    let safetyCounter = 0;
+                    while (safetyCounter < 1000) {
+                        safetyCounter++;
+                        let currentBlocks = state.stack.length > 0 ? state.stack[state.stack.length - 1].blocks : state.blocks;
+                        let currentPC = state.stack.length > 0 ? state.stack[state.stack.length - 1].pc : state.pc;
+                        
+                        if (currentPC >= currentBlocks.length) {
+                            if (state.stack.length > 0) {
+                                let loopState = state.stack[state.stack.length - 1];
+                                if (loopState.forever) {
+                                    loopState.pc = 0;
+                                    continue;
+                                } else {
+                                    loopState.iterationsLeft--;
+                                    if (loopState.iterationsLeft > 0) {
+                                        loopState.pc = 0;
+                                        continue;
+                                    } else {
+                                        state.stack.pop();
+                                        if (state.stack.length > 0) {
+                                            state.stack[state.stack.length - 1].pc++;
+                                        } else {
+                                            state.pc++;
+                                        }
+                                        continue;
+                                    }
+                                }
+                            } else {
+                                // 弾の挙動は、最後まで実行し終えたら自動的に最初からループ実行する
+                                state.pc = 0;
+                                state.waitTimer = 0.01; // 1フレーム待機
+                                break;
+                            }
+                        }
+                        
+                        let block = currentBlocks[currentPC];
+                        if (!block) {
+                            state.pc = 0;
+                            state.waitTimer = 0.01;
+                            break;
+                        }
+                        
+                        let advancePC = true;
+                        switch (block.type) {
+                            case 'wait': {
+                                let dur = evalExpr(block.params.duration, state.variables);
+                                state.waitTimer = Math.max(0.01, dur);
+                                break;
+                            }
+                            case 'repeat': {
+                                let count = Math.round(evalExpr(block.params.count, state.variables));
+                                state.stack.push({
+                                    type: 'repeat',
+                                    pc: 0,
+                                    iterationsLeft: Math.max(1, count),
+                                    forever: false,
+                                    blocks: block.children || []
+                                });
+                                advancePC = false;
+                                break;
+                            }
+                            case 'forever': {
+                                state.stack.push({
+                                    type: 'forever',
+                                    pc: 0,
+                                    iterationsLeft: 999999,
+                                    forever: true,
+                                    blocks: block.children || []
+                                });
+                                advancePC = false;
+                                break;
+                            }
+                            case 'if': {
+                                let condStr = block.params.cond || 'x < 10';
+                                let isTrue = !!evalExpr(condStr, state.variables);
+                                
+                                if (isTrue && block.children && block.children.length > 0) {
+                                    state.stack.push({
+                                        type: 'if',
+                                        pc: 0,
+                                        iterationsLeft: 1,
+                                        forever: false,
+                                        blocks: block.children
+                                    });
+                                    advancePC = false;
+                                }
+                                break;
+                            }
+                            case 'once': {
+                                let onceId = block.onceId || 'once_default';
+                                state.executedBlocks = state.executedBlocks || new Set();
+                                
+                                if (state.executedBlocks.has(onceId)) {
+                                    advancePC = true;
+                                } else {
+                                    state.executedBlocks.add(onceId);
+                                    if (block.children && block.children.length > 0) {
+                                        state.stack.push({
+                                            type: 'once',
+                                            pc: 0,
+                                            iterationsLeft: 1,
+                                            forever: false,
+                                            blocks: block.children
+                                        });
+                                        advancePC = false;
+                                    }
+                                }
+                                break;
+                            }
+                            case 'set_laser': {
+                                state.variables.warningTime = evalExpr(block.params.warningTime || '1.0', state.variables);
+                                state.variables.activeTime = evalExpr(block.params.activeTime || '1.5', state.variables);
+                                break;
+                            }
+                            case 'set_var': {
+                                let varName = block.params.name;
+                                let val = evalExpr(block.params.value, state.variables);
+                                state.variables[varName] = val;
+                                break;
+                            }
+                            case 'change_var': {
+                                let varName = block.params.name;
+                                let val = evalExpr(block.params.value, state.variables);
+                                state.variables[varName] = (state.variables[varName] || 0) + val;
+                                break;
+                            }
+                            case 'aim_at_target': {
+                                let dx = target.x - b.x;
+                                let dy = target.y - b.y;
+                                state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                                break;
+                            }
+                            case 'homing': {
+                                let turnSpeed = evalExpr(block.params.turnSpeed || '90', state.variables);
+                                let dx = target.x - b.x;
+                                let dy = target.y - b.y;
+                                let targetAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+                                
+                                let diff = targetAngle - state.variables.angle;
+                                diff = ((diff + 180) % 360 + 360) % 360 - 180;
+                                
+                                let step = turnSpeed * dt;
+                                if (Math.abs(diff) < step) {
+                                    state.variables.angle = targetAngle;
+                                } else {
+                                    state.variables.angle += Math.sign(diff) * step;
+                                }
+                                break;
+                            }
+                            case 'bounce': {
+                                let x = state.variables.x;
+                                let y = state.variables.y;
+                                let angle = state.variables.angle;
+                                let bounced = false;
+                                if (x < 10 && Math.cos(angle * Math.PI / 180) < 0) {
+                                    angle = 180 - angle;
+                                    bounced = true;
+                                }
+                                if (x > PLAY_WIDTH - 10 && Math.cos(angle * Math.PI / 180) > 0) {
+                                    angle = 180 - angle;
+                                    bounced = true;
+                                }
+                                if (y < 10 && Math.sin(angle * Math.PI / 180) < 0) {
+                                    angle = -angle;
+                                    bounced = true;
+                                }
+                                // Bottom wall is excluded from bouncing
+                                state.variables.angle = ((angle % 360) + 360) % 360;
+                                if (bounced) {
+                                    state.variables.isBounced = 1;
+                                }
+                                break;
+                            }
+                        }
+                        
+                        if (advancePC) {
+                            if (state.stack.length > 0) {
+                                state.stack[state.stack.length - 1].pc++;
+                            } else {
+                                state.pc++;
+                            }
+                        }
+                        
+                        if (state.waitTimer > 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Physics update
+            let finalAngleRad = state.variables.angle * Math.PI / 180;
+            b.vx = Math.cos(finalAngleRad) * state.variables.speed;
+            b.vy = Math.sin(finalAngleRad) * state.variables.speed;
+            
+            // Sync mutated coordinates
+            if (state.variables.x !== undefined) b.x = state.variables.x;
+            if (state.variables.y !== undefined) b.y = state.variables.y;
+            
+            // Sync custom variables to bullet physics properties
+            if (state.variables.bulletType === 'laser') {
+                b.isLaser = true;
+            } else if (state.variables.bulletType === 'normal') {
+                b.isLaser = false;
+            }
+            if (state.variables.color !== undefined) {
+                b.color = state.variables.color;
+            }
+            
+            // 設置レーザー（警告線付きビーム）の制御
+            let warnT = parseFloat(state.variables.warningTime) || 0;
+            let actT = parseFloat(state.variables.activeTime) || 0;
+            if (warnT > 0 && actT > 0) {
+                warnT = Math.max(0.5, warnT); // 予告時間は最低0.5秒（理不尽防止）
+                state.variables.warningTime = warnT; // スクリプト側にも反映
+                if (b.laserStartX === undefined) {
+                    b.laserStartX = b.x;
+                    b.laserStartY = b.y;
+                }
+                b.x = b.laserStartX;
+                b.y = b.laserStartY;
+                state.variables.x = b.x;
+                state.variables.y = b.y;
+                b.vx = 0;
+                b.vy = 0;
+                state.variables.speed = 0;
+                
+                let elapsed = state.variables.timer;
+                if (elapsed < warnT) {
+                    b.isWarningLaser = true;
+                    b.isLaser = false;
+                    b.isCustomBeam = false;
+                } else if (elapsed < warnT + actT) {
+                    b.isWarningLaser = false;
+                    b.isLaser = true;
+                    b.isCustomBeam = true; // 設置ビームフラグ
+                } else {
+                    b.y = -9999;
+                    b.isWarningLaser = false;
+                    b.isLaser = false;
+                    b.isCustomBeam = false;
+                }
+            }
+        }
+
+        // ==========================================
+        // 自作カード作成画面 (管理・ブロックエディタ)
+        // ==========================================
+        function getBlockCost(block) {
+            switch (block.type) {
+                case 'repeat':
+                case 'forever':
+                case 'wait':
+                case 'set_var':
+                case 'change_var':
+                case 'if':
+                    return 0;
+                case 'aim_at_target':
+                case 'spawn_bullet':
+                case 'bounce':
+                    return 1;
+                case 'homing':
+                    return 2;
+                case 'spawn_ring':
+                case 'spawn_way':
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
+
+        function calculateCustomCardCost(emitterScript, bulletScript) {
+            // 1. 各ブロックの最低基本コストを算出（静的な評価）
+            let baseBlockCost = 0;
+            (emitterScript || []).forEach(b => baseBlockCost += getBlockCost(b));
+            (bulletScript || []).forEach(b => baseBlockCost += getBlockCost(b));
+
+            // 点からレイ（半直線）への最短距離を計算するヘルパー（レーザーの脅威度計算用）
+            function getDistanceToRay(px, py, sx, sy, angleDeg) {
+                let angleRad = angleDeg * Math.PI / 180;
+                let dx = Math.cos(angleRad);
+                let dy = Math.sin(angleRad);
+                
+                let vx = px - sx;
+                let vy = py - sy;
+                
+                let t = vx * dx + vy * dy;
+                if (t < 0) {
+                    return Math.sqrt(vx * vx + vy * vy);
+                } else {
+                    let perpX = vx - t * dx;
+                    let perpY = vy - t * dy;
+                    return Math.sqrt(perpX * perpX + perpY * perpY);
+                }
+            }
+
+            // 2. シミュレーションによる動的コスト計算
+            let simDuration = 15; // スペルカード全体の時間（15秒）
+            let fps = 30; // 30FPSで十分高精度かつ高速
+            let dt = 1 / fps;
+            let totalFrames = simDuration * fps;
+
+            let attacker = { x: PLAY_WIDTH / 2, y: 150, team: 'ENEMY' };
+            let target = { x: PLAY_WIDTH / 2, y: (canvas ? canvas.height : 900) * 0.8 };
+
+            let emitterState = initEmitterState(emitterScript, attacker, target);
+            let simBullets = [];
+
+            // 実行中のゲームに影響を与えないようにグローバル bullets 配列を退避
+            let originalBullets = bullets;
+            bullets = [];
+
+            let totalFired = 0;
+            let closeToPlayerScore = 0;
+            let totalSpeedSum = 0;
+            let bulletSpeedCount = 0;
+
+            for (let frame = 0; frame < totalFrames; frame++) {
+                // Emitterの状態更新
+                if (!emitterState.finished) {
+                    emitterState.variables.x = attacker.x;
+                    emitterState.variables.y = attacker.y;
+                    emitterState.variables.tx = target.x;
+                    emitterState.variables.ty = target.y;
+                    let dx = target.x - attacker.x;
+                    let dy = target.y - attacker.y;
+                    emitterState.variables.dist = Math.sqrt(dx * dx + dy * dy);
+
+                    stepEmitter({ bulletScript: bulletScript }, emitterState, attacker, target, dt);
+                }
+
+                // 生成された弾を検知してシミュレーション用配列へ移す
+                if (bullets.length > 0) {
+                    bullets.forEach(b => {
+                        let vx = b.vx || 0;
+                        let vy = b.vy || 0;
+                        let speed = Math.sqrt(vx * vx + vy * vy);
+                        totalSpeedSum += speed;
+                        bulletSpeedCount++;
+                        totalFired++;
+
+                        // 異常な無限ループ等でメモリが溢れるのを防ぐため、シミュレート対象は500発に制限
+                        if (simBullets.length < 500) {
+                            simBullets.push({
+                                x: b.x,
+                                y: b.y,
+                                startX: b.startX,
+                                startY: b.startY,
+                                vx: vx,
+                                vy: vy,
+                                radius: b.radius || 6,
+                                isLaser: b.isLaser || false,
+                                bulletState: b.bulletState ? JSON.parse(JSON.stringify(b.bulletState)) : null,
+                                gotClose: false,
+                                offScreen: false
+                            });
+                        }
+                    });
+                    bullets = [];
+                }
+
+                // シミュレーション中の弾の移動 ＆ 近接判定
+                for (let i = 0; i < simBullets.length; i++) {
+                    let b = simBullets[i];
+                    if (b.offScreen) continue;
+
+                    if (b.bulletState) {
+                        runCustomBulletScript(b, dt, attacker, target);
+                    } else {
+                        b.x += b.vx * dt;
+                        b.y += b.vy * dt;
+                    }
+
+                    // プレイヤーとの距離計算
+                    let distToPlayer;
+                    if (b.isLaser) {
+                        let angle = (b.bulletState && b.bulletState.variables.angle !== undefined) ? b.bulletState.variables.angle : 0;
+                        distToPlayer = getDistanceToRay(target.x, target.y, b.x, b.y, angle);
+                    } else {
+                        let pdx = b.x - target.x;
+                        let pdy = b.y - target.y;
+                        distToPlayer = Math.sqrt(pdx * pdx + pdy * pdy);
+                    }
+
+                    // プレイヤーに近接（150px以内）した時の加点（レーザーは持続判定のため高めのウェイトを設定）
+                    if (!b.gotClose && distToPlayer < 150) {
+                        b.gotClose = true;
+                        closeToPlayerScore += (b.isLaser ? 3 : 1);
+                    }
+
+                    // 画面外判定
+                    let currentHeight = canvas ? canvas.height : 900;
+                    if (b.x < -100 || b.x > PLAY_WIDTH + 100 || b.y < -100 || b.y > currentHeight + 100) {
+                        b.offScreen = true;
+                    }
+                }
+
+                // すべて処理し終えたら早期ブレイク
+                if (emitterState.finished && simBullets.every(b => b.offScreen)) {
+                    break;
+                }
+            }
+
+            // グローバル bullets 配列を復元
+            bullets = originalBullets;
+
+            // 指標の計算
+            let bulletsPerSecond = totalFired / simDuration;
+            let closeScorePerSecond = closeToPlayerScore / simDuration;
+            let avgSpeed = bulletSpeedCount > 0 ? (totalSpeedSum / bulletSpeedCount) : 0;
+
+            // コスト計算式
+            let simCost = (bulletsPerSecond * 0.1) + (closeScorePerSecond * 0.4) + (avgSpeed / 100) * 0.5;
+            let totalCost = baseBlockCost + simCost;
+
+            // コストは四捨五入して整数（最低1）
+            return Math.max(1, Math.round(totalCost));
+        }
+
+        function renderCardMakerList() {
+            const container = document.getElementById('custom-cards-list-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (customCards.length === 0) {
+                container.innerHTML = '<div style="color:#aaa; font-size:12px; text-align:center; padding:30px 0;">登録されている自作カードはありません。</div>';
+                return;
+            }
+            
+            customCards.forEach(card => {
+                const item = document.createElement('div');
+                item.className = 'custom-card-item';
+                
+                let descText = card.desc ? card.desc.replace('【自作カード】', '') : '';
+                
+                item.innerHTML = `
+                    <div class="custom-card-info">
+                        <span class="custom-card-title">${card.name.replace('【A】', '')}</span>
+                        <span class="custom-card-desc">${descText}</span>
+                    </div>
+                    <span class="custom-card-cost-badge">コスト: ${card.cost}</span>
+                    <div class="custom-card-actions">
+                        <button class="custom-card-act-btn btn-edit" onclick="customCardMakerOpenEditor('${card.id}')">編集</button>
+                        <button class="custom-card-act-btn btn-delete" onclick="customCardMakerDeleteCard('${card.id}')">削除</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function saveCustomCardDraft(showNotification = false) {
+            let nameVal = document.getElementById('custom-card-name').value;
+            let descVal = document.getElementById('custom-card-desc').value;
+            
+            if (customCardMakerMode === 'code') {
+                let code = document.getElementById('workspace-code-textarea').value;
+                let parsed = codeToBlocks(code);
+                if (customCardMaker.activeTab === 'emitter') {
+                    customCardMaker.emitterScript = parsed;
+                } else if (customCardMaker.activeTab === 'bullet') {
+                    customCardMaker.bulletScript = parsed;
+                }
+            }
+
+            let draftData = {
+                editingId: customCardMaker.editingId,
+                name: nameVal,
+                desc: descVal,
+                activeTab: customCardMaker.activeTab,
+                customCardMakerMode: customCardMakerMode,
+                emitterScript: customCardMaker.emitterScript,
+                bulletScript: customCardMaker.bulletScript,
+                testPassed: customCardMaker.testPassed,
+                codeText: document.getElementById('workspace-code-textarea').value
+            };
+            
+            localStorage.setItem('custom_card_draft', JSON.stringify(draftData));
+            
+            const restoreBtn = document.getElementById('custom-card-draft-load-btn');
+            if (restoreBtn) restoreBtn.style.display = 'inline-block';
+            
+            if (showNotification) {
+                alert("スペルカードの編集状態を一時保存しました。");
+            }
+        }
+
+        function loadCustomCardDraft() {
+            let draftStr = localStorage.getItem('custom_card_draft');
+            if (!draftStr) {
+                alert("一時保存されたデータがありません。");
+                return;
+            }
+            
+            try {
+                let draftData = JSON.parse(draftStr);
+                customCardMaker.editingId = draftData.editingId;
+                customCardMaker.name = draftData.name || 'カスタムスペル';
+                customCardMaker.desc = draftData.desc || 'オリジナルの弾幕パターン。';
+                customCardMaker.activeTab = draftData.activeTab || 'emitter';
+                customCardMaker.emitterScript = draftData.emitterScript || [];
+                customCardMaker.bulletScript = draftData.bulletScript || [];
+                customCardMaker.testPassed = draftData.testPassed || false;
+                
+                customCardMakerMode = draftData.customCardMakerMode || 'block';
+                
+                document.getElementById('custom-card-name').value = customCardMaker.name;
+                document.getElementById('custom-card-desc').value = customCardMaker.desc;
+                
+                document.getElementById('tab-btn-emitter').className = customCardMaker.activeTab === 'emitter' ? 'tab-btn active' : 'tab-btn';
+                document.getElementById('tab-btn-bullet').className = customCardMaker.activeTab === 'bullet' ? 'tab-btn active' : 'tab-btn';
+                
+                const btnBlock = document.getElementById('mode-btn-block');
+                const btnCode = document.getElementById('mode-btn-code');
+                const blocksContainer = document.getElementById('workspace-blocks-container');
+                const codeTextarea = document.getElementById('workspace-code-textarea');
+                
+                if (customCardMakerMode === 'block') {
+                    if (btnBlock) btnBlock.className = 'tab-btn active';
+                    if (btnCode) btnCode.className = 'tab-btn';
+                    if (blocksContainer) blocksContainer.classList.remove('hidden');
+                    if (codeTextarea) codeTextarea.classList.add('hidden');
+                } else {
+                    if (btnBlock) btnBlock.className = 'tab-btn';
+                    if (btnCode) btnCode.className = 'tab-btn active';
+                    if (blocksContainer) blocksContainer.classList.add('hidden');
+                    if (codeTextarea) codeTextarea.classList.remove('hidden');
+                }
+                
+                if (draftData.codeText !== undefined) {
+                    document.getElementById('workspace-code-textarea').value = draftData.codeText;
+                } else {
+                    let script = customCardMaker.activeTab === 'emitter' ? customCardMaker.emitterScript : customCardMaker.bulletScript;
+                    document.getElementById('workspace-code-textarea').value = blocksToCode(script);
+                }
+                
+                renderCardMaker();
+                alert("一時保存データから復元しました。");
+            } catch (e) {
+                console.error(e);
+                alert("データの復元に失敗しました。");
+            }
+        }
+
+        function customCardMakerOpenEditor(cardId) {
+            document.getElementById('card-maker-list-view').classList.add('hidden');
+            document.getElementById('card-maker-editor-view').classList.remove('hidden');
+            
+            const restoreBtn = document.getElementById('custom-card-draft-load-btn');
+            if (restoreBtn) {
+                if (localStorage.getItem('custom_card_draft')) {
+                    restoreBtn.style.display = 'inline-block';
+                } else {
+                    restoreBtn.style.display = 'none';
+                }
+            }
+
+            customCardMakerMode = 'block';
+            const blocksContainer = document.getElementById('workspace-blocks-container');
+            const codeTextarea = document.getElementById('workspace-code-textarea');
+            if (blocksContainer) blocksContainer.classList.remove('hidden');
+            if (codeTextarea) codeTextarea.classList.add('hidden');
+            
+            const btnBlock = document.getElementById('mode-btn-block');
+            const btnCode = document.getElementById('mode-btn-code');
+            if (btnBlock) btnBlock.className = 'tab-btn active';
+            if (btnCode) btnCode.className = 'tab-btn';
+            
+            const palette = document.querySelector('.palette-panel');
+            if (palette) {
+                palette.style.opacity = '1.0';
+                palette.style.pointerEvents = 'auto';
+            }
+            
+            if (cardId) {
+                let card = customCards.find(c => c.id === cardId);
+                let migratedCard = migrateOldCustomCard(card);
+                customCardMaker.editingId = migratedCard.id;
+                customCardMaker.name = migratedCard.name.replace('【A】', '');
+                customCardMaker.desc = migratedCard.desc;
+                customCardMaker.emitterScript = JSON.parse(JSON.stringify(migratedCard.emitterScript || []));
+                customCardMaker.bulletScript = JSON.parse(JSON.stringify(migratedCard.bulletScript || []));
+                customCardMaker.testPassed = true;
+                document.getElementById('card-editor-title').textContent = "スペルカード編集";
+            } else {
+                customCardMaker.editingId = null;
+                customCardMaker.name = 'カスタムスペル';
+                customCardMaker.desc = 'オリジナルの弾幕パターン。';
+                customCardMaker.emitterScript = [
+                    { type: 'repeat', params: { count: '12' }, indent: 0 },
+                    { type: 'spawn_bullet', params: { bulletType: 'normal', color: '#ff3333', radius: '6', speed: '200', angle: 'angle' }, indent: 1 },
+                    { type: 'change_var', params: { name: 'angle', value: '30' }, indent: 1 },
+                    { type: 'wait', params: { duration: '0.2' }, indent: 1 }
+                ];
+                customCardMaker.bulletScript = [];
+                customCardMaker.testPassed = false;
+                document.getElementById('card-editor-title').textContent = "新規スペルカード作成";
+            }
+            
+            customCardMaker.activeTab = 'emitter';
+            
+            document.getElementById('custom-card-name').value = customCardMaker.name;
+            document.getElementById('custom-card-desc').value = customCardMaker.desc;
+            
+            renderCardMaker();
+        }
+
+        function customCardMakerCloseEditor() {
+            document.getElementById('card-maker-editor-view').classList.add('hidden');
+            document.getElementById('card-maker-list-view').classList.remove('hidden');
+            renderCardMakerList();
+        }
+
+        function customCardMakerSwitchTab(tab) {
+            if (customCardMakerMode === 'code') {
+                let code = document.getElementById('workspace-code-textarea').value;
+                let parsed = codeToBlocks(code);
+                if (customCardMaker.activeTab === 'emitter') {
+                    customCardMaker.emitterScript = parsed;
+                } else if (customCardMaker.activeTab === 'bullet') {
+                    customCardMaker.bulletScript = parsed;
+                }
+            }
+
+            customCardMaker.activeTab = tab;
+            document.getElementById('tab-btn-emitter').className = tab === 'emitter' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tab-btn-bullet').className = tab === 'bullet' ? 'tab-btn active' : 'tab-btn';
+            
+            if (customCardMakerMode === 'code') {
+                let script = tab === 'emitter' ? customCardMaker.emitterScript : customCardMaker.bulletScript;
+                document.getElementById('workspace-code-textarea').value = blocksToCode(script);
+                
+                let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
+                document.getElementById('custom-card-cost').textContent = cost;
+            } else {
+                renderCardMaker();
+            }
+        }
+
+        function getActiveScript() {
+            if (customCardMaker.activeTab === 'emitter') return customCardMaker.emitterScript;
+            return customCardMaker.bulletScript;
+        }
+
+        function customCardMakerAddBlock(type) {
+            let script = getActiveScript();
+            let block = { type: type, params: {}, indent: 0 };
+            
+            if (type === 'wait') {
+                block.params.duration = '0.2';
+            } else if (type === 'repeat') {
+                block.params.count = '10';
+            } else if (type === 'if') {
+                block.params.cond = 'x < 10';
+            } else if (type === 'set_var') {
+                block.params.name = 'speed';
+                block.params.value = '250';
+            } else if (type === 'change_var') {
+                block.params.name = 'angle';
+                block.params.value = '10';
+            } else if (type === 'spawn_bullet') {
+                block.params.bulletType = 'normal';
+                block.params.color = '#ff3333';
+                block.params.speed = '200';
+                block.params.angle = 'angle';
+            } else if (type === 'spawn_ring') {
+                block.params.bulletType = 'normal';
+                block.params.color = '#ff3333';
+                block.params.speed = '200';
+                block.params.count = '12';
+            } else if (type === 'spawn_way') {
+                block.params.bulletType = 'normal';
+                block.params.color = '#ff3333';
+                block.params.speed = '200';
+                block.params.angle = 'angle';
+                block.params.count = '3';
+                block.params.spread = '30';
+            } else if (type === 'homing') {
+                block.params.turnSpeed = '90';
+            } else if (type === 'set_laser') {
+                block.params.warningTime = '1.0';
+                block.params.activeTime = '1.5';
+            } else if (type === 'once') {
+                block.params = {};
+            }
+            
+            script.push(block);
+            customCardMaker.testPassed = false;
+            saveCustomCardDraft(false);
+            renderCardMaker();
+        }
+
+        function customCardMakerUpdateParam(idx, paramName, value) {
+            let script = getActiveScript();
+            script[idx].params[paramName] = value;
+            customCardMaker.testPassed = false;
+            saveCustomCardDraft(false);
+            renderCardMaker();
+        }
+
+        function customCardMakerOnIfCondSelectChange(idx, val) {
+            let script = getActiveScript();
+            if (val === 'custom') {
+                let input = document.getElementById(`if-cond-input-${idx}`);
+                if (input) {
+                    input.style.display = 'inline-block';
+                    input.focus();
+                }
+            } else {
+                customCardMakerUpdateParam(idx, 'cond', val);
+            }
+        }
+
+        function customCardMakerIndent(idx, dir) {
+            let script = getActiveScript();
+            script[idx].indent = Math.max(0, Math.min(3, (script[idx].indent || 0) + dir));
+            customCardMaker.testPassed = false;
+            saveCustomCardDraft(false);
+            renderCardMaker();
+        }
+
+        function customCardMakerMove(idx, dir) {
+            let script = getActiveScript();
+            let targetIdx = idx + dir;
+            if (targetIdx >= 0 && targetIdx < script.length) {
+                let temp = script[idx];
+                script[idx] = script[targetIdx];
+                script[targetIdx] = temp;
+                customCardMaker.testPassed = false;
+                saveCustomCardDraft(false);
+                renderCardMaker();
+            }
+        }
+
+        function customCardMakerDelete(idx) {
+            let script = getActiveScript();
+            script.splice(idx, 1);
+            customCardMaker.testPassed = false;
+            saveCustomCardDraft(false);
+            renderCardMaker();
+        }
+
+        function renderBlockControls(idx) {
+            return `
+                <div class="block-controls">
+                    <button class="block-ctrl-btn" onclick="customCardMakerIndent(${idx}, -1)" title="インデントを下げる">◀</button>
+                    <button class="block-ctrl-btn" onclick="customCardMakerIndent(${idx}, 1)" title="インデントを上げる">▶</button>
+                    <button class="block-ctrl-btn" onclick="customCardMakerMove(${idx}, -1)" title="上に移動">▲</button>
+                    <button class="block-ctrl-btn" onclick="customCardMakerMove(${idx}, 1)" title="下に移動">▼</button>
+                    <button class="block-ctrl-btn btn-delete" onclick="customCardMakerDelete(${idx})" title="削除">×</button>
+                </div>
+            `;
+        }
+
+        function renderCardMaker() {
+            let tab = customCardMaker.activeTab;
+            
+            // 制御グループ
+            document.getElementById('palette-title-control').style.display = 'block';
+            document.getElementById('palette-btn-repeat').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-forever').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-wait').style.display = 'block';
+            document.getElementById('palette-btn-if').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-once').style.display = 'block';
+            
+            // 変数グループ
+            document.getElementById('palette-title-vars').style.display = 'block';
+            document.getElementById('palette-btn-setvar').style.display = 'block';
+            document.getElementById('palette-btn-changevar').style.display = 'block';
+            document.getElementById('palette-btn-setlaser').style.display = (tab === 'bullet') ? 'block' : 'none';
+            
+            // 動作グループ
+            document.getElementById('palette-btn-aim').style.display = 'block';
+            document.getElementById('palette-btn-spawn').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-spawn-ring').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-spawn-way').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-homing').style.display = (tab === 'bullet') ? 'block' : 'none';
+            
+            let container = document.getElementById('workspace-blocks-container');
+            container.innerHTML = '';
+            
+            let script = getActiveScript();
+            
+            if (script.length === 0) {
+                container.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:50px 0; border:1.5px dashed rgba(255,255,255,0.1); border-radius:8px;">ブロックがありません。左のパレットをクリックしてブロックを追加してください。</div>';
+            } else {
+                for (let i = 0; i < script.length; i++) {
+                    if (i === 0) script[i].indent = 0;
+                    else script[i].indent = Math.min(script[i].indent || 0, script[i - 1].indent + 1);
+                }
+
+                script.forEach((b, idx) => {
+                    const blockDiv = document.createElement('div');
+                    let margin = b.indent * 20;
+                    blockDiv.style.marginLeft = margin + 'px';
+                    
+                    let html = '';
+                    switch (b.type) {
+                        case 'wait':
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御]</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.duration}" onchange="customCardMakerUpdateParam(${idx}, 'duration', this.value)">
+                                <span>秒待つ</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'repeat':
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御]</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.count}" onchange="customCardMakerUpdateParam(${idx}, 'count', this.value)">
+                                <span>回くりかえす</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'forever':
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御] ずっとくりかえす</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'once':
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御] 1度だけ実行する</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'if': {
+                            let cond = b.params.cond || 'isBounced';
+                            let normalizedCond = cond.replace(/\s+/g, '');
+                            let selectVal = 'custom';
+                            if (normalizedCond === 'isbounced' || cond === 'isBounced') selectVal = 'isBounced';
+                            else if (normalizedCond === 'timer>1' || normalizedCond === 'timer>1.0') selectVal = 'timer > 1';
+                            else if (normalizedCond === 'x<10') selectVal = 'x < 10';
+                            else if (normalizedCond === 'x>590' || normalizedCond === 'x>790') selectVal = 'x > 590';
+                            else if (normalizedCond === 'y<10') selectVal = 'y < 10';
+                            else if (normalizedCond === 'y>890') selectVal = 'y > 890';
+                            else if (normalizedCond === 'dist<150') selectVal = 'dist < 150';
+                            
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御] もし</span>
+                                <select onchange="customCardMakerOnIfCondSelectChange(${idx}, this.value)" style="margin-right: 4px;">
+                                    <option value="isBounced" ${selectVal === 'isBounced' ? 'selected' : ''}>壁に触れたら (isBounced)</option>
+                                    <option value="timer > 1" ${selectVal === 'timer > 1' ? 'selected' : ''}>1秒経過したら (timer > 1)</option>
+                                    <option value="x < 10" ${selectVal === 'x < 10' ? 'selected' : ''}>画面左端に達したら (x < 10)</option>
+                                    <option value="x > 590" ${selectVal === 'x > 590' ? 'selected' : ''}>画面右端に達したら (x > 590)</option>
+                                    <option value="y < 10" ${selectVal === 'y < 10' ? 'selected' : ''}>画面上端に達したら (y < 10)</option>
+                                    <option value="y > 890" ${selectVal === 'y > 890' ? 'selected' : ''}>画面下端に達したら (y > 890)</option>
+                                    <option value="dist < 150" ${selectVal === 'dist < 150' ? 'selected' : ''}>相手に近づいたら (dist < 150)</option>
+                                    <option value="custom" ${selectVal === 'custom' ? 'selected' : ''}>その他 (自由記述)</option>
+                                </select>
+                                <input type="text" id="if-cond-input-${idx}" list="val-suggestions" style="width:90px; display:${selectVal === 'custom' ? 'inline-block' : 'none'};" value="${cond}" onchange="customCardMakerUpdateParam(${idx}, 'cond', this.value)">
+                                <span>なら</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        }
+                        case 'set_var':
+                            blockDiv.className = 'maker-block color-vars';
+                            html = `
+                                <span>[変数]</span>
+                                <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
+                                <span>を</span>
+                                <input type="text" list="val-suggestions" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
+                                <span>にする</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'change_var':
+                            blockDiv.className = 'maker-block color-vars';
+                            html = `
+                                <span>[変数]</span>
+                                <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
+                                <span>を</span>
+                                <input type="text" list="val-suggestions" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
+                                <span>増やす</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'aim_at_target':
+                            blockDiv.className = 'maker-block color-motion';
+                            html = `
+                                <span>[動作] 相手の方向を向く (angleを設定)</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'spawn_bullet':
+                            blockDiv.className = 'maker-block color-action';
+                            html = `
+                                <span>[発射] 弾を発射する - 見た目:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'bulletType', this.value)">
+                                    <option value="normal" ${b.params.bulletType === 'normal' ? 'selected' : ''}>通常弾</option>
+                                    <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
+                                </select>
+                                <span>色:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
+                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
+                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
+                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
+                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
+                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
+                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
+                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
+                                </select>
+                                <span>速度:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
+                                <span>角度:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.angle}" onchange="customCardMakerUpdateParam(${idx}, 'angle', this.value)">
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'spawn_ring':
+                            blockDiv.className = 'maker-block color-action';
+                            html = `
+                                <span>[発射] 全方位円形弾 - 見た目:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'bulletType', this.value)">
+                                    <option value="normal" ${b.params.bulletType === 'normal' ? 'selected' : ''}>通常弾</option>
+                                    <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
+                                </select>
+                                <span>色:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
+                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
+                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
+                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
+                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
+                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
+                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
+                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
+                                </select>
+                                <span>速度:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
+                                <span>弾数:</span>
+                                <input type="text" list="val-suggestions" style="width:40px;" value="${b.params.count}" onchange="customCardMakerUpdateParam(${idx}, 'count', this.value)">
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'spawn_way':
+                            blockDiv.className = 'maker-block color-action';
+                            html = `
+                                <span>[発射] Way弾 - 見た目:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'bulletType', this.value)">
+                                    <option value="normal" ${b.params.bulletType === 'normal' ? 'selected' : ''}>通常弾</option>
+                                    <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
+                                </select>
+                                <span>色:</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
+                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
+                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
+                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
+                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
+                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
+                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
+                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
+                                </select>
+                                <span>速度:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
+                                <span>中心角:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.angle}" onchange="customCardMakerUpdateParam(${idx}, 'angle', this.value)">
+                                <span>弾数:</span>
+                                <input type="text" list="val-suggestions" style="width:40px;" value="${b.params.count}" onchange="customCardMakerUpdateParam(${idx}, 'count', this.value)">
+                                <span>分散角:</span>
+                                <input type="text" list="val-suggestions" style="width:40px;" value="${b.params.spread}" onchange="customCardMakerUpdateParam(${idx}, 'spread', this.value)">
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'homing':
+                            blockDiv.className = 'maker-block color-motion';
+                            html = `
+                                <span>[動作] 相手を追尾する - 回転速度:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.turnSpeed}" onchange="customCardMakerUpdateParam(${idx}, 'turnSpeed', this.value)">
+                                <span>度/秒</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'set_laser':
+                            blockDiv.className = 'maker-block color-vars';
+                            html = `
+                                <span>[設定] 設置レーザー - 予告:</span>
+                                <input type="text" list="val-suggestions" style="width:45px;" value="${b.params.warningTime || '1.0'}" onchange="customCardMakerUpdateParam(${idx}, 'warningTime', this.value)">
+                                <span>秒, 照射:</span>
+                                <input type="text" list="val-suggestions" style="width:45px;" value="${b.params.activeTime || '1.5'}" onchange="customCardMakerUpdateParam(${idx}, 'activeTime', this.value)">
+                                <span>秒</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'bounce':
+                            blockDiv.className = 'maker-block color-motion';
+                            html = `
+                                <span>[動作] 壁で跳ね返る (isBouncedを設定)</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                    }
+                    
+                    blockDiv.innerHTML = html;
+                    container.appendChild(blockDiv);
+                });
+            }
+            
+            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript, customCardMaker.bounceScript);
+            let costIndicator = document.getElementById('custom-card-cost-indicator');
+            let costVal = document.getElementById('custom-card-cost');
+            let testBtn = document.getElementById('custom-card-test-btn');
+            let saveBtn = document.getElementById('custom-card-save-btn');
+            
+            costVal.textContent = cost;
+            
+            let isCostValid = cost <= 15;
+            if (isCostValid) {
+                costIndicator.style.borderColor = '#00ffcc';
+                costIndicator.style.color = '#00ffcc';
+                costIndicator.style.background = 'rgba(0,255,200,0.1)';
+                testBtn.disabled = false;
+                testBtn.style.opacity = '1.0';
+                saveBtn.disabled = !customCardMaker.testPassed;
+            } else {
+                costIndicator.style.borderColor = '#ff3366';
+                costIndicator.style.color = '#ff3366';
+                costIndicator.style.background = 'rgba(255,50,100,0.1)';
+                testBtn.disabled = true;
+                testBtn.style.opacity = '0.4';
+                saveBtn.disabled = true;
+            }
+        }
+
+        function customCardMakerDeleteCard(cardId) {
+            if (confirm('この自作カードを削除しますか？')) {
+                customCards = customCards.filter(c => c.id !== cardId);
+                try {
+                    localStorage.setItem('touhou_kyoukaisen_custom_cards', JSON.stringify(customCards));
+                } catch(e) {}
+                integrateCustomCards();
+                renderCardMakerList();
+            }
+        }
+
+        function startCustomCardTest() {
+            if (customCardMakerMode === 'code') {
+                let code = document.getElementById('workspace-code-textarea').value;
+                let parsed = codeToBlocks(code);
+                if (customCardMaker.activeTab === 'emitter') {
+                    customCardMaker.emitterScript = parsed;
+                } else if (customCardMaker.activeTab === 'bullet') {
+                    customCardMaker.bulletScript = parsed;
+                }
+            }
+
+            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
+            if (cost > 15) {
+                alert("コストの上限（15）を超えています！");
+                return;
+            }
+            
+            let tempCustomCard = {
+                id: 'custom_test',
+                name: '【A】' + (document.getElementById('custom-card-name').value.trim() || 'テスト弾幕'),
+                duration: 15,
+                pattern: 'custom_test',
+                interval: 0.1,
+                cost: cost,
+                desc: 'テスト中',
+                isCustom: true,
+                emitterScript: JSON.parse(JSON.stringify(customCardMaker.emitterScript)),
+                bulletScript: JSON.parse(JSON.stringify(customCardMaker.bulletScript))
+            };
+            
+            let testCardIdx = defaultCards.active.findIndex(c => c.id === 'custom_test');
+            if (testCardIdx !== -1) {
+                defaultCards.active[testCardIdx] = tempCustomCard;
+            } else {
+                defaultCards.active.push(tempCustomCard);
+            }
+            
+            isCustomCardTesting = true;
+            
+            document.getElementById('titleScreen').style.display = 'none';
+            isGameRunning = true;
+            
+            // テストプレイ開始時に全キー入力をリセット（スタックキー防止）
+            for (let k in keyboardState) keyboardState[k] = false;
+            
+            bullets = [];
+            activeReigekis = [];
+            reigekiCutinTimer = 0;
+            prevBombInput = false;
+            activeEffects = [];
+            
+            player.x = PLAY_WIDTH / 2;
+            player.y = canvas.height * 0.8;
+            player.isInvincible = false;
+            player.invincibleTimer = 0;
+            player.hp = 1000;
+            player.maxHp = 1000;
+            player.pendingDamage = 0;
+            player.pendingHeal = 0;
+            player.grazeCount = 0;
+            player.bombs = 0;
+            player.maxBombs = 0;
+            player.passives = [];
+            player.recentHits = [];
+            
+            cpu.x = PLAY_WIDTH / 2;
+            cpu.y = canvas.height * 0.2;
+            cpu.hp = 1000;
+            cpu.pendingDamage = 0;
+            cpu.pendingHeal = 0;
+            cpu.grazeCount = 0;
+            cpu.bombs = 0;
+            cpu.maxBombs = 0;
+            cpu.passives = [];
+            cpu.recentHits = [];
+            
+            gameState = 'BATTLE';
+            battlePhase = 'ACTION';
+            turnOwner = 'CPU';
+            turnCount = 1;
+            
+            activeCards = [ tempCustomCard ];
+            activeCards[0].emitterState = initEmitterState(tempCustomCard.emitterScript, cpu, player);
+            actionTimer = 15.0;
+            normalShotTimer = 0;
+            
+            lastTime = performance.now();
+            requestAnimationFrame(update);
+        }
+
+        function endCustomCardTest(success) {
+            isCustomCardTesting = false;
+            isGameRunning = false;
+            
+            bullets = [];
+            activeReigekis = [];
+            
+            const bombBtn = document.getElementById('mobileBombBtn');
+            if (bombBtn) bombBtn.style.display = 'none';
+            const overlay = document.getElementById('battleOverlay');
+            if (overlay) overlay.classList.add('hidden');
+            
+            document.getElementById('titleScreen').style.display = 'flex';
+            showScreen('screen-card-maker');
+            
+            if (success) {
+                customCardMaker.testPassed = true;
+                alert('★テスト成功！ノー被弾クリアしました！カード登録が可能です。');
+            } else {
+                customCardMaker.testPassed = false;
+                alert('被弾しました！テスト失敗です。');
+            }
+            
+            renderCardMaker();
+        }
+
+        function registerCustomCard() {
+            if (customCardMakerMode === 'code') {
+                let code = document.getElementById('workspace-code-textarea').value;
+                let parsed = codeToBlocks(code);
+                if (customCardMaker.activeTab === 'emitter') {
+                    customCardMaker.emitterScript = parsed;
+                } else if (customCardMaker.activeTab === 'bullet') {
+                    customCardMaker.bulletScript = parsed;
+                }
+            }
+
+            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
+            if (cost > 15) {
+                alert("コストの上限（15）を超えています！");
+                return;
+            }
+            if (!customCardMaker.testPassed) {
+                alert("このカードを登録するには、まずテストプレイをノー被弾でクリアする必要があります！");
+                return;
+            }
+
+            let nameInput = document.getElementById('custom-card-name').value.trim() || 'カスタムスペル';
+            let descInput = document.getElementById('custom-card-desc').value.trim() || 'オリジナルの弾幕パターン。';
+
+            if (!nameInput.startsWith('【A】')) {
+                nameInput = '【A】' + nameInput;
+            }
+            if (!descInput.startsWith('【自作カード】')) {
+                descInput = '【自作カード】' + descInput;
+            }
+
+            let cardId = customCardMaker.editingId || ('custom_' + Date.now());
+            let cardData = {
+                id: cardId,
+                name: nameInput,
+                desc: descInput,
+                duration: 15,
+                cost: cost,
+                isCustom: true,
+                emitterScript: JSON.parse(JSON.stringify(customCardMaker.emitterScript)),
+                bulletScript: JSON.parse(JSON.stringify(customCardMaker.bulletScript))
+            };
+
+            if (customCardMaker.editingId) {
+                let idx = customCards.findIndex(c => c.id === customCardMaker.editingId);
+                if (idx !== -1) {
+                    customCards[idx] = cardData;
+                } else {
+                    customCards.push(cardData);
+                }
+            } else {
+                customCards.push(cardData);
+            }
+
+            try {
+                localStorage.setItem('touhou_kyoukaisen_custom_cards', JSON.stringify(customCards));
+                localStorage.removeItem('custom_card_draft');
+                const restoreBtn = document.getElementById('custom-card-draft-load-btn');
+                if (restoreBtn) restoreBtn.style.display = 'none';
+            } catch(e) {
+                console.error("Failed to save custom cards:", e);
+            }
+
+            integrateCustomCards();
+            customCardMakerCloseEditor();
+        }
+
+        let customCardMakerMode = 'block';
+
+        function customCardMakerSwitchMode(mode) {
+            if (customCardMakerMode === mode) return;
+            
+            let script = getActiveScript();
+            
+            const blocksContainer = document.getElementById('workspace-blocks-container');
+            const codeTextarea = document.getElementById('workspace-code-textarea');
+            const palette = document.querySelector('.palette-panel');
+            const btnBlock = document.getElementById('mode-btn-block');
+            const btnCode = document.getElementById('mode-btn-code');
+
+            if (mode === 'code') {
+                let code = blocksToCode(script);
+                if (codeTextarea) codeTextarea.value = code;
+                
+                if (blocksContainer) blocksContainer.classList.add('hidden');
+                if (codeTextarea) codeTextarea.classList.remove('hidden');
+                
+                if (palette) {
+                    palette.style.opacity = '0.3';
+                    palette.style.pointerEvents = 'none';
+                }
+            } else {
+                let code = codeTextarea ? codeTextarea.value : "";
+                let parsedBlocks = codeToBlocks(code);
+                
+                if (customCardMaker.activeTab === 'emitter') {
+                    customCardMaker.emitterScript = parsedBlocks;
+                } else if (customCardMaker.activeTab === 'bullet') {
+                    customCardMaker.bulletScript = parsedBlocks;
+                }
+                
+                if (blocksContainer) blocksContainer.classList.remove('hidden');
+                if (codeTextarea) codeTextarea.classList.add('hidden');
+                
+                if (palette) {
+                    palette.style.opacity = '1.0';
+                    palette.style.pointerEvents = 'auto';
+                }
+                
+                customCardMaker.testPassed = false;
+                renderCardMaker();
+            }
+            
+            customCardMakerMode = mode;
+            if (btnBlock) btnBlock.className = mode === 'block' ? 'tab-btn active' : 'tab-btn';
+            if (btnCode) btnCode.className = mode === 'code' ? 'tab-btn active' : 'tab-btn';
+        }
+
+        function customCardMakerOnCodeInput() {
+            let textarea = document.getElementById('workspace-code-textarea');
+            let code = textarea ? textarea.value : "";
+            let parsedBlocks = codeToBlocks(code);
+            
+            if (customCardMaker.activeTab === 'emitter') {
+                customCardMaker.emitterScript = parsedBlocks;
+            } else if (customCardMaker.activeTab === 'bullet') {
+                customCardMaker.bulletScript = parsedBlocks;
+            }
+            
+            customCardMaker.testPassed = false;
+            
+            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
+            let costVal = document.getElementById('custom-card-cost');
+            let costIndicator = document.getElementById('custom-card-cost-indicator');
+            let testBtn = document.getElementById('custom-card-test-btn');
+            let saveBtn = document.getElementById('custom-card-save-btn');
+            
+            if (costVal) costVal.textContent = cost;
+            
+            let isCostValid = cost <= 15;
+            if (costIndicator) {
+                if (isCostValid) {
+                    costIndicator.style.borderColor = '#00ffcc';
+                    costIndicator.style.color = '#00ffcc';
+                    costIndicator.style.background = 'rgba(0,255,200,0.1)';
+                } else {
+                    costIndicator.style.borderColor = '#ff3366';
+                    costIndicator.style.color = '#ff3366';
+                    costIndicator.style.background = 'rgba(255,50,100,0.1)';
+                }
+            }
+            if (testBtn) {
+                testBtn.disabled = !isCostValid;
+                testBtn.style.opacity = isCostValid ? '1.0' : '0.4';
+            }
+            if (saveBtn) {
+                saveBtn.disabled = true;
+            }
+            saveCustomCardDraft(false);
+        }
+
+        function blocksToCode(blocks) {
+            if (!blocks || blocks.length === 0) return "";
+            let lines = [];
+            blocks.forEach(b => {
+                let indentStr = "    ".repeat(b.indent || 0);
+                let line = "";
+                switch (b.type) {
+                    case 'wait':
+                        line = `wait(${b.params.duration || '0.2'})`;
+                        break;
+                    case 'repeat':
+                        line = `repeat(${b.params.count || '10'})`;
+                        break;
+                    case 'forever':
+                        line = `forever()`;
+                        break;
+                    case 'set_var':
+                        line = `${b.params.name || 'angle'} = ${b.params.value || '0'}`;
+                        break;
+                    case 'change_var':
+                        line = `${b.params.name || 'angle'} += ${b.params.value || '10'}`;
+                        break;
+                    case 'aim_at_target':
+                        line = `aimAtTarget()`;
+                        break;
+                    case 'spawn_bullet': {
+                        let bt = b.params.bulletType || 'normal';
+                        let col = b.params.color || '#ff3333';
+                        let spd = b.params.speed || '200';
+                        let ang = b.params.angle || 'angle';
+                        line = `spawnBullet("${bt}", "${col}", ${spd}, ${ang})`;
+                        break;
+                    }
+                    case 'spawn_ring': {
+                        let btRing = b.params.bulletType || 'normal';
+                        let colRing = b.params.color || '#ff3333';
+                        let spdRing = b.params.speed || '200';
+                        let cntRing = b.params.count || '12';
+                        line = `spawnRing("${btRing}", "${colRing}", ${spdRing}, ${cntRing})`;
+                        break;
+                    }
+                    case 'spawn_way': {
+                        let btWay = b.params.bulletType || 'normal';
+                        let colWay = b.params.color || '#ff3333';
+                        let spdWay = b.params.speed || '200';
+                        let angWay = b.params.angle || 'angle';
+                        let cntWay = b.params.count || '3';
+                        let sprWay = b.params.spread || '30';
+                        line = `spawnWay("${btWay}", "${colWay}", ${spdWay}, ${angWay}, ${cntWay}, ${sprWay})`;
+                        break;
+                    }
+                    case 'homing':
+                        line = `homing(${b.params.turnSpeed || '90'})`;
+                        break;
+                    case 'bounce':
+                        line = `bounce()`;
+                        break;
+                    case 'set_laser':
+                        line = `warningTime = ${b.params.warningTime || '1.0'}\n${indentStr}activeTime = ${b.params.activeTime || '1.5'}`;
+                        break;
+                    case 'if':
+                        line = `if (${b.params.cond || 'x < 10'})`;
+                        break;
+                    case 'once':
+                        line = `once`;
+                        break;
+                }
+                if (line) {
+                    lines.push(indentStr + line);
+                }
+            });
+            return lines.join("\n");
+        }
+
+        function codeToBlocks(code) {
+            if (!code) return [];
+            let lines = code.split("\n");
+            let blocks = [];
+            
+            lines.forEach(line => {
+                let matchIndent = line.match(/^([ \t]*)/);
+                let indentStr = matchIndent ? matchIndent[1] : "";
+                let spaceCount = 0;
+                for (let i = 0; i < indentStr.length; i++) {
+                    if (indentStr[i] === '\t') spaceCount += 4;
+                    else spaceCount += 1;
+                }
+                let indent = Math.floor(spaceCount / 4);
+                indent = Math.max(0, Math.min(3, indent));
+                
+                let trimmed = line.trim();
+                // セミコロン、行末の波括弧を除去
+                trimmed = trimmed.replace(/;+$/, "").trim();
+                trimmed = trimmed.replace(/\{\s*$/, "").trim();
+                
+                if (trimmed === "" || trimmed === "{" || trimmed === "}" || trimmed.startsWith("//")) return;
+                
+                let block = null;
+                
+                let mWait = trimmed.match(/^wait\((.*?)\)$/i);
+                if (mWait) {
+                    block = { type: 'wait', params: { duration: mWait[1].trim() }, indent: indent };
+                }
+                let mRepeat = trimmed.match(/^repeat\((.*?)\)$/i);
+                if (mRepeat) {
+                    block = { type: 'repeat', params: { count: mRepeat[1].trim() }, indent: indent };
+                }
+                let mForever = trimmed.match(/^forever\(\)$/i);
+                if (mForever) {
+                    block = { type: 'forever', params: {}, indent: indent };
+                }
+                let mIf = trimmed.match(/^if\s*\((.*?)\)$/i);
+                if (mIf) {
+                    block = { type: 'if', params: { cond: mIf[1].trim() }, indent: indent };
+                }
+                let mAim = trimmed.match(/^aimAtTarget\(\)$/i);
+                if (mAim) {
+                    block = { type: 'aim_at_target', params: {}, indent: indent };
+                }
+                let mBounce = trimmed.match(/^bounce\(\)$/i);
+                if (mBounce) {
+                    block = { type: 'bounce', params: {}, indent: indent };
+                }
+                let mOnce = trimmed.match(/^once(\(\))?$/i);
+                if (mOnce) {
+                    block = { type: 'once', params: {}, indent: indent };
+                }
+                let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
+                if (mHoming) {
+                    block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent: indent };
+                }
+                let mSpawn = trimmed.match(/^spawnBullet\((.*?)\)$/i);
+                if (mSpawn) {
+                    let args = mSpawn[1].split(",").map(s => {
+                        let sTrim = s.trim();
+                        if ((sTrim.startsWith('"') && sTrim.endsWith('"')) || (sTrim.startsWith("'") && sTrim.endsWith("'"))) {
+                            return sTrim.substring(1, sTrim.length - 1);
+                        }
+                        return sTrim;
+                    });
+                    let isLegacy = args.length >= 5;
+                    block = {
+                        type: 'spawn_bullet',
+                        params: {
+                            bulletType: args[0] || 'normal',
+                            color: args[1] || '#ff3333',
+                            speed: isLegacy ? (args[3] || '200') : (args[2] || '200'),
+                            angle: isLegacy ? (args[4] || 'angle') : (args[3] || 'angle')
+                        },
+                        indent: indent
+                    };
+                }
+                let mSpawnRing = trimmed.match(/^spawnRing\((.*?)\)$/i);
+                if (mSpawnRing) {
+                    let args = mSpawnRing[1].split(",").map(s => {
+                        let sTrim = s.trim();
+                        if ((sTrim.startsWith('"') && sTrim.endsWith('"')) || (sTrim.startsWith("'") && sTrim.endsWith("'"))) {
+                            return sTrim.substring(1, sTrim.length - 1);
+                        }
+                        return sTrim;
+                    });
+                    let isLegacy = args.length >= 5;
+                    block = {
+                        type: 'spawn_ring',
+                        params: {
+                            bulletType: args[0] || 'normal',
+                            color: args[1] || '#ff3333',
+                            speed: isLegacy ? (args[3] || '200') : (args[2] || '200'),
+                            count: isLegacy ? (args[4] || '12') : (args[3] || '12')
+                        },
+                        indent: indent
+                    };
+                }
+                let mSpawnWay = trimmed.match(/^spawnWay\((.*?)\)$/i);
+                if (mSpawnWay) {
+                    let args = mSpawnWay[1].split(",").map(s => {
+                        let sTrim = s.trim();
+                        if ((sTrim.startsWith('"') && sTrim.endsWith('"')) || (sTrim.startsWith("'") && sTrim.endsWith("'"))) {
+                            return sTrim.substring(1, sTrim.length - 1);
+                        }
+                        return sTrim;
+                    });
+                    let isLegacy = args.length >= 7;
+                    block = {
+                        type: 'spawn_way',
+                        params: {
+                            bulletType: args[0] || 'normal',
+                            color: args[1] || '#ff3333',
+                            speed: isLegacy ? (args[3] || '200') : (args[2] || '200'),
+                            angle: isLegacy ? (args[4] || 'angle') : (args[3] || 'angle'),
+                            count: isLegacy ? (args[5] || '3') : (args[4] || '3'),
+                            spread: isLegacy ? (args[6] || '30') : (args[5] || '30')
+                        },
+                        indent: indent
+                    };
+                }
+                
+                if (!block) {
+                    let mChange = trimmed.match(/^(\w+)\s*\+=\s*(.+)$/);
+                    if (mChange) {
+                        block = {
+                            type: 'change_var',
+                            params: { name: mChange[1].trim(), value: mChange[2].trim() },
+                            indent: indent
+                        };
+                    } else {
+                        let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/);
+                        if (mSet) {
+                            block = {
+                                type: 'set_var',
+                                params: { name: mSet[1].trim(), value: mSet[2].trim() },
+                                indent: indent
+                            };
+                        }
+                    }
+                }
+                
+                if (block) {
+                    blocks.push(block);
+                }
+            });
+            
+            let mergedBlocks = [];
+            for (let i = 0; i < blocks.length; i++) {
+                let curr = blocks[i];
+                let next = blocks[i + 1];
+                if (curr.type === 'set_var' && curr.params.name === 'warningTime' &&
+                    next && next.type === 'set_var' && next.params.name === 'activeTime' &&
+                    curr.indent === next.indent) {
+                    
+                    mergedBlocks.push({
+                        type: 'set_laser',
+                        params: {
+                            warningTime: curr.params.value,
+                            activeTime: next.params.value
+                        },
+                        indent: curr.indent
+                    });
+                    i++; // activeTime block is merged
+                } else if (curr.type === 'set_var' && curr.params.name === 'warningTime') {
+                    mergedBlocks.push({
+                        type: 'set_laser',
+                        params: {
+                            warningTime: curr.params.value,
+                            activeTime: '1.5'
+                        },
+                        indent: curr.indent
+                    });
+                } else if (curr.type === 'set_var' && curr.params.name === 'activeTime') {
+                    mergedBlocks.push({
+                        type: 'set_laser',
+                        params: {
+                            warningTime: '1.0',
+                            activeTime: curr.params.value
+                        },
+                        indent: curr.indent
+                    });
+                } else {
+                    mergedBlocks.push(curr);
+                }
+            }
+            blocks = mergedBlocks;
+
+            for (let i = 0; i < blocks.length; i++) {
+                if (i === 0) blocks[i].indent = 0;
+                else blocks[i].indent = Math.min(blocks[i].indent || 0, blocks[i - 1].indent + 1);
+            }
+            
+            return blocks;
         }
 
         // スマホ操作の自動初期化
