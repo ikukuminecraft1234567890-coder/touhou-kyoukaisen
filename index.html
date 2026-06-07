@@ -888,22 +888,22 @@
            自作カード作成画面（エディタ）用スタイル
            ========================================== */
         #screen-card-maker {
-            position: absolute !important;
+            position: fixed !important;
             top: 0 !important;
             left: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            height: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
             background: rgba(12, 10, 25, 0.98) !important;
             border: none !important;
             border-radius: 0px !important;
             box-shadow: none !important;
-            padding: 15px !important;
+            padding: 8px !important;
             display: flex;
             flex-direction: column !important;
             color: #fff !important;
             box-sizing: border-box !important;
             z-index: 100 !important;
+            overflow: hidden !important;
         }
         .code-textarea {
             width: 100% !important;
@@ -930,25 +930,40 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            padding-bottom: 12px;
-            margin-bottom: 12px;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
             width: 100%;
+        }
+        #card-editor-title {
+            margin: 0;
+            font-size: 16px !important;
+            white-space: nowrap;
+        }
+        #custom-card-cost-indicator {
+            font-size: 11px !important;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(0,255,200,0.1);
+            border: 1px solid #00ffcc;
         }
         .maker-metadata {
             display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
             width: 100%;
         }
         .metadata-input {
             background: rgba(0, 0, 0, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             color: #fff !important;
-            padding: 8px 12px !important;
+            padding: 6px 10px !important;
             border-radius: 6px !important;
-            font-size: 14px !important;
+            font-size: 11px !important;
             outline: none !important;
             transition: all 0.2s;
             box-sizing: border-box;
@@ -960,44 +975,66 @@
         }
         .maker-layout {
             display: flex;
+            flex-direction: column !important;
             flex: 1;
-            gap: 15px;
-            overflow: hidden;
+            gap: 10px;
+            overflow-y: auto !important;
             min-height: 0;
             width: 100%;
         }
         .palette-panel {
-            width: 200px;
+            width: 100% !important;
+            max-height: 140px !important;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 10px;
+            padding: 5px !important;
             overflow-y: auto;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 5px !important;
             flex-shrink: 0;
+            align-content: flex-start;
         }
         .workspace-panel {
-            flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 240px !important;
+            flex: 1;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 10px;
+            padding: 6px !important;
             overflow: hidden;
+        }
+        /* コードモード時：ワークスペースは100%幅・全高・エディタが単独展開 */
+        .maker-layout.code-mode {
+            gap: 0 !important;
+        }
+        .maker-layout.code-mode .workspace-panel {
+            min-height: 0 !important;
+            flex: 1;
+            width: 100%;
+        }
+        .maker-layout.code-mode #workspace-code-textarea {
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            font-size: 13px !important;
+            line-height: 1.7 !important;
         }
         .tabs-header {
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         .tab-btn {
-            padding: 6px 12px !important;
-            font-size: 11px !important;
+            padding: 4px 8px !important;
+            font-size: 10px !important;
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 4px !important;
@@ -1020,32 +1057,35 @@
             gap: 8px;
         }
         .palette-group-title {
-            font-size: 10px;
+            width: 100%;
+            font-size: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #aaa;
-            margin-top: 5px;
+            margin-top: 2px;
             margin-bottom: 2px;
             border-left: 3px solid #00ffcc;
             padding-left: 5px;
             font-weight: bold;
         }
         .palette-btn {
-            width: 100% !important;
-            padding: 6px 8px !important;
-            font-size: 11px !important;
+            width: calc(33.3% - 4px) !important;
+            padding: 4px 6px !important;
+            font-size: 9px !important;
             color: #fff !important;
             border: none !important;
             border-radius: 6px !important;
             cursor: pointer;
-            text-align: left !important;
+            text-align: center !important;
             transition: all 0.2s;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .palette-btn:hover {
-            transform: translateX(3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: scale(1.03);
             filter: brightness(1.2);
         }
         /* カテゴリカラー */
@@ -1057,19 +1097,19 @@
         .maker-block {
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            padding: 6px 10px;
-            padding-right: 130px !important; /* 操作ボタン用の固定右余白 */
+            flex-wrap: wrap !important;
+            padding: 4px 6px !important;
+            padding-right: 100px !important; /* 操作ボタン用の固定右余白 */
             border-radius: 6px;
             color: #fff;
-            font-size: 11px;
+            font-size: 9px !important;
             gap: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             box-sizing: border-box;
             min-height: 38px;
             border: 1px solid rgba(255,255,255,0.1);
             position: relative;
-            flex-shrink: 0 !important; /* 親コンテナの高さが足りない場合にブロックが潰れるのを防ぐ */
+            flex-shrink: 0 !important;
             transition: all 0.15s ease;
         }
         .maker-block:hover {
@@ -1082,10 +1122,10 @@
             color: #fff !important;
             padding: 2px 6px !important;
             border-radius: 4px !important;
-            width: 45px !important;
+            width: 32px !important;
             text-align: center !important;
             outline: none !important;
-            font-size: 11px !important;
+            font-size: 9px !important;
             transition: border-color 0.2s;
         }
         .maker-block input[type="text"]:focus {
@@ -1095,10 +1135,10 @@
             background: rgba(0, 0, 0, 0.6) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #fff !important;
-            padding: 2px 4px !important;
+            padding: 1px 2px !important;
             border-radius: 4px !important;
             outline: none !important;
-            font-size: 11px !important;
+            font-size: 9px !important;
             cursor: pointer;
             transition: border-color 0.2s;
         }
@@ -1117,14 +1157,14 @@
             background: rgba(255, 255, 255, 0.1) !important;
             border: none !important;
             color: #fff !important;
-            width: 20px !important;
-            height: 20px !important;
+            width: 16px !important;
+            height: 16px !important;
             border-radius: 4px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             cursor: pointer !important;
-            font-size: 9px !important;
+            font-size: 8px !important;
             transition: all 0.15s;
         }
         .block-ctrl-btn:hover {
@@ -1137,6 +1177,10 @@
         .block-ctrl-btn.btn-delete:hover {
             background: rgba(255, 50, 50, 0.6) !important;
         }
+        #palette-bounce-hint {
+            display: none !important;
+        }
+
         /* 自作カード管理画面用カードアイテム */
         .custom-card-item {
             background: linear-gradient(135deg, rgba(20, 20, 35, 0.9) 0%, rgba(10, 10, 20, 0.9) 100%);
@@ -1220,67 +1264,105 @@
             color: #fff !important;
         }
 
-        /* スマホ向け縦画面対応 */
-        @media (max-width: 768px), (max-height: 600px) {
+        /* ==========================================
+           PC向けデスクトップレイアウト上書き（レスポンシブ）
+           ========================================== */
+        @media (min-width: 769px) and (min-height: 601px) {
             #screen-card-maker {
-                width: 100vw !important;
-                height: 100vh !important;
-                padding: 8px !important;
+                position: absolute !important;
                 top: 0 !important;
                 left: 0 !important;
-                border-radius: 0 !important;
-            }
-            .maker-layout {
-                flex-direction: column !important;
-                overflow-y: auto !important;
-            }
-            .palette-panel {
                 width: 100% !important;
-                max-height: 140px !important;
-                flex-direction: row !important;
-                flex-wrap: wrap !important;
-                gap: 5px !important;
-                padding: 5px !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                padding: 15px !important;
+                border-radius: 12px !important;
             }
-            .palette-group-title {
-                width: 100%;
-                margin-top: 2px;
-                font-size: 8px;
+            .maker-header {
+                flex-wrap: nowrap;
+                gap: 0;
+                padding-bottom: 12px;
+                margin-bottom: 12px;
             }
-            .palette-btn {
-                width: calc(33.3% - 4px) !important;
-                padding: 4px 6px !important;
-                font-size: 9px !important;
+            #card-editor-title {
+                font-size: 20px !important;
             }
-            .workspace-panel {
-                min-height: 240px !important;
-                padding: 6px !important;
+            #custom-card-cost-indicator {
+                font-size: 14px !important;
+                padding: 4px 10px;
+            }
+            .maker-metadata {
+                flex-direction: row;
+                gap: 15px;
+                margin-bottom: 15px;
             }
             .metadata-input {
+                font-size: 14px !important;
+                padding: 8px 12px !important;
+            }
+            .maker-layout {
+                flex-direction: row !important;
+                overflow: hidden !important;
+                gap: 15px;
+            }
+            .palette-panel {
+                width: 200px !important;
+                max-height: none !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                gap: 10px !important;
+                padding: 10px !important;
+            }
+            .workspace-panel {
+                min-height: 0 !important;
+                padding: 10px !important;
+            }
+            .tabs-header {
+                flex-wrap: nowrap;
+                gap: 8px;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+            .tab-btn {
+                padding: 6px 12px !important;
                 font-size: 11px !important;
-                padding: 6px 10px !important;
+            }
+            .palette-group-title {
+                width: auto !important;
+                font-size: 10px !important;
+                margin-top: 5px !important;
+                margin-bottom: 2px !important;
+            }
+            .palette-btn {
+                width: 100% !important;
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+                text-align: left !important;
+            }
+            .palette-btn:hover {
+                transform: translateX(3px);
             }
             .maker-block {
-                font-size: 9px !important;
-                padding: 4px 6px !important;
-                padding-right: 100px !important;
-                flex-wrap: wrap !important;
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+                padding-right: 130px !important;
+                flex-wrap: nowrap !important;
             }
             .maker-block input[type="text"] {
-                width: 32px !important;
-                font-size: 9px !important;
+                width: 45px !important;
+                font-size: 11px !important;
             }
             .maker-block select {
-                font-size: 9px !important;
-                padding: 1px 2px !important;
+                font-size: 11px !important;
+                padding: 2px 4px !important;
             }
             .block-ctrl-btn {
-                width: 16px !important;
-                height: 16px !important;
-                font-size: 8px !important;
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 9px !important;
             }
             #palette-bounce-hint {
-                display: none !important;
+                display: block !important;
             }
         }
     </style>
@@ -3589,6 +3671,11 @@
         window.addEventListener('keydown', e => {
             // キー設定中の場合はキャプチャするので、ここでは処理しない
             if (activeConfiguringKey) return;
+
+            // textarea / input にフォーカスがある場合はゲーム側のキー処理を完全にスキップ
+            // （JSコードエディタのカーソル移動・改行・文字入力をブロックしないため）
+            const focused = document.activeElement;
+            if (focused && (focused.tagName === 'TEXTAREA' || focused.tagName === 'INPUT')) return;
 
             keyboardState[e.key] = true;
 
@@ -9604,17 +9691,25 @@
             const btnBlock = document.getElementById('mode-btn-block');
             const btnCode = document.getElementById('mode-btn-code');
 
+            const makerLayout = document.querySelector('.maker-layout');
+
             if (mode === 'code') {
                 let code = blocksToCode(script);
-                if (codeTextarea) codeTextarea.value = code;
-                
-                if (blocksContainer) blocksContainer.classList.add('hidden');
-                if (codeTextarea) codeTextarea.classList.remove('hidden');
-                
-                if (palette) {
-                    palette.style.opacity = '0.3';
-                    palette.style.pointerEvents = 'none';
+                if (codeTextarea) {
+                    codeTextarea.value = code;
+                    codeTextarea.classList.remove('hidden');
+                    // コードモード時は全幅・全高でエディタを表示
+                    codeTextarea.style.flex = '1';
+                    codeTextarea.style.minHeight = '0';
+                    codeTextarea.style.height = '100%';
+                    // フォーカスを当ててすぐ編集できるようにする
+                    setTimeout(() => codeTextarea.focus(), 50);
                 }
+                if (blocksContainer) blocksContainer.classList.add('hidden');
+                // パレットパネルを完全に非表示にして画面を最大化
+                if (palette) palette.classList.add('hidden');
+                // レイアウトに code-mode クラスを付ける
+                if (makerLayout) makerLayout.classList.add('code-mode');
             } else {
                 let code = codeTextarea ? codeTextarea.value : "";
                 let parsedBlocks = codeToBlocks(code);
@@ -9626,12 +9721,21 @@
                 }
                 
                 if (blocksContainer) blocksContainer.classList.remove('hidden');
-                if (codeTextarea) codeTextarea.classList.add('hidden');
-                
+                if (codeTextarea) {
+                    codeTextarea.classList.add('hidden');
+                    // ブロックモードに戻すときスタイルリセット
+                    codeTextarea.style.flex = '';
+                    codeTextarea.style.minHeight = '';
+                    codeTextarea.style.height = '';
+                }
+                // パレットパネルを再表示
                 if (palette) {
+                    palette.classList.remove('hidden');
                     palette.style.opacity = '1.0';
                     palette.style.pointerEvents = 'auto';
                 }
+                // code-mode クラスを外す
+                if (makerLayout) makerLayout.classList.remove('code-mode');
                 
                 customCardMaker.testPassed = false;
                 renderCardMaker();
