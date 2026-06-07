@@ -1792,6 +1792,7 @@
                             <button class="palette-btn color-action" id="palette-btn-spawn-ring" onclick="customCardMakerAddBlock('spawn_ring')">全方位円形弾を発射</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn-way" onclick="customCardMakerAddBlock('spawn_way')">Way弾を発射</button>
                             <button class="palette-btn color-motion" id="palette-btn-homing" onclick="customCardMakerAddBlock('homing')">相手を追尾する</button>
+                            <button class="palette-btn color-motion" id="palette-btn-bounce" onclick="customCardMakerAddBlock('bounce')">壁で反射する</button>
                         </div>
 
                         <!-- ワークスペース -->
@@ -2521,6 +2522,7 @@
         // --- CUSTOM SPELL CARD SYSTEM ---
         let customCards = [];
         let isCustomCardTesting = false;
+        let customCardTestEmitterDone = false; // エミッター停止後、弾が消えるまで待つフラグ
         let customCardMaker = {
             editingId: null,
             name: 'カスタムスペル',
@@ -6834,6 +6836,10 @@
                     let b = bullets[i];
                     if (!b) continue; // 安全対策: ループ内で配列が縮小して範囲外になった場合の回避
                     if (b.update) b.update(b, dt); // 弾個別の状態更新 (消える魔球やエボリューションなど)
+                    if (isBulletExpired(b)) {
+                        bullets.splice(i, 1);
+                        continue;
+                    }
                     b.x += b.vx * dt; b.y += b.vy * dt;
 
                     let minY = -30;
@@ -6877,6 +6883,9 @@
                             let x2, y2;
                             if (b.isCustomBeam && b.bulletState) {
                                 let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                                if (b.bulletState.isPlayerSide) {
+                                    rad = -rad;
+                                }
                                 x2 = b.x + Math.cos(rad) * 1200;
                                 y2 = b.y + Math.sin(rad) * 1200;
                             } else {
@@ -6985,6 +6994,9 @@
                             let x2, y2;
                             if (b.isCustomBeam && b.bulletState) {
                                 let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                                if (b.bulletState.isPlayerSide) {
+                                    rad = -rad;
+                                }
                                 x2 = b.x + Math.cos(rad) * 1200;
                                 y2 = b.y + Math.sin(rad) * 1200;
                             } else {
@@ -7093,7 +7105,12 @@
                     endCustomCardTest(false);
                     return;
                 }
-                if (actionTimer <= 0) {
+                // actionTimer が切れたらエミッター終了フェーズへ移行
+                if (actionTimer <= 0 && !customCardTestEmitterDone) {
+                    customCardTestEmitterDone = true;
+                }
+                // エミッター終了後、全弾が消えたらテスト成功
+                if (customCardTestEmitterDone && bullets.length === 0) {
                     endCustomCardTest(true);
                     return;
                 }
@@ -7237,6 +7254,9 @@
                     // 予告線（ガイドライン）の描画 - 東方STG風
                     ctx.save();
                     let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                    if (b.bulletState.isPlayerSide) {
+                        rad = -rad;
+                    }
                     let x2 = b.x + Math.cos(rad) * 1200;
                     let y2 = b.y + Math.sin(rad) * 1200;
                     
@@ -7274,6 +7294,9 @@
                     if (b.isCustomBeam && b.bulletState) {
                         // 設置ビーム（ビーム状レーザー）の描画 - 東方STG風
                         let rad = (b.bulletState.variables.angle || 0) * Math.PI / 180;
+                        if (b.bulletState.isPlayerSide) {
+                            rad = -rad;
+                        }
                         let x2 = b.x + Math.cos(rad) * 1200;
                         let y2 = b.y + Math.sin(rad) * 1200;
                         
@@ -7694,17 +7717,42 @@
 
             if (isCustomCardTesting) {
                 ctx.save();
-                ctx.fillStyle = 'rgba(255, 0, 50, 0.2)';
-                ctx.fillRect(0, 0, PLAY_WIDTH, 40);
-                ctx.strokeStyle = 'rgba(255, 0, 50, 0.6)';
-                ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(0, 40); ctx.lineTo(PLAY_WIDTH, 40); ctx.stroke();
-                
-                ctx.fillStyle = '#ff3366';
-                ctx.font = "bold 15px 'Noto Serif JP', sans-serif";
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText("◆ 自作弾幕テストプレイ中 (被弾・ボム禁止) ◆", PLAY_WIDTH / 2, 20);
+                if (customCardTestEmitterDone) {
+                    // 弾消滅待ちフェーズ
+                    ctx.fillStyle = 'rgba(0, 180, 255, 0.2)';
+                    ctx.fillRect(0, 0, PLAY_WIDTH, 40);
+                    ctx.strokeStyle = 'rgba(0, 180, 255, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0, 40); ctx.lineTo(PLAY_WIDTH, 40); ctx.stroke();
+                    ctx.fillStyle = '#00cfff';
+                    ctx.font = "bold 14px 'Noto Serif JP', sans-serif";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`◆ 弾消滅待ち… 残り${bullets.length}発 (全弾が消えたらクリア) ◆`, PLAY_WIDTH / 2, 20);
+                    
+                    if (bullets.length > 0) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = "10px monospace";
+                        let first = bullets[0];
+                        let stateText = `x:${first.x ? first.x.toFixed(1) : 'null'} y:${first.y ? first.y.toFixed(1) : 'null'} vx:${first.vx ? first.vx.toFixed(1) : 'null'} vy:${first.vy ? first.vy.toFixed(1) : 'null'} isL:${first.isLaser} isW:${first.isWarningLaser} isCB:${first.isCustomBeam}`;
+                        if (first.bulletState) {
+                            let vars = first.bulletState.variables;
+                            stateText += ` timer:${vars.timer.toFixed(1)} warn:${vars.warningTime} active:${vars.activeTime}`;
+                        }
+                        ctx.fillText(stateText, PLAY_WIDTH / 2, 35);
+                    }
+                } else {
+                    ctx.fillStyle = 'rgba(255, 0, 50, 0.2)';
+                    ctx.fillRect(0, 0, PLAY_WIDTH, 40);
+                    ctx.strokeStyle = 'rgba(255, 0, 50, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0, 40); ctx.lineTo(PLAY_WIDTH, 40); ctx.stroke();
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = "bold 15px 'Noto Serif JP', sans-serif";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText("◆ 自作弾幕テストプレイ中 (被弾・ボム禁止) ◆", PLAY_WIDTH / 2, 20);
+                }
                 ctx.restore();
             }
 
@@ -8053,6 +8101,26 @@
         // ==========================================
         // 自作カード用ブロックコンパイラ＆インタプリタ
         // ==========================================
+        function executeOnceBlock(block, state) {
+            if (!state.lifetimeOnce) state.lifetimeOnce = new Set();
+            let onceId = block.onceId || 'once_default';
+            if (state.lifetimeOnce.has(onceId)) {
+                return true;
+            }
+            state.lifetimeOnce.add(onceId);
+            if (block.children && block.children.length > 0) {
+                state.stack.push({
+                    type: 'once',
+                    pc: 0,
+                    iterationsLeft: 1,
+                    forever: false,
+                    blocks: block.children
+                });
+                return false;
+            }
+            return true;
+        }
+
         function compileIndentedBlocks(flatBlocks) {
             let root = [];
             let stack = [{ indent: -1, children: root }];
@@ -8123,8 +8191,12 @@
                 x_offset: 0,
                 y_offset: 0
             };
+            let isPlayerSide = (attacker === player);
             let dx = target.x - attacker.x;
             let dy = target.y - attacker.y;
+            if (isPlayerSide) {
+                dy = -dy;
+            }
             variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
             let compiledBlocks = compileIndentedBlocks(JSON.parse(JSON.stringify(script || [])));
@@ -8135,21 +8207,25 @@
                 waitTimer: 0,
                 stack: [],
                 variables: variables,
-                finished: false
+                finished: false,
+                isPlayerSide: isPlayerSide,
+                lifetimeOnce: new Set()
             };
         }
 
         function stepEmitter(c, state, attacker, target, dt) {
             if (!state) return;
             
+            let isPlayerSide = state.isPlayerSide;
+            
             // コアの現在位置、ターゲットの現在位置、および距離情報を毎フレーム同期
             state.variables.x = attacker.x;
-            state.variables.y = attacker.y;
+            state.variables.y = isPlayerSide ? (canvas.height - attacker.y) : attacker.y;
             state.variables.tx = target.x;
-            state.variables.ty = target.y;
+            state.variables.ty = isPlayerSide ? (canvas.height - target.y) : target.y;
             
             let dx = target.x - attacker.x;
-            let dy = target.y - attacker.y;
+            let dy = isPlayerSide ? (attacker.y - target.y) : (target.y - attacker.y);
             state.variables.dist = Math.sqrt(dx * dx + dy * dy);
             
             if (state.finished) return;
@@ -8230,6 +8306,25 @@
                         advancePC = false;
                         break;
                     }
+                    case 'if': {
+                        let condStr = block.params.cond || 'x < 10';
+                        let isTrue = !!evalExpr(condStr, state.variables);
+                        if (isTrue && block.children && block.children.length > 0) {
+                            state.stack.push({
+                                type: 'if',
+                                pc: 0,
+                                iterationsLeft: 1,
+                                forever: false,
+                                blocks: block.children
+                            });
+                            advancePC = false;
+                        }
+                        break;
+                    }
+                    case 'once': {
+                        advancePC = executeOnceBlock(block, state);
+                        break;
+                    }
                     case 'set_var': {
                         let varName = block.params.name;
                         let val = evalExpr(block.params.value, state.variables);
@@ -8245,6 +8340,11 @@
                     case 'aim_at_target': {
                         let dx = target.x - (attacker.x + (state.variables.x_offset || 0));
                         let dy = target.y - (attacker.y + (state.variables.y_offset || 0));
+                        if (isPlayerSide) {
+                            let targetVirtualY = canvas.height - target.y;
+                            let spawnVirtualY = (canvas.height - attacker.y) + (state.variables.y_offset || 0);
+                            dy = targetVirtualY - spawnVirtualY;
+                        }
                         state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
                         break;
                     }
@@ -8255,7 +8355,13 @@
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
                         let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        if (isPlayerSide) {
+                            spawnY = attacker.y - (state.variables.y_offset || 0);
+                        }
                         let angleRad = angle * Math.PI / 180;
+                        if (isPlayerSide) {
+                            angleRad = -angleRad;
+                        }
                         
                         let newBullet = {
                             x: spawnX,
@@ -8276,12 +8382,15 @@
                             newBullet.isLaser = true;
                         }
 
-                        if (c.bulletScript && c.bulletScript.length > 0) {
-                            newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
-                            newBullet.update = (b, bdt) => {
-                                runCustomBulletScript(b, bdt, attacker, target);
-                            };
-                        }
+                        newBullet.threatWeight = computeBulletThreatWeight(
+                            spawnX, spawnY, newBullet.vx, newBullet.vy, target.x, target.y
+                        );
+
+                        newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
+                        newBullet.bulletState.isPlayerSide = isPlayerSide;
+                        newBullet.update = (b, bdt) => {
+                            runCustomBulletScript(b, bdt, attacker, target);
+                        };
                         
                         bullets.push(newBullet);
                         break;
@@ -8293,10 +8402,16 @@
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
                         let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        if (isPlayerSide) {
+                            spawnY = attacker.y - (state.variables.y_offset || 0);
+                        }
                         
                         for (let k = 0; k < count; k++) {
                             let angle = (360 / count) * k;
                             let angleRad = angle * Math.PI / 180;
+                            if (isPlayerSide) {
+                                angleRad = -angleRad;
+                            }
                             
                             let newBullet = {
                                 x: spawnX,
@@ -8317,12 +8432,15 @@
                                 newBullet.isLaser = true;
                             }
                             
-                            if (c.bulletScript && c.bulletScript.length > 0) {
-                                newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
-                                newBullet.update = (b, bdt) => {
-                                    runCustomBulletScript(b, bdt, attacker, target);
-                                };
-                            }
+                            newBullet.threatWeight = computeBulletThreatWeight(
+                                spawnX, spawnY, newBullet.vx, newBullet.vy, target.x, target.y
+                            );
+
+                            newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
+                            newBullet.bulletState.isPlayerSide = isPlayerSide;
+                            newBullet.update = (b, bdt) => {
+                                runCustomBulletScript(b, bdt, attacker, target);
+                            };
                             
                             bullets.push(newBullet);
                         }
@@ -8337,12 +8455,18 @@
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
                         let spawnY = attacker.y + (state.variables.y_offset || 0);
+                        if (isPlayerSide) {
+                            spawnY = attacker.y - (state.variables.y_offset || 0);
+                        }
                         
                         let startAngle = centerAngle - (spread * (count - 1)) / 2;
                         
                         for (let k = 0; k < count; k++) {
                             let angle = startAngle + spread * k;
                             let angleRad = angle * Math.PI / 180;
+                            if (isPlayerSide) {
+                                angleRad = -angleRad;
+                            }
                             
                             let newBullet = {
                                 x: spawnX,
@@ -8363,12 +8487,15 @@
                                 newBullet.isLaser = true;
                             }
                             
-                            if (c.bulletScript && c.bulletScript.length > 0) {
-                                newBullet.bulletState = initBulletState(c.bulletScript, speed, angle, attacker, target);
-                                newBullet.update = (b, bdt) => {
-                                    runCustomBulletScript(b, bdt, attacker, target);
-                                };
-                            }
+                            newBullet.threatWeight = computeBulletThreatWeight(
+                                spawnX, spawnY, newBullet.vx, newBullet.vy, target.x, target.y
+                            );
+
+                            newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
+                            newBullet.bulletState.isPlayerSide = isPlayerSide;
+                            newBullet.update = (b, bdt) => {
+                                runCustomBulletScript(b, bdt, attacker, target);
+                            };
                             
                             bullets.push(newBullet);
                         }
@@ -8408,18 +8535,48 @@
                 waitTimer: 0,
                 stack: [],
                 variables: variables,
-                executedBlocks: new Set(),
+                lifetimeOnce: new Set(),
                 finished: false
             };
+        }
+
+        function isBulletExpired(b) {
+            if (!b) return true;
+            if (b._expired) return true;
+            if (!Number.isFinite(b.x) || !Number.isFinite(b.y)) return true;
+            if (b.bulletState) {
+                let warnT = parseFloat(b.bulletState.variables.warningTime) || 0;
+                let actT = parseFloat(b.bulletState.variables.activeTime) || 0;
+                if (warnT > 0 && actT > 0) {
+                    warnT = Math.max(0.5, warnT);
+                    if ((b.bulletState.variables.timer || 0) >= warnT + actT) {
+                        return true;
+                    }
+                }
+            }
+            // 速度ゼロの移動レーザーは線が描画されず配列に残留する
+            if (b.isLaser && !b.isWarningLaser && !b.isCustomBeam) {
+                if (Math.hypot(b.vx || 0, b.vy || 0) < 1) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         function runCustomBulletScript(b, dt, attacker, target) {
             let state = b.bulletState;
             if (!state) return;
             
+            let isPlayerSide = state.isPlayerSide;
+            
             // 毎フレーム壁との接触を判定（左・右・上端のみ。下端は除外）
-            // 連続トリガーによるチャタリングや多重実行を防ぐため、壁に触れた瞬間（1フレーム目）のみ 1 にする
-            let currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10);
+            // isPlayerSide の場合は、上端ではなく下端との接触を判定
+            let currentlyTouching;
+            if (isPlayerSide) {
+                currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y > canvas.height - 10);
+            } else {
+                currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10);
+            }
             let wallTouchTrigger = (currentlyTouching && !b.wasTouchingWall) ? 1 : 0;
             state.variables.isBounced = wallTouchTrigger;
             state.variables.isTouchWall = wallTouchTrigger;
@@ -8437,13 +8594,13 @@
             
             // Expose physics & environment variables in real-time
             state.variables.x = b.x;
-            state.variables.y = b.y;
+            state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
             state.variables.speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
             state.variables.tx = target.x;
-            state.variables.ty = target.y;
+            state.variables.ty = isPlayerSide ? (canvas.height - target.y) : target.y;
             
             let dx = target.x - b.x;
-            let dy = target.y - b.y;
+            let dy = isPlayerSide ? (b.y - target.y) : (target.y - b.y);
             state.variables.dist = Math.sqrt(dx * dx + dy * dy);
             
             if (!state.finished) {
@@ -8481,6 +8638,7 @@
                                 }
                             } else {
                                 // 弾の挙動は、最後まで実行し終えたら自動的に最初からループ実行する
+                                // once は弾生（この弾が存在する間）で一度きり — ループしてもリセットしない
                                 state.pc = 0;
                                 state.waitTimer = 0.01; // 1フレーム待機
                                 break;
@@ -8541,24 +8699,7 @@
                                 break;
                             }
                             case 'once': {
-                                let onceId = block.onceId || 'once_default';
-                                state.executedBlocks = state.executedBlocks || new Set();
-                                
-                                if (state.executedBlocks.has(onceId)) {
-                                    advancePC = true;
-                                } else {
-                                    state.executedBlocks.add(onceId);
-                                    if (block.children && block.children.length > 0) {
-                                        state.stack.push({
-                                            type: 'once',
-                                            pc: 0,
-                                            iterationsLeft: 1,
-                                            forever: false,
-                                            blocks: block.children
-                                        });
-                                        advancePC = false;
-                                    }
-                                }
+                                advancePC = executeOnceBlock(block, state);
                                 break;
                             }
                             case 'set_laser': {
@@ -8580,14 +8721,14 @@
                             }
                             case 'aim_at_target': {
                                 let dx = target.x - b.x;
-                                let dy = target.y - b.y;
+                                let dy = isPlayerSide ? (b.y - target.y) : (target.y - b.y);
                                 state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
                                 break;
                             }
                             case 'homing': {
                                 let turnSpeed = evalExpr(block.params.turnSpeed || '90', state.variables);
                                 let dx = target.x - b.x;
-                                let dy = target.y - b.y;
+                                let dy = isPlayerSide ? (b.y - target.y) : (target.y - b.y);
                                 let targetAngle = Math.atan2(dy, dx) * 180 / Math.PI;
                                 
                                 let diff = targetAngle - state.variables.angle;
@@ -8644,12 +8785,17 @@
             
             // Physics update
             let finalAngleRad = state.variables.angle * Math.PI / 180;
+            if (isPlayerSide) {
+                finalAngleRad = -finalAngleRad;
+            }
             b.vx = Math.cos(finalAngleRad) * state.variables.speed;
             b.vy = Math.sin(finalAngleRad) * state.variables.speed;
             
             // Sync mutated coordinates
             if (state.variables.x !== undefined) b.x = state.variables.x;
-            if (state.variables.y !== undefined) b.y = state.variables.y;
+            if (state.variables.y !== undefined) {
+                b.y = isPlayerSide ? (canvas.height - state.variables.y) : state.variables.y;
+            }
             
             // Sync custom variables to bullet physics properties
             if (state.variables.bulletType === 'laser') {
@@ -8674,7 +8820,7 @@
                 b.x = b.laserStartX;
                 b.y = b.laserStartY;
                 state.variables.x = b.x;
-                state.variables.y = b.y;
+                state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
                 b.vx = 0;
                 b.vy = 0;
                 state.variables.speed = 0;
@@ -8689,7 +8835,7 @@
                     b.isLaser = true;
                     b.isCustomBeam = true; // 設置ビームフラグ
                 } else {
-                    b.y = -9999;
+                    b._expired = true;
                     b.isWarningLaser = false;
                     b.isLaser = false;
                     b.isCustomBeam = false;
@@ -8708,8 +8854,8 @@
                 case 'set_var':
                 case 'change_var':
                 case 'if':
-                    return 0;
                 case 'aim_at_target':
+                    return 0;
                 case 'spawn_bullet':
                 case 'bounce':
                     return 1;
@@ -8721,6 +8867,27 @@
                 default:
                     return 0;
             }
+        }
+
+        // 弾の進行方向と自機方向の一致度から脅威度(0.15〜1.0)を算出
+        function computeBulletThreatWeight(spawnX, spawnY, vx, vy, targetX, targetY) {
+            let speed = Math.hypot(vx, vy);
+            if (speed < 1) return 0.4;
+
+            let bdx = vx / speed;
+            let bdy = vy / speed;
+            let tx = targetX - spawnX;
+            let ty = targetY - spawnY;
+            let tDist = Math.hypot(tx, ty);
+            if (tDist < 1) return 1.0;
+
+            tx /= tDist;
+            ty /= tDist;
+            let alignment = Math.max(-1, Math.min(1, bdx * tx + bdy * ty));
+
+            if (alignment >= 0.75) return 0.75 + 0.25 * ((alignment - 0.75) / 0.25);
+            if (alignment >= 0) return 0.35 + 0.4 * (alignment / 0.75);
+            return 0.15;
         }
 
         function calculateCustomCardCost(emitterScript, bulletScript) {
@@ -8764,12 +8931,23 @@
             let originalBullets = bullets;
             bullets = [];
 
+            const MAX_BULLETS_PER_SECOND = 60;
+            const MAX_THREAT_PER_SECOND = 60;
             let totalFired = 0;
+            let totalWeightedThreat = 0;
             let closeToPlayerScore = 0;
             let totalSpeedSum = 0;
             let bulletSpeedCount = 0;
+            let spawnsThisSecond = 0;
+            let lastSimSecond = -1;
 
             for (let frame = 0; frame < totalFrames; frame++) {
+                let currentSecond = Math.floor(frame / fps);
+                if (currentSecond !== lastSimSecond) {
+                    lastSimSecond = currentSecond;
+                    spawnsThisSecond = 0;
+                }
+
                 // Emitterの状態更新
                 if (!emitterState.finished) {
                     emitterState.variables.x = attacker.x;
@@ -8783,15 +8961,24 @@
                     stepEmitter({ bulletScript: bulletScript }, emitterState, attacker, target, dt);
                 }
 
-                // 生成された弾を検知してシミュレーション用配列へ移す
+                // 生成された弾を検知してシミュレーション用配列へ移す（秒間60発まで）
                 if (bullets.length > 0) {
-                    bullets.forEach(b => {
+                    let spawnedThisFrame = bullets;
+                    bullets = [];
+                    spawnedThisFrame.forEach(b => {
+                        if (spawnsThisSecond >= MAX_BULLETS_PER_SECOND) return;
+
+                        spawnsThisSecond++;
                         let vx = b.vx || 0;
                         let vy = b.vy || 0;
                         let speed = Math.sqrt(vx * vx + vy * vy);
+                        let threatWeight = b.threatWeight !== undefined
+                            ? b.threatWeight
+                            : computeBulletThreatWeight(b.x, b.y, vx, vy, target.x, target.y);
                         totalSpeedSum += speed;
                         bulletSpeedCount++;
                         totalFired++;
+                        totalWeightedThreat += threatWeight;
 
                         // 異常な無限ループ等でメモリが溢れるのを防ぐため、シミュレート対象は500発に制限
                         if (simBullets.length < 500) {
@@ -8804,13 +8991,13 @@
                                 vy: vy,
                                 radius: b.radius || 6,
                                 isLaser: b.isLaser || false,
+                                threatWeight: threatWeight,
                                 bulletState: b.bulletState ? JSON.parse(JSON.stringify(b.bulletState)) : null,
                                 gotClose: false,
                                 offScreen: false
                             });
                         }
                     });
-                    bullets = [];
                 }
 
                 // シミュレーション中の弾の移動 ＆ 近接判定
@@ -8836,10 +9023,14 @@
                         distToPlayer = Math.sqrt(pdx * pdx + pdy * pdy);
                     }
 
-                    // プレイヤーに近接（150px以内）した時の加点（レーザーは持続判定のため高めのウェイトを設定）
+                    // 近接加点は弾ごとの脅威度で重み付け（自機狙いは高く、全方位の外れ弾は低く）
+                    let warnT = b.bulletState ? (parseFloat(b.bulletState.variables.warningTime) || 0) : 0;
+                    let actT = b.bulletState ? (parseFloat(b.bulletState.variables.activeTime) || 0) : 0;
+                    let isBeamThreat = b.isLaser || (warnT > 0 && actT > 0);
+                    let threatW = b.threatWeight !== undefined ? b.threatWeight : 0.5;
                     if (!b.gotClose && distToPlayer < 150) {
                         b.gotClose = true;
-                        closeToPlayerScore += (b.isLaser ? 3 : 1);
+                        closeToPlayerScore += isBeamThreat ? (3 * threatW) : threatW;
                     }
 
                     // 画面外判定
@@ -8858,13 +9049,13 @@
             // グローバル bullets 配列を復元
             bullets = originalBullets;
 
-            // 指標の計算
-            let bulletsPerSecond = totalFired / simDuration;
+            // 指標の計算（物理弾数は60発/秒、脅威度は60/秒で上限）
+            let threatPerSecond = Math.min(MAX_THREAT_PER_SECOND, totalWeightedThreat / simDuration);
             let closeScorePerSecond = closeToPlayerScore / simDuration;
             let avgSpeed = bulletSpeedCount > 0 ? (totalSpeedSum / bulletSpeedCount) : 0;
 
-            // コスト計算式
-            let simCost = (bulletsPerSecond * 0.1) + (closeScorePerSecond * 0.4) + (avgSpeed / 100) * 0.5;
+            // コスト計算式（脅威度＋近接脅威＋弾速）
+            let simCost = (threatPerSecond * 0.35) + (closeScorePerSecond * 0.25) + (avgSpeed / 100) * 0.35;
             let totalCost = baseBlockCost + simCost;
 
             // コストは四捨五入して整数（最低1）
@@ -9211,10 +9402,10 @@
             
             // 制御グループ
             document.getElementById('palette-title-control').style.display = 'block';
-            document.getElementById('palette-btn-repeat').style.display = (tab === 'emitter') ? 'block' : 'none';
-            document.getElementById('palette-btn-forever').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-repeat').style.display = 'block';
+            document.getElementById('palette-btn-forever').style.display = 'block';
             document.getElementById('palette-btn-wait').style.display = 'block';
-            document.getElementById('palette-btn-if').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-if').style.display = 'block';
             document.getElementById('palette-btn-once').style.display = 'block';
             
             // 変数グループ
@@ -9229,6 +9420,7 @@
             document.getElementById('palette-btn-spawn-ring').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn-way').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-homing').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-bounce').style.display = (tab === 'bullet') ? 'block' : 'none';
             
             let container = document.getElementById('workspace-blocks-container');
             container.innerHTML = '';
@@ -9579,6 +9771,7 @@
             activeCards = [ tempCustomCard ];
             activeCards[0].emitterState = initEmitterState(tempCustomCard.emitterScript, cpu, player);
             actionTimer = 15.0;
+            customCardTestEmitterDone = false;
             normalShotTimer = 0;
             
             lastTime = performance.now();
@@ -9792,8 +9985,17 @@
         function blocksToCode(blocks) {
             if (!blocks || blocks.length === 0) return "";
             let lines = [];
+            let activeIndent = 0;
+            
             blocks.forEach(b => {
-                let indentStr = "    ".repeat(b.indent || 0);
+                let indent = b.indent || 0;
+                while (activeIndent > indent) {
+                    activeIndent--;
+                    let indentStr = "    ".repeat(activeIndent);
+                    lines.push(indentStr + "}");
+                }
+                
+                let indentStr = "    ".repeat(indent);
                 let line = "";
                 switch (b.type) {
                     case 'wait':
@@ -9856,15 +10058,143 @@
                         line = `once`;
                         break;
                 }
+                
                 if (line) {
-                    lines.push(indentStr + line);
+                    let isContainer = ['repeat', 'forever', 'if', 'once'].includes(b.type);
+                    if (isContainer) {
+                        lines.push(indentStr + line + " {");
+                        activeIndent = indent + 1;
+                    } else {
+                        lines.push(indentStr + line);
+                    }
                 }
             });
+            
+            while (activeIndent > 0) {
+                activeIndent--;
+                let indentStr = "    ".repeat(activeIndent);
+                lines.push(indentStr + "}");
+            }
+            
             return lines.join("\n");
+        }
+
+        // 波括弧スタイルのコードをブロックリストに変換するヘルパー
+        // repeat(20){ spawnRing(...); } のようなスタイルに対応
+        function _codeToBlocksBrace(code) {
+            // トークン列に変換：各行を行ごとに処理しつつ { } を独立トークンとして扱う
+            // アルゴリズム：再帰的に { } を認識してネストを解析し、indentを付ける
+            const blocks = [];
+            // スタックで現在の親ブロックを管理
+            const stack = [{ children: blocks, indent: -1 }];
+
+            function parseLine(rawLine, currentIndent) {
+                // 行を前処理
+                let trimmed = rawLine.trim();
+                trimmed = trimmed.replace(/;+$/, "").trim();
+                // コメント・空行・単独の { } をスキップ
+                if (!trimmed || trimmed === '{' || trimmed === '}' || trimmed.startsWith('//')) return;
+
+                // インデントを計算（スタックの深さで決定）
+                let indent = Math.max(0, Math.min(3, currentIndent));
+
+                const makeBlock = (trimmed, indent) => {
+                    let block = null;
+                    let mWait = trimmed.match(/^wait\((.*?)\)$/i);
+                    if (mWait) block = { type: 'wait', params: { duration: mWait[1].trim() }, indent };
+                    let mRepeat = trimmed.match(/^repeat\((.*?)\)$/i);
+                    if (mRepeat) block = { type: 'repeat', params: { count: mRepeat[1].trim() }, indent };
+                    let mForever = trimmed.match(/^forever\(\)$/i);
+                    if (mForever) block = { type: 'forever', params: {}, indent };
+                    let mIf = trimmed.match(/^if\s*\((.*?)\)$/i);
+                    if (mIf) block = { type: 'if', params: { cond: mIf[1].trim() }, indent };
+                    let mAim = trimmed.match(/^aimAtTarget\(\)$/i);
+                    if (mAim) block = { type: 'aim_at_target', params: {}, indent };
+                    let mBounce = trimmed.match(/^bounce\(\)$/i);
+                    if (mBounce) block = { type: 'bounce', params: {}, indent };
+                    let mOnce = trimmed.match(/^once(\(\))?$/i);
+                    if (mOnce) block = { type: 'once', params: {}, indent };
+                    let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
+                    if (mHoming) block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent };
+                    let mSpawn = trimmed.match(/^spawnBullet\((.*?)\)$/i);
+                    if (mSpawn) {
+                        let args = mSpawn[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        let isLegacy = args.length >= 5;
+                        block = { type: 'spawn_bullet', params: { bulletType: args[0]||'normal', color: args[1]||'#ff3333', speed: isLegacy?(args[3]||'200'):(args[2]||'200'), angle: isLegacy?(args[4]||'angle'):(args[3]||'angle') }, indent };
+                    }
+                    let mSpawnRing = trimmed.match(/^spawnRing\((.*?)\)$/i);
+                    if (mSpawnRing) {
+                        let args = mSpawnRing[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        let isLegacy = args.length >= 5;
+                        block = { type: 'spawn_ring', params: { bulletType: args[0]||'normal', color: args[1]||'#ff3333', speed: isLegacy?(args[3]||'200'):(args[2]||'200'), count: isLegacy?(args[4]||'12'):(args[3]||'12') }, indent };
+                    }
+                    let mSpawnWay = trimmed.match(/^spawnWay\((.*?)\)$/i);
+                    if (mSpawnWay) {
+                        let args = mSpawnWay[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        let isLegacy = args.length >= 7;
+                        block = { type: 'spawn_way', params: { bulletType: args[0]||'normal', color: args[1]||'#ff3333', speed: isLegacy?(args[3]||'200'):(args[2]||'200'), angle: isLegacy?(args[4]||'angle'):(args[3]||'angle'), count: isLegacy?(args[5]||'3'):(args[4]||'3'), spread: isLegacy?(args[6]||'30'):(args[5]||'30') }, indent };
+                    }
+                    if (!block) {
+                        let mChange = trimmed.match(/^(\w+)\s*\+=\s*(.+)$/);
+                        if (mChange) block = { type: 'change_var', params: { name: mChange[1], value: mChange[2] }, indent };
+                        else {
+                            let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/);
+                            if (mSet) block = { type: 'set_var', params: { name: mSet[1], value: mSet[2] }, indent };
+                        }
+                    }
+                    return block;
+                };
+
+                // ブロックを平坦リストへ追加
+                let block = makeBlock(trimmed, indent);
+                if (block) blocks.push(block);
+            }
+
+            // コードをトークナイズ：{ } を認識して深さを追跡しながら行をパース
+            // まずコード全体を ";" と改行で分割して行を得る
+            // { を含む行は "header { body }" の形を展開する
+            // 例: repeat(20){ spawnRing(); } → "repeat(20)" / "{ spawnRing()" / "}"
+            const expanded = code
+                .replace(/\{/g, '\n{\n')
+                .replace(/\}/g, '\n}\n')
+                .replace(/;/g, '\n');
+
+            const rawLines = expanded.split('\n');
+            let depth = 0;
+
+            rawLines.forEach(rawLine => {
+                const t = rawLine.trim();
+                if (!t) return;
+                if (t === '{') { depth++; return; }
+                if (t === '}') { depth = Math.max(0, depth - 1); return; }
+                // コメントは除外
+                if (t.startsWith('//')) return;
+                // 行末 { が残っていたら深さを増やして除去
+                let line = t;
+                let hasBraceAtEnd = /\{\s*$/.test(line);
+                line = line.replace(/\{\s*$/, '').trim();
+                if (line) {
+                    parseLine(line, depth);
+                }
+                if (hasBraceAtEnd) depth++;
+            });
+
+            return blocks;
         }
 
         function codeToBlocks(code) {
             if (!code) return [];
+
+            // --- 波括弧ベースのパース ---
+            // 波括弧が含まれている場合はブレースパーサーを使う
+            // （repeat(20){ ... } のようなスタイルに対応）
+            const hasBraces = /\{/.test(code);
+            if (hasBraces) {
+                return _codeToBlocksBrace(code);
+            }
+
+            // --- インデントベースのパース（従来）---
+
             let lines = code.split("\n");
             let blocks = [];
             
