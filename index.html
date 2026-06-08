@@ -1865,6 +1865,8 @@
                         <option value="tx">ターゲットのX座標 (tx)</option>
                         <option value="ty">ターゲットのY座標 (ty)</option>
                         <option value="timer">弾のタイマー (timer)</option>
+                        <option value="second">秒数 (second)</option>
+                        <option value="frame">フレーム数 (frame)</option>
                         <option value="isBounced">壁接触フラグ (isBounced)</option>
                         <option value="isTouchWall">wall trigger (isTouchWall)</option>
                         <option value="touchingWall">wall touching (touchingWall)</option>
@@ -1880,6 +1882,9 @@
                         <option value="dist < 150">dist < 150</option>
                         <option value="touchingWall">touchingWall</option>
                         <option value="timer">生存タイマー (timer)</option>
+                        <option value="second">秒数 (second)</option>
+                        <option value="frame">フレーム数 (frame)</option>
+                        <option value="random(0, 100)">random(0, 100)</option>
                         <option value="x">現在のX座標 (x)</option>
                         <option value="y">現在のY座標 (y)</option>
                         <option value="dist">ターゲットとの距離 (dist)</option>
@@ -2693,8 +2698,13 @@
             return Math.max(1, Math.ceil((Number(rawCost) || 1) / CUSTOM_CARD_PLAY_COST_DIVISOR));
         }
 
-        function applyCustomCardCosts(cc) {
-            const rawCost = calculateCustomCardCost(cc.emitterScript, cc.bulletScript);
+        function applyCustomCardCosts(cc, recalc = false) {
+            let rawCost = Number(cc.rawCost);
+            if (recalc) {
+                rawCost = calculateCustomCardCost(cc.emitterScript, cc.bulletScript);
+            } else if (!Number.isFinite(rawCost) || rawCost <= 0) {
+                rawCost = Number(cc.cost) || 1;
+            }
             cc.rawCost = rawCost;
             cc.cost = getCustomCardPlayCost(rawCost);
             return cc;
@@ -2752,9 +2762,20 @@
         try {
             const saved = localStorage.getItem('touhou_kyoukaisen_custom_cards');
             if (saved) {
-                customCards = JSON.parse(saved).map(migrateOldCustomCard);
+                const parsedCards = JSON.parse(saved);
+                customCards = parsedCards.map(card => {
+                    try {
+                        return migrateOldCustomCard(card);
+                    } catch (cardError) {
+                        console.error('Failed to migrate custom card:', cardError, card);
+                        return null;
+                    }
+                }).filter(Boolean);
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error('Failed to load custom cards:', e);
+            customCards = [];
+        }
 
         function integrateCustomCards() {
             // Remove existing custom cards in defaultCards.active first
@@ -8322,6 +8343,37 @@
             }
             return root;
         }
+        function isParallelRootBlock(block) {
+            return block && ['repeat', 'forever', 'if', 'once'].includes(block.type);
+        }
+
+        function createParallelThreadsForState(state) {
+            const rootBlocks = state.blocks || [];
+            if (rootBlocks.filter(isParallelRootBlock).length < 2) return;
+            state.parallelThreads = rootBlocks.map(block => ({
+                blocks: [block],
+                pc: 0,
+                waitTimer: 0,
+                stack: [],
+                variables: state.variables,
+                finished: false,
+                isPlayerSide: state.isPlayerSide,
+                isParallelThread: true,
+                lifetimeOnce: state.lifetimeOnce,
+                constVars: state.constVars,
+                speedScaleApplied: state.speedScaleApplied
+            }));
+            state.finished = false;
+        }
+
+        function syncParallelThreadState(parent, thread) {
+            thread.variables = parent.variables;
+            thread.isPlayerSide = parent.isPlayerSide;
+            thread.lifetimeOnce = parent.lifetimeOnce;
+            thread.constVars = parent.constVars;
+            thread.speedScaleApplied = parent.speedScaleApplied;
+        }
+
         function evalValue(expr, variables) {
             if (typeof expr === 'number') return expr;
             let s = String(expr).trim();
@@ -8350,6 +8402,10 @@
             if (resolved === 0 || resolved === undefined || resolved === null || resolved === '') return '#ff3333';
             return String(resolved);
         }
+        function normalizeConditionOperators(cond) {
+            return String(cond || '').replace(/(^|[^!<>=])=([^=]|$)/g, '$1==$2');
+        }
+
         function evalCondition(cond, variables) {
             let s = String(cond || '').trim();
             let normalized = s.replace(/\s+/g, '').toLowerCase();
@@ -8364,7 +8420,7 @@
                 if (mBefore) s = 'timer <= (' + mBefore[1] + ')';
                 if (mNear) s = 'dist <= (' + mNear[1] + ')';
             }
-            return !!evalExpr(s, variables || {});
+            return !!evalExpr(normalizeConditionOperators(s), variables || {});
         }
         function setScriptVariable(state, name, value, isConst) {
             if (!name) return;
@@ -8398,6 +8454,23 @@
                 let re = new RegExp('\\b' + varName + '\\b', 'g');
                 resolved = resolved.replace(re, val);
             }
+
+            resolved = resolved.replace(/\b(?:random|rand)\s*\(([^()]*)\)/gi, function(match, argsText) {
+                let rawArgs = argsText.trim() === '' ? [] : argsText.split(',');
+                let args = rawArgs.map(function(arg) {
+                    let text = arg.trim();
+                    try {
+                        if (/^[0-9.+\-*/() <>=!&| ]+$/.test(text)) {
+                            return Number(Function('"use strict"; return (' + text + ')')());
+                        }
+                    } catch(e) {}
+                    let n = parseFloat(text);
+                    return isNaN(n) ? 0 : n;
+                });
+                if (args.length >= 2) return args[0] + Math.random() * (args[1] - args[0]);
+                if (args.length === 1) return Math.random() * args[0];
+                return Math.random();
+            });
             
             try {
                 if (/^[0-9.+\-*/() <>=!&| ]+$/.test(resolved)) {
@@ -8414,7 +8487,9 @@
                 angle: 0,
                 speed: 200,
                 x_offset: 0,
-                y_offset: 0
+                y_offset: 0,
+                second: 0,
+                frame: 0
             };
             let isPlayerSide = (attacker === player);
             let dx = target.x - attacker.x;
@@ -8426,7 +8501,7 @@
 
             let compiledBlocks = compileIndentedBlocks(JSON.parse(JSON.stringify(script || [])));
 
-            return {
+            let state = {
                 blocks: compiledBlocks,
                 pc: 0,
                 waitTimer: 0,
@@ -8438,6 +8513,8 @@
                 constVars: new Set(),
                 speedScaleApplied: new Set()
             };
+            createParallelThreadsForState(state);
+            return state;
         }
 
         function stepEmitter(c, state, attacker, target, dt) {
@@ -8450,10 +8527,25 @@
             state.variables.y = isPlayerSide ? (canvas.height - attacker.y) : attacker.y;
             state.variables.tx = target.x;
             state.variables.ty = isPlayerSide ? (canvas.height - target.y) : target.y;
+            if (!state.isParallelThread) {
+                state.variables.second = (Number(state.variables.second) || 0) + dt;
+                state.variables.frame = (Number(state.variables.frame) || 0) + 1;
+            }
             
             let dx = target.x - attacker.x;
             let dy = isPlayerSide ? (attacker.y - target.y) : (target.y - attacker.y);
             state.variables.dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (state.parallelThreads) {
+                let allFinished = true;
+                for (let thread of state.parallelThreads) {
+                    syncParallelThreadState(state, thread);
+                    stepEmitter(c, thread, attacker, target, dt);
+                    if (!thread.finished) allFinished = false;
+                }
+                state.finished = allFinished;
+                return;
+            }
             
             if (state.finished) return;
             
@@ -8562,8 +8654,9 @@
                     case 'change_var': {
                         let varName = block.params.name;
                         let val = evalExpr(block.params.value, state.variables);
+                        let delta = block.params.op === '-' ? -val : val;
                         if (!state.constVars || typeof state.constVars.has !== 'function') state.constVars = new Set();
-                            if (!state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + val;
+                        if (!state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + delta;
                         break;
                     }
                     case 'aim_at_target': {
@@ -8751,6 +8844,8 @@
                 speed: initialSpeed,
                 angle: initialAngle,
                 timer: 0,
+                second: 0,
+                frame: 0,
                 isBounced: 0,
                 isTouchWall: 0,
                 warningTime: 0,
@@ -8832,6 +8927,8 @@
             }
             
             state.variables.timer += dt;
+            state.variables.second = (Number(state.variables.second) || 0) + dt;
+            state.variables.frame = (Number(state.variables.frame) || 0) + 1;
             
             // Expose physics & environment variables in real-time
             state.variables.x = b.x;
@@ -8963,7 +9060,9 @@
                             case 'change_var': {
                                 let varName = block.params.name;
                                 let val = evalExpr(block.params.value, state.variables);
-                                if (!state.constVars || !state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + val;
+                                let delta = block.params.op === '-' ? -val : val;
+                                if (!state.constVars || typeof state.constVars.has !== 'function') state.constVars = new Set();
+                                if (!state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + delta;
                                 break;
                             }
                             case 'aim_at_target': {
@@ -9193,8 +9292,6 @@
             let totalFired = 0;
             let totalWeightedThreat = 0;
             let closeToPlayerScore = 0;
-            let totalSpeedSum = 0;
-            let bulletSpeedCount = 0;
             let spawnsThisSecond = 0;
             let lastSimSecond = -1;
 
@@ -9232,8 +9329,6 @@
                         let threatWeight = b.threatWeight !== undefined
                             ? b.threatWeight
                             : computeBulletThreatWeight(b.x, b.y, vx, vy, target.x, target.y);
-                        totalSpeedSum += speed;
-                        bulletSpeedCount++;
                         totalFired++;
                         totalWeightedThreat += threatWeight;
 
@@ -9309,10 +9404,9 @@
             // 指標の計算（物理弾数は60発/秒、脅威度は60/秒で上限）
             let threatPerSecond = Math.min(MAX_THREAT_PER_SECOND, totalWeightedThreat / simDuration);
             let closeScorePerSecond = closeToPlayerScore / simDuration;
-            let avgSpeed = bulletSpeedCount > 0 ? (totalSpeedSum / bulletSpeedCount) : 0;
 
             // コスト計算式（脅威度＋近接脅威＋弾速）
-            let simCost = (threatPerSecond * 0.35) + (closeScorePerSecond * 0.25) + (avgSpeed / 100) * 0.35;
+            let simCost = (threatPerSecond * 0.35) + (closeScorePerSecond * 0.25);
             let totalCost = baseBlockCost + simCost;
 
             // コストは四捨五入して整数（最低1）
@@ -9563,6 +9657,7 @@
             } else if (type === 'change_var') {
                 block.params.name = 'angle';
                 block.params.value = '10';
+                block.params.op = '+';
             } else if (type === 'spawn_bullet') {
                 block.params.bulletType = 'normal';
                 block.params.color = '#ff3333';
@@ -9799,8 +9894,11 @@
                                 <span>[変数]</span>
                                 <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
                                 <span>を</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'op', this.value)">
+                                    <option value="+" ${(b.params.op || '+') === '+' ? 'selected' : ''}>+=</option>
+                                    <option value="-" ${b.params.op === '-' ? 'selected' : ''}>-=</option>
+                                </select>
                                 <input type="text" list="val-suggestions" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
-                                <span>増やす</span>
                                 ${renderBlockControls(idx)}
                             `;
                             break;
@@ -9960,7 +10058,7 @@
 
             let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
             if (cost > CUSTOM_CARD_COST_LIMIT) {
-                alert("コストの上限（15）を超えています！");
+                alert('cost limit exceeded: ' + cost + ' / ' + CUSTOM_CARD_COST_LIMIT);
                 return;
             }
             
@@ -10078,7 +10176,7 @@
 
             let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
             if (cost > CUSTOM_CARD_COST_LIMIT) {
-                alert("コストの上限（15）を超えています！");
+                alert('cost limit exceeded: ' + cost + ' / ' + CUSTOM_CARD_COST_LIMIT);
                 return;
             }
             if (!customCardMaker.testPassed) {
@@ -10119,18 +10217,25 @@
             } else {
                 customCards.push(cardData);
             }
-
             try {
-                localStorage.setItem('touhou_kyoukaisen_custom_cards', JSON.stringify(customCards));
+                const serializedCards = JSON.stringify(customCards);
+                localStorage.setItem('touhou_kyoukaisen_custom_cards', serializedCards);
+                const savedCards = localStorage.getItem('touhou_kyoukaisen_custom_cards');
+                if (savedCards !== serializedCards) {
+                    throw new Error('save verification failed');
+                }
                 localStorage.removeItem('custom_card_draft');
                 const restoreBtn = document.getElementById('custom-card-draft-load-btn');
                 if (restoreBtn) restoreBtn.style.display = 'none';
             } catch(e) {
                 console.error("Failed to save custom cards:", e);
+                alert('\u30ab\u30fc\u30c9\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f: ' + (e && e.message ? e.message : e));
+                return;
             }
 
             integrateCustomCards();
             customCardMakerCloseEditor();
+            alert('\u30ab\u30fc\u30c9\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f\u3002');
         }
 
         let customCardMakerMode = 'block';
@@ -10248,7 +10353,7 @@
             let s = String(color || '#ff3333').trim();
             if (!s) return '"#ff3333"';
             if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s;
-            if (/^[A-Za-z_$][w$]*$/.test(s)) return s;
+            if (/^[A-Za-z_$][\w$]*$/.test(s)) return s;
             return JSON.stringify(s);
         }
 
@@ -10284,7 +10389,7 @@
                         line = `${b.params.name || 'angle'} = ${b.params.value || '0'}`;
                         break;
                     case 'change_var':
-                        line = `${b.params.name || 'angle'} += ${b.params.value || '10'}`;
+                        line = `${b.params.name || 'angle'} ${b.params.op === '-' ? '-=' : '+='} ${b.params.value || '10'}`;
                         break;
                     case 'aim_at_target':
                         line = `aimAtTarget()`;
@@ -10415,8 +10520,8 @@
                         block = { type: 'spawn_way', params: { bulletType: args[0]||'normal', color: args[1]||'#ff3333', speed: isLegacy?(args[3]||'200'):(args[2]||'200'), angle: isLegacy?(args[4]||'angle'):(args[3]||'angle'), count: isLegacy?(args[5]||'3'):(args[4]||'3'), spread: isLegacy?(args[6]||'30'):(args[5]||'30') }, indent };
                     }
                     if (!block) {
-                        let mChange = trimmed.match(/^(\w+)\s*\+=\s*(.+)$/);
-                        if (mChange) block = { type: 'change_var', params: { name: mChange[1], value: mChange[2] }, indent };
+                        let mChange = trimmed.match(/^(\w+)\s*([+\-])=\s*(.+)$/);
+                        if (mChange) block = { type: 'change_var', params: { name: mChange[1], op: mChange[2], value: mChange[3] }, indent };
                         else {
                             let mConst = trimmed.match(/^const\s+(\w+)\s*=\s*(.+)$/);
                             if (mConst) block = { type: 'const_var', params: { name: mConst[1], value: mConst[2] }, indent };
@@ -10602,11 +10707,11 @@
                 }
                 
                 if (!block) {
-                    let mChange = trimmed.match(/^(\w+)\s*\+=\s*(.+)$/);
+                    let mChange = trimmed.match(/^(\w+)\s*([+\-])=\s*(.+)$/);
                     if (mChange) {
                         block = {
                             type: 'change_var',
-                            params: { name: mChange[1].trim(), value: mChange[2].trim() },
+                            params: { name: mChange[1].trim(), op: mChange[2], value: mChange[3].trim() },
                             indent: indent
                         };
                     } else {
