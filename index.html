@@ -1759,6 +1759,16 @@
                         <option value="dist">ターゲットとの距離 (dist)</option>
                         <option value="isBounced">壁接触フラグ (isBounced)</option>
                     </datalist>
+                    <datalist id="color-suggestions">
+                        <option value="#ff3333">red</option>
+                        <option value="#ffdd33">yellow</option>
+                        <option value="#3388ff">blue</option>
+                        <option value="#33ff88">green</option>
+                        <option value="#ff33aa">pink</option>
+                        <option value="#33ffff">cyan</option>
+                        <option value="#ffffff">white</option>
+                        <option value="#ffaa33">orange</option>
+                    </datalist>
                     <div class="maker-header">
                         <h3 id="card-editor-title" style="margin: 0; font-size: 20px;">スペルカード編集</h3>
                         <div id="custom-card-cost-indicator" style="font-size: 14px; font-weight: bold; padding: 4px 10px; border-radius: 4px; background: rgba(0,255,200,0.1); border: 1px solid #00ffcc;">
@@ -2531,6 +2541,7 @@
 
         // --- CUSTOM SPELL CARD SYSTEM ---
         const CUSTOM_CARD_COST_LIMIT = 30;
+        const CUSTOM_CARD_PLAY_COST_DIVISOR = 3;
         const CUSTOM_SPAWN_WAY_MAX_COUNT = 60;
         const CUSTOM_SPAWN_RING_MAX_COUNT = 72;
         let customCards = [];
@@ -2551,6 +2562,17 @@
             bounceScript: [],
             testPassed: false
         };
+
+        function getCustomCardPlayCost(rawCost) {
+            return Math.max(1, Math.ceil((Number(rawCost) || 1) / CUSTOM_CARD_PLAY_COST_DIVISOR));
+        }
+
+        function applyCustomCardCosts(cc) {
+            const rawCost = calculateCustomCardCost(cc.emitterScript, cc.bulletScript);
+            cc.rawCost = rawCost;
+            cc.cost = getCustomCardPlayCost(rawCost);
+            return cc;
+        }
 
         function migrateOldCustomCard(cc) {
             let changed = false;
@@ -2597,10 +2619,7 @@
                 cc.bulletScript.push(...combinedList);
                 cc.bounceScript = [];
             }
-            
-            if (changed) {
-                cc.cost = calculateCustomCardCost(cc.emitterScript, cc.bulletScript);
-            }
+            applyCustomCardCosts(cc);
             return cc;
         }
 
@@ -7274,7 +7293,8 @@
                     let y2 = b.y + Math.sin(rad) * 1200;
                     
                     let warnT = parseFloat(b.bulletState.variables.warningTime) || 1.0;
-                    let elapsed = b.bulletState.variables.timer;
+                    let laserStart = b.bulletState.variables.laserStartTime || 0;
+                    let elapsed = Math.max(0, b.bulletState.variables.timer - laserStart);
                     let progress = Math.min(1.0, elapsed / warnT);
                     
                     // パルス（点滅）効果
@@ -7313,7 +7333,8 @@
                         let x2 = b.x + Math.cos(rad) * 1200;
                         let y2 = b.y + Math.sin(rad) * 1200;
                         
-                        let elapsed = b.bulletState.variables.timer - parseFloat(b.bulletState.variables.warningTime);
+                        let laserStart = b.bulletState.variables.laserStartTime || 0;
+                        let elapsed = b.bulletState.variables.timer - laserStart - parseFloat(b.bulletState.variables.warningTime);
                         let actT = parseFloat(b.bulletState.variables.activeTime) || 1.0;
                         
                         // アニメーション：開始0.08秒で太くなり、終了前0.15秒で細くなる
@@ -8183,8 +8204,23 @@
             if (variables && variables[s] !== undefined) return variables[s];
             return evalExpr(expr, variables || {});
         }
+        function isCssColorLiteral(value) {
+            let s = String(value || '').trim();
+            return /^#([0-9a-f]{3,8})$/i.test(s) ||
+                /^rgba?\(/i.test(s) ||
+                /^hsla?\(/i.test(s) ||
+                /^(red|blue|green|yellow|white|black|cyan|magenta|purple|orange|pink|lime|gray|grey)$/i.test(s);
+        }
+
         function resolveColorParam(colorParam, variables) {
-            let resolved = evalValue(colorParam || '#ff3333', variables || {});
+            let raw = String(colorParam || '#ff3333').trim();
+            if (variables && variables[raw] !== undefined) return String(variables[raw]);
+            if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+                raw = raw.substring(1, raw.length - 1);
+            }
+            if (isCssColorLiteral(raw)) return raw;
+            let resolved = evalValue(raw, variables || {});
+            if (isCssColorLiteral(resolved)) return String(resolved);
             if (resolved === 0 || resolved === undefined || resolved === null || resolved === '') return '#ff3333';
             return String(resolved);
         }
@@ -8592,7 +8628,8 @@
                 isBounced: 0,
                 isTouchWall: 0,
                 warningTime: 0,
-                activeTime: 0
+                activeTime: 0,
+                laserStartTime: null
             };
             let compiledBlocks = compileIndentedBlocks(JSON.parse(JSON.stringify(script || [])));
 
@@ -8618,7 +8655,10 @@
                 let actT = parseFloat(b.bulletState.variables.activeTime) || 0;
                 if (warnT > 0 && actT > 0) {
                     warnT = Math.max(0.5, warnT);
-                    if ((b.bulletState.variables.timer || 0) >= warnT + actT) {
+                    let laserStart = b.bulletState.variables.laserStartTime;
+                    if (laserStart === null || laserStart === undefined) return false;
+                    let laserElapsed = (b.bulletState.variables.timer || 0) - laserStart;
+                    if (laserElapsed >= warnT + actT) {
                         return true;
                     }
                 }
@@ -8780,6 +8820,11 @@
                             case 'set_laser': {
                                 state.variables.warningTime = evalExpr(block.params.warningTime || '1.0', state.variables);
                                 state.variables.activeTime = evalExpr(block.params.activeTime || '1.5', state.variables);
+                                if (state.variables.laserStartTime === null || state.variables.laserStartTime === undefined) {
+                                    state.variables.laserStartTime = state.variables.timer;
+                                    b.laserStartX = b.x;
+                                    b.laserStartY = b.y;
+                                }
                                 break;
                             }
                             case 'const_var':
@@ -8893,6 +8938,9 @@
             if (warnT > 0 && actT > 0) {
                 warnT = Math.max(0.5, warnT); // 予告時間は最低0.5秒（理不尽防止）
                 state.variables.warningTime = warnT; // スクリプト側にも反映
+                if (state.variables.laserStartTime === null || state.variables.laserStartTime === undefined) {
+                    state.variables.laserStartTime = state.variables.timer;
+                }
                 if (b.laserStartX === undefined) {
                     b.laserStartX = b.x;
                     b.laserStartY = b.y;
@@ -8905,7 +8953,7 @@
                 b.vy = 0;
                 state.variables.speed = 0;
                 
-                let elapsed = state.variables.timer;
+                let elapsed = state.variables.timer - state.variables.laserStartTime;
                 if (elapsed < warnT) {
                     b.isWarningLaser = true;
                     b.isLaser = false;
@@ -9167,7 +9215,7 @@
                         <span class="custom-card-title">${card.name.replace('【A】', '')}</span>
                         <span class="custom-card-desc">${descText}</span>
                     </div>
-                    <span class="custom-card-cost-badge">コスト: ${card.cost}</span>
+                    <span class="custom-card-cost-badge">コスト: ${card.cost} <span style="opacity:.7;">(評価:${card.rawCost || card.cost})</span></span>
                     <div class="custom-card-actions">
                         <button class="custom-card-act-btn btn-edit" onclick="customCardMakerOpenEditor('${card.id}')">編集</button>
                         <button class="custom-card-act-btn btn-delete" onclick="customCardMakerDeleteCard('${card.id}')">削除</button>
@@ -9646,7 +9694,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                <input type="text" list="color-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>角度:</span>
@@ -9663,7 +9711,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                <input type="text" list="color-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>弾数:</span>
@@ -9680,7 +9728,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
+                                <input type="text" list="color-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>中心角:</span>
@@ -9796,7 +9844,8 @@
                 duration: 15,
                 pattern: 'custom_test',
                 interval: 0.1,
-                cost: cost,
+                rawCost: cost,
+                cost: getCustomCardPlayCost(cost),
                 desc: 'テスト中',
                 isCustom: true,
                 emitterScript: JSON.parse(JSON.stringify(customCardMaker.emitterScript)),
@@ -9927,7 +9976,8 @@
                 name: nameInput,
                 desc: descInput,
                 duration: 15,
-                cost: cost,
+                rawCost: cost,
+                cost: getCustomCardPlayCost(cost),
                 isCustom: true,
                 emitterScript: JSON.parse(JSON.stringify(customCardMaker.emitterScript)),
                 bulletScript: JSON.parse(JSON.stringify(customCardMaker.bulletScript))
@@ -10068,6 +10118,14 @@
             saveCustomCardDraft(false);
         }
 
+        function formatCodeColorArg(color) {
+            let s = String(color || '#ff3333').trim();
+            if (!s) return '"#ff3333"';
+            if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s;
+            if (/^[A-Za-z_$][w$]*$/.test(s)) return s;
+            return JSON.stringify(s);
+        }
+
         function blocksToCode(blocks) {
             if (!blocks || blocks.length === 0) return "";
             let lines = [];
@@ -10110,7 +10168,7 @@
                         let col = b.params.color || '#ff3333';
                         let spd = b.params.speed || '200';
                         let ang = b.params.angle || 'angle';
-                        line = `spawnBullet("${bt}", "${col}", ${spd}, ${ang})`;
+                        line = `spawnBullet("${bt}", ${formatCodeColorArg(col)}, ${spd}, ${ang})`;
                         break;
                     }
                     case 'spawn_ring': {
@@ -10118,7 +10176,7 @@
                         let colRing = b.params.color || '#ff3333';
                         let spdRing = b.params.speed || '200';
                         let cntRing = b.params.count || '12';
-                        line = `spawnRing("${btRing}", "${colRing}", ${spdRing}, ${cntRing})`;
+                        line = `spawnRing("${btRing}", ${formatCodeColorArg(colRing)}, ${spdRing}, ${cntRing})`;
                         break;
                     }
                     case 'spawn_way': {
@@ -10128,7 +10186,7 @@
                         let angWay = b.params.angle || 'angle';
                         let cntWay = b.params.count || '3';
                         let sprWay = b.params.spread || '30';
-                        line = `spawnWay("${btWay}", "${colWay}", ${spdWay}, ${angWay}, ${cntWay}, ${sprWay})`;
+                        line = `spawnWay("${btWay}", ${formatCodeColorArg(colWay)}, ${spdWay}, ${angWay}, ${cntWay}, ${sprWay})`;
                         break;
                     }
                     case 'speed_scale':
