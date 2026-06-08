@@ -1940,6 +1940,8 @@
                             
                             <div class="palette-group-title" id="palette-title-motion">動作 (Motion / Actions)</div>
                             <button class="palette-btn color-motion" id="palette-btn-aim" onclick="customCardMakerAddBlock('aim_at_target')">相手の方向を向く</button>
+                            <button class="palette-btn color-motion" id="palette-btn-move-owner" onclick="customCardMakerAddBlock('move_owner')">位置を指定する</button>
+                            <button class="palette-btn color-motion" id="palette-btn-slide-owner" onclick="customCardMakerAddBlock('slide_owner')">滑らかに移動する</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn" onclick="customCardMakerAddBlock('spawn_bullet')">弾を発射する</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn-ring" onclick="customCardMakerAddBlock('spawn_ring')">全方位円形弾を発射</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn-way" onclick="customCardMakerAddBlock('spawn_way')">Way弾を発射</button>
@@ -2051,6 +2053,8 @@
             }
 
             // 部屋一覧の初回更新
+            onlineCustomCards = [];
+            integrateCustomCards();
             refreshRoomList();
         }
 
@@ -2457,12 +2461,15 @@
                 // 自分のデッキデータを送信
                 let selectedDeck = (decks.length > 0 && selectedDeckIndex >= 0 && selectedDeckIndex < decks.length) ? decks[selectedDeckIndex] : null;
                 let baseActive = selectedDeck ? selectedDeck.active.filter(v => v !== "") : defaultCards.active.slice(0, 6).map(c => c.id);
+                let baseAbility = selectedDeck && selectedDeck.ability ? selectedDeck.ability.filter(v => v !== "") : defaultCards.ability.map(c => c.id);
                 let basePassive = selectedDeck ? selectedDeck.passive.filter(v => v !== "") : defaultCards.passive.map(c => c.id);
 
                 conn.send({
                     type: 'deck',
                     active: baseActive,
-                    passive: basePassive
+                    ability: baseAbility,
+                    passive: basePassive,
+                    customCards: serializeCustomCardsForDeck(baseActive)
                 });
             });
 
@@ -2490,6 +2497,7 @@
             }
 
             if (data.type === 'deck') {
+                integrateOnlineCustomCards(data.customCards || []);
                 opponentDeck = data;
                 document.getElementById('online-status').textContent = 'デッキ情報を受信しました！戦闘準備完了！';
 
@@ -2560,6 +2568,8 @@
             isOnlineMode = false;
             onlineConnected = false;
             opponentDeck = null;
+            onlineCustomCards = [];
+            integrateCustomCards();
             if (conn) {
                 conn.close();
                 conn = null;
@@ -2684,6 +2694,7 @@
         const CUSTOM_SPAWN_WAY_MAX_COUNT = 60;
         const CUSTOM_SPAWN_RING_MAX_COUNT = 72;
         let customCards = [];
+        let onlineCustomCards = [];
         let isCustomCardTesting = false;
         let customCardTestEmitterDone = false; // エミッター停止後、弾が消えるまで待つフラグ
         let customCardMaker = {
@@ -2785,25 +2796,54 @@
             customCards = [];
         }
 
+        function pushIntegratedCustomCard(cc) {
+            let migrated = migrateOldCustomCard(cc);
+            defaultCards.active = defaultCards.active.filter(c => c.id !== migrated.id);
+            defaultCards.active.push({
+                id: migrated.id,
+                name: migrated.name,
+                duration: migrated.duration || 15,
+                pattern: migrated.id,
+                interval: 0.1,
+                cost: migrated.cost,
+                rawCost: migrated.rawCost || migrated.cost,
+                desc: migrated.desc,
+                isCustom: true,
+                emitterScript: migrated.emitterScript,
+                bulletScript: migrated.bulletScript
+            });
+        }
+
+        function serializeCustomCardsForDeck(cardIds) {
+            const idSet = new Set((cardIds || []).filter(Boolean));
+            return customCards
+                .filter(c => idSet.has(c.id))
+                .map(c => {
+                    let migrated = migrateOldCustomCard(c);
+                    return {
+                        id: migrated.id,
+                        name: migrated.name,
+                        duration: migrated.duration || 15,
+                        rawCost: migrated.rawCost || migrated.cost,
+                        cost: migrated.cost,
+                        desc: migrated.desc,
+                        isCustom: true,
+                        emitterScript: JSON.parse(JSON.stringify(migrated.emitterScript || [])),
+                        bulletScript: JSON.parse(JSON.stringify(migrated.bulletScript || []))
+                    };
+                });
+        }
+
+        function integrateOnlineCustomCards(cards) {
+            onlineCustomCards = Array.isArray(cards) ? cards.map(c => migrateOldCustomCard(c)) : [];
+            integrateCustomCards();
+        }
+
         function integrateCustomCards() {
             // Remove existing custom cards in defaultCards.active first
             defaultCards.active = defaultCards.active.filter(c => !c.isCustom);
-            
-            customCards.forEach(cc => {
-                let migrated = migrateOldCustomCard(cc);
-                defaultCards.active.push({
-                    id: migrated.id,
-                    name: migrated.name,
-                    duration: migrated.duration || 15,
-                    pattern: migrated.id,
-                    interval: 0.1, // dummy
-                    cost: migrated.cost,
-                    desc: migrated.desc,
-                    isCustom: true,
-                    emitterScript: migrated.emitterScript,
-                    bulletScript: migrated.bulletScript
-                });
-            });
+            customCards.forEach(cc => pushIntegratedCustomCard(cc));
+            onlineCustomCards.forEach(cc => pushIntegratedCustomCard(cc));
         }
         integrateCustomCards();
         // --------------------------------
@@ -3750,6 +3790,111 @@
 
         let bullets = [];
         let activeCards = []; // activeCardからactiveCards(配列)へ変更
+
+        const customOwnerPositionLocks = {
+            PLAYER: null,
+            CPU: null
+        };
+
+        function getHomePositionForOwner(owner) {
+            return {
+                x: PLAY_WIDTH / 2,
+                y: owner === 'PLAYER' ? canvas.height * 0.8 : canvas.height * 0.2
+            };
+        }
+
+        function getCustomOwnerPosition(owner, preset) {
+            const unit = owner === 'PLAYER' ? player : cpu;
+            const radius = unit.grazeRadius || unit.hitboxRadius || 10;
+            const minX = radius + 10;
+            const maxX = PLAY_WIDTH - radius - 10;
+            const centerX = PLAY_WIDTH / 2;
+            const sign = owner === 'PLAYER' ? 1 : -1;
+            const key = String(preset || 'center').trim().toLowerCase().replace(/[\s_-]/g, '');
+            let x = centerX;
+            let y = owner === 'PLAYER' ? canvas.height * 0.8 : canvas.height * 0.2;
+
+            if (key === 'right' || key === 'r') x = centerX + sign * PLAY_WIDTH * 0.18;
+            if (key === 'left' || key === 'l') x = centerX - sign * PLAY_WIDTH * 0.18;
+            if (key === 'farright' || key === 'maxright' || key === 'rightedge') x = sign > 0 ? maxX : minX;
+            if (key === 'farleft' || key === 'maxleft' || key === 'leftedge') x = sign > 0 ? minX : maxX;
+            if (key === 'enemyrightup' || key === 'rightup' || key === 'ru') {
+                x = centerX + sign * PLAY_WIDTH * 0.28;
+                y = owner === 'PLAYER' ? canvas.height * 0.68 : canvas.height * 0.12;
+            }
+            if (key === 'enemyleftup' || key === 'leftup' || key === 'lu') {
+                x = centerX - sign * PLAY_WIDTH * 0.28;
+                y = owner === 'PLAYER' ? canvas.height * 0.68 : canvas.height * 0.12;
+            }
+
+            return { x: Math.max(minX, Math.min(maxX, x)), y };
+        }
+
+        function placeCustomOwnerAt(owner, pos) {
+            const unit = owner === 'PLAYER' ? player : cpu;
+            unit.x = pos.x;
+            unit.y = pos.y;
+            unit.moveDir = 0;
+            unit.prevX = pos.x;
+            if (owner === 'PLAYER') {
+                mobileTargetX = pos.x;
+                mobileTargetY = pos.y;
+            } else {
+                cpu.targetX = pos.x;
+                cpu.targetY = pos.y;
+            }
+        }
+
+        function moveOwnerToHome(owner) {
+            placeCustomOwnerAt(owner, getHomePositionForOwner(owner));
+        }
+
+        function setCustomOwnerPosition(owner, preset, duration = 0) {
+            const unit = owner === 'PLAYER' ? player : cpu;
+            const target = getCustomOwnerPosition(owner, preset);
+            const moveDuration = Math.max(0, Number(duration) || 0);
+            customOwnerPositionLocks[owner] = {
+                startX: unit.x,
+                startY: unit.y,
+                targetX: target.x,
+                targetY: target.y,
+                duration: moveDuration,
+                elapsed: 0
+            };
+            if (moveDuration <= 0) {
+                placeCustomOwnerAt(owner, target);
+            }
+        }
+
+        function applyCustomOwnerPositionLock(owner, dt = 0) {
+            let lock = customOwnerPositionLocks[owner];
+            if (!lock) {
+                setCustomOwnerPosition(owner, 'center', 0);
+                lock = customOwnerPositionLocks[owner];
+            }
+            if (lock.duration <= 0) {
+                placeCustomOwnerAt(owner, { x: lock.targetX, y: lock.targetY });
+                return;
+            }
+            lock.elapsed = Math.min(lock.duration, lock.elapsed + Math.max(0, dt || 0));
+            const t = lock.duration > 0 ? lock.elapsed / lock.duration : 1;
+            const eased = t * t * (3 - 2 * t);
+            placeCustomOwnerAt(owner, {
+                x: lock.startX + (lock.targetX - lock.startX) * eased,
+                y: lock.startY + (lock.targetY - lock.startY) * eased
+            });
+        }
+
+        function isCustomActionLocked(owner = turnOwner) {
+            return battlePhase === 'ACTION'
+                && owner === turnOwner
+                && activeCards.some(c => c && c.isCustom);
+        }
+
+        function enforceCustomActionLock(dt = 0) {
+            if (isCustomActionLocked('PLAYER')) applyCustomOwnerPositionLock('PLAYER', dt);
+            if (isCustomActionLocked('CPU')) applyCustomOwnerPositionLock('CPU', dt);
+        }
 
         // ==========================================
         // 統合入力管理システム (ゲームパッド・キーコンフィグ対応)
@@ -4876,18 +5021,29 @@
             let ids = Array.isArray(cardIds) ? cardIds : [cardIds];
             let attacker = turnOwner === 'PLAYER' ? player : cpu;
             let target = turnOwner === 'PLAYER' ? cpu : player;
-            activeCards = ids.map(id => {
+            let selectedCards = ids.map(id => {
                 let found = defaultCards.active.find(c => c.id === id);
                 if (found) {
                     let copy = { ...found, spawnTimer: found.interval };
-                    if (copy.isCustom) {
-                        copy.emitterState = initEmitterState(copy.emitterScript, attacker, target);
-                    }
                     return copy;
                 }
                 return null;
             }).filter(Boolean);
 
+            if (selectedCards.length === 0) return;
+            if (selectedCards.some(c => c.isCustom)) {
+                setCustomOwnerPosition(turnOwner, 'center', 0);
+                attacker = turnOwner === 'PLAYER' ? player : cpu;
+                target = turnOwner === 'PLAYER' ? cpu : player;
+            }
+
+            selectedCards.forEach(copy => {
+                if (copy.isCustom) {
+                    copy.emitterState = initEmitterState(copy.emitterScript, attacker, target);
+                }
+            });
+
+            activeCards = selectedCards;
             if (activeCards.length === 0) return;
             actionTimer = Math.max(...activeCards.map(c => c.duration));
             normalShotTimer = 0;
@@ -6466,6 +6622,10 @@
 
                 player.x = Math.max(player.grazeRadius, Math.min(PLAY_WIDTH - player.grazeRadius, player.x));
                 player.y = Math.max(boundaryY + player.grazeRadius, Math.min(canvas.height - player.grazeRadius, player.y));
+                if (isCustomActionLocked('PLAYER')) {
+                    applyCustomOwnerPositionLock('PLAYER', dt);
+                    dx = 0;
+                }
 
                 // オンライン対戦時は自分の座標を相手に送信 (点対称に反転)
                 if (isOnlineMode && conn && onlineConnected) {
@@ -6481,7 +6641,10 @@
                 // CPU（相手プレイヤー）の移動処理
                 if (isOnlineMode) {
                     // オンライン対戦時は相手から受信した座標をそのまま反映
-                    if (receivedState) {
+                    if (isCustomActionLocked('CPU')) {
+                        applyCustomOwnerPositionLock('CPU', dt);
+                        receivedState = null;
+                    } else if (receivedState) {
                         cpu.x = receivedState.x;
                         cpu.y = receivedState.y;
                         cpu.isSlow = receivedState.slow;
@@ -6896,6 +7059,8 @@
                     }
                     cpu.prevX = cpu.x;
                 }
+
+                enforceCustomActionLock(dt);
 
                 // アクションフェーズの弾幕展開
                 if (battlePhase === 'ACTION') {
@@ -8707,6 +8872,14 @@
                         state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
                         break;
                     }
+                    case 'move_owner': {
+                        const owner = attacker === player ? 'PLAYER' : 'CPU';
+                        const preset = evalValue(block.params.preset || 'center', state.variables);
+                        const duration = evalExpr(block.params.duration || '0', state.variables);
+                        setCustomOwnerPosition(owner, preset, duration);
+                        applyCustomOwnerPositionLock(owner, 0);
+                        break;
+                    }
                     case 'spawn_bullet': {
                         let speed = evalExpr(block.params.speed, state.variables);
                         let angle = evalExpr(block.params.angle, state.variables);
@@ -9249,6 +9422,7 @@
                 case 'if':
                 case 'const_var':
                 case 'aim_at_target':
+                case 'move_owner':
                     return 0;
                 case 'spawn_bullet':
                 case 'bounce':
@@ -9263,6 +9437,59 @@
                 default:
                     return 0;
             }
+        }
+
+        let customCardCostCalcTimer = null;
+        let customCardCostCalcSeq = 0;
+
+        function estimateCustomCardEditCost(emitterScript, bulletScript) {
+            let baseBlockCost = 0;
+            (emitterScript || []).forEach(b => baseBlockCost += getBlockCost(b));
+            (bulletScript || []).forEach(b => baseBlockCost += getBlockCost(b));
+            return Math.max(1, Math.round(baseBlockCost));
+        }
+
+        function setCustomCardCostIndicator(cost, pending = false) {
+            let costIndicator = document.getElementById('custom-card-cost-indicator');
+            let costVal = document.getElementById('custom-card-cost');
+            let testBtn = document.getElementById('custom-card-test-btn');
+            let saveBtn = document.getElementById('custom-card-save-btn');
+            if (!costVal || !costIndicator) return;
+
+            costVal.textContent = pending ? (cost + '...') : cost;
+            let isCostValid = cost <= CUSTOM_CARD_COST_LIMIT;
+            if (isCostValid) {
+                costIndicator.style.borderColor = pending ? '#ffcc66' : '#00ffcc';
+                costIndicator.style.color = pending ? '#ffcc66' : '#00ffcc';
+                costIndicator.style.background = pending ? 'rgba(255,204,102,0.1)' : 'rgba(0,255,200,0.1)';
+                if (testBtn) {
+                    testBtn.disabled = false;
+                    testBtn.style.opacity = '1';
+                }
+                if (saveBtn) saveBtn.disabled = !customCardMaker.testPassed;
+            } else {
+                costIndicator.style.borderColor = '#ff3366';
+                costIndicator.style.color = '#ff3366';
+                costIndicator.style.background = 'rgba(255,50,100,0.1)';
+                if (testBtn) {
+                    testBtn.disabled = true;
+                    testBtn.style.opacity = '0.4';
+                }
+                if (saveBtn) saveBtn.disabled = true;
+            }
+        }
+
+        function scheduleCustomCardCostCalculation() {
+            let estimate = estimateCustomCardEditCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
+            setCustomCardCostIndicator(estimate, true);
+
+            if (customCardCostCalcTimer) clearTimeout(customCardCostCalcTimer);
+            let seq = ++customCardCostCalcSeq;
+            customCardCostCalcTimer = setTimeout(() => {
+                customCardCostCalcTimer = null;
+                if (seq !== customCardCostCalcSeq) return;
+                setCustomCardCostIndicator(estimate, false);
+            }, 250);
         }
 
         // 弾の進行方向と自機方向の一致度から脅威度(0.15〜1.0)を算出
@@ -9485,11 +9712,11 @@
             });
         }
 
-        function saveCustomCardDraft(showNotification = false) {
+        function saveCustomCardDraft(showNotification = false, skipCodeParse = false) {
             let nameVal = document.getElementById('custom-card-name').value;
             let descVal = document.getElementById('custom-card-desc').value;
             
-            if (customCardMakerMode === 'code') {
+            if (customCardMakerMode === 'code' && !skipCodeParse) {
                 let code = document.getElementById('workspace-code-textarea').value;
                 let parsed = codeToBlocks(code);
                 if (customCardMaker.activeTab === 'emitter') {
@@ -9665,9 +9892,7 @@
             if (customCardMakerMode === 'code') {
                 let script = tab === 'emitter' ? customCardMaker.emitterScript : customCardMaker.bulletScript;
                 document.getElementById('workspace-code-textarea').value = blocksToCode(script);
-                
-                let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
-                document.getElementById('custom-card-cost').textContent = cost;
+                scheduleCustomCardCostCalculation();
             } else {
                 renderCardMaker();
             }
@@ -9720,6 +9945,13 @@
                 block.type = 'set_var';
                 block.params.name = 'color';
                 block.params.value = '#33ffff';
+            } else if (type === 'move_owner') {
+                block.params.preset = 'center';
+                block.params.duration = '0';
+            } else if (type === 'slide_owner') {
+                block.type = 'move_owner';
+                block.params.preset = 'right';
+                block.params.duration = '1.0';
             } else if (type === 'spawn_bullet') {
                 block.params.bulletType = 'normal';
                 block.params.color = '#ff3333';
@@ -9838,6 +10070,8 @@
             
             // 動作グループ
             document.getElementById('palette-btn-aim').style.display = 'block';
+            document.getElementById('palette-btn-move-owner').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-slide-owner').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn-ring').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn-way').style.display = (tab === 'emitter') ? 'block' : 'none';
@@ -9980,6 +10214,25 @@
                                 ${renderBlockControls(idx)}
                             `;
                             break;
+                        case 'move_owner':
+                            blockDiv.className = 'maker-block color-motion';
+                            html = `
+                                <span>[位置] 使用者を</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'preset', this.value)">
+                                    <option value="center" ${(b.params.preset || 'center') === 'center' ? 'selected' : ''}>中央</option>
+                                    <option value="right" ${b.params.preset === 'right' ? 'selected' : ''}>右</option>
+                                    <option value="left" ${b.params.preset === 'left' ? 'selected' : ''}>左</option>
+                                    <option value="farRight" ${b.params.preset === 'farRight' ? 'selected' : ''}>最右</option>
+                                    <option value="farLeft" ${b.params.preset === 'farLeft' ? 'selected' : ''}>最左</option>
+                                    <option value="rightUp" ${(b.params.preset === 'rightUp' || b.params.preset === 'enemyRightUp') ? 'selected' : ''}>右上（敵使用時、こっちから見て右上）</option>
+                                    <option value="leftUp" ${(b.params.preset === 'leftUp' || b.params.preset === 'enemyLeftUp') ? 'selected' : ''}>左上（敵使用時、こっちから見て左上）</option>
+                                </select>
+                                <span>へ</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.duration || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'duration', this.value)">
+                                <span>秒で移動</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
                         case 'spawn_bullet':
                             blockDiv.className = 'maker-block color-action';
                             html = `
@@ -10079,30 +10332,7 @@
                 });
             }
             
-            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript, customCardMaker.bounceScript);
-            let costIndicator = document.getElementById('custom-card-cost-indicator');
-            let costVal = document.getElementById('custom-card-cost');
-            let testBtn = document.getElementById('custom-card-test-btn');
-            let saveBtn = document.getElementById('custom-card-save-btn');
-            
-            costVal.textContent = cost;
-            
-            let isCostValid = cost <= CUSTOM_CARD_COST_LIMIT;
-            if (isCostValid) {
-                costIndicator.style.borderColor = '#00ffcc';
-                costIndicator.style.color = '#00ffcc';
-                costIndicator.style.background = 'rgba(0,255,200,0.1)';
-                testBtn.disabled = false;
-                testBtn.style.opacity = '1.0';
-                saveBtn.disabled = !customCardMaker.testPassed;
-            } else {
-                costIndicator.style.borderColor = '#ff3366';
-                costIndicator.style.color = '#ff3366';
-                costIndicator.style.background = 'rgba(255,50,100,0.1)';
-                testBtn.disabled = true;
-                testBtn.style.opacity = '0.4';
-                saveBtn.disabled = true;
-            }
+            scheduleCustomCardCostCalculation();
         }
 
         function customCardMakerDeleteCard(cardId) {
@@ -10389,35 +10619,8 @@
             }
             
             customCardMaker.testPassed = false;
-            
-            let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
-            let costVal = document.getElementById('custom-card-cost');
-            let costIndicator = document.getElementById('custom-card-cost-indicator');
-            let testBtn = document.getElementById('custom-card-test-btn');
-            let saveBtn = document.getElementById('custom-card-save-btn');
-            
-            if (costVal) costVal.textContent = cost;
-            
-            let isCostValid = cost <= CUSTOM_CARD_COST_LIMIT;
-            if (costIndicator) {
-                if (isCostValid) {
-                    costIndicator.style.borderColor = '#00ffcc';
-                    costIndicator.style.color = '#00ffcc';
-                    costIndicator.style.background = 'rgba(0,255,200,0.1)';
-                } else {
-                    costIndicator.style.borderColor = '#ff3366';
-                    costIndicator.style.color = '#ff3366';
-                    costIndicator.style.background = 'rgba(255,50,100,0.1)';
-                }
-            }
-            if (testBtn) {
-                testBtn.disabled = !isCostValid;
-                testBtn.style.opacity = isCostValid ? '1.0' : '0.4';
-            }
-            if (saveBtn) {
-                saveBtn.disabled = true;
-            }
-            saveCustomCardDraft(false);
+            scheduleCustomCardCostCalculation();
+            saveCustomCardDraft(false, true);
         }
 
         function formatCodeColorArg(color) {
@@ -10465,6 +10668,16 @@
                     case 'aim_at_target':
                         line = `aimAtTarget()`;
                         break;
+                    case 'move_owner': {
+                        let preset = b.params.preset || 'center';
+                        if (preset === 'enemyRightUp') preset = 'rightUp';
+                        if (preset === 'enemyLeftUp') preset = 'leftUp';
+                        let duration = b.params.duration || '0';
+                        line = (String(duration).trim() === '0')
+                            ? `moveTo("${preset}")`
+                            : `slideTo("${preset}", ${duration})`;
+                        break;
+                    }
                     case 'spawn_bullet': {
                         let bt = b.params.bulletType || 'normal';
                         let col = b.params.color || '#ff3333';
@@ -10562,6 +10775,16 @@
                     if (mIf) block = { type: 'if', params: { cond: mIf[1].trim() }, indent };
                     let mAim = trimmed.match(/^aimAtTarget\(\)$/i);
                     if (mAim) block = { type: 'aim_at_target', params: {}, indent };
+                    let mMoveOwner = trimmed.match(/^moveTo\((.*?)\)$/i);
+                    if (mMoveOwner) {
+                        let preset = mMoveOwner[1].trim().replace(/^['"]|['"]$/g, '');
+                        block = { type: 'move_owner', params: { preset: preset || 'center', duration: '0' }, indent };
+                    }
+                    let mSlideOwner = trimmed.match(/^slideTo\((.*?)\)$/i);
+                    if (mSlideOwner) {
+                        let args = mSlideOwner[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        block = { type: 'move_owner', params: { preset: args[0] || 'center', duration: args[1] || '1.0' }, indent };
+                    }
                     let mBounce = trimmed.match(/^bounce\(\)$/i);
                     if (mBounce) block = { type: 'bounce', params: {}, indent };
                     let mOnce = trimmed.match(/^once(\(\))?$/i);
@@ -10694,6 +10917,16 @@
                 let mAim = trimmed.match(/^aimAtTarget\(\)$/i);
                 if (mAim) {
                     block = { type: 'aim_at_target', params: {}, indent: indent };
+                }
+                let mMoveOwner = trimmed.match(/^moveTo\((.*?)\)$/i);
+                if (mMoveOwner) {
+                    let preset = mMoveOwner[1].trim().replace(/^['"]|['"]$/g, '');
+                    block = { type: 'move_owner', params: { preset: preset || 'center', duration: '0' }, indent: indent };
+                }
+                let mSlideOwner = trimmed.match(/^slideTo\((.*?)\)$/i);
+                if (mSlideOwner) {
+                    let args = mSlideOwner[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                    block = { type: 'move_owner', params: { preset: args[0] || 'center', duration: args[1] || '1.0' }, indent: indent };
                 }
                 let mBounce = trimmed.match(/^bounce\(\)$/i);
                 if (mBounce) {
