@@ -1365,6 +1365,132 @@
                 display: block !important;
             }
         }
+
+        /* Custom card editor readability pass */
+        .palette-panel {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.45) rgba(0,0,0,0.25);
+        }
+        .palette-btn {
+            min-height: 28px !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }
+        .workspace-scroll {
+            overflow-x: hidden !important;
+            padding: 10px !important;
+        }
+        .maker-block {
+            width: 100% !important;
+            max-width: 100% !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            padding: 9px 10px !important;
+            padding-right: 10px !important;
+            min-height: 46px !important;
+            font-size: 12px !important;
+            line-height: 1.35 !important;
+            letter-spacing: 0 !important;
+            overflow: visible !important;
+            border-width: 1px !important;
+            border-color: rgba(255,255,255,0.22) !important;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.22), 0 3px 8px rgba(0,0,0,0.28) !important;
+        }
+        .maker-block span {
+            min-width: max-content;
+            color: rgba(255,255,255,0.96) !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .maker-block input[type="text"],
+        .maker-block select {
+            min-height: 24px !important;
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+            border-color: rgba(255,255,255,0.34) !important;
+            background: rgba(5, 6, 12, 0.82) !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.45) !important;
+        }
+        .maker-block input[type="text"] {
+            width: 86px !important;
+            min-width: 64px !important;
+            max-width: 150px !important;
+            text-align: left !important;
+        }
+        .maker-block input[list="var-suggestions"] {
+            width: 112px !important;
+        }
+        .maker-block input[list="color-suggestions"] {
+            width: 116px !important;
+            font-family: Consolas, 'Courier New', monospace !important;
+        }
+        .maker-block input[id^="if-cond-input"] {
+            width: 160px !important;
+        }
+        .maker-block select {
+            max-width: min(220px, 100%) !important;
+            padding: 3px 6px !important;
+        }
+        .block-controls {
+            position: static !important;
+            transform: none !important;
+            margin-left: auto !important;
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            gap: 4px !important;
+            align-self: center !important;
+            padding-left: 6px !important;
+        }
+        .block-ctrl-btn {
+            width: 24px !important;
+            height: 24px !important;
+            min-width: 24px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            border: 1px solid rgba(255,255,255,0.24) !important;
+            background: rgba(255,255,255,0.14) !important;
+        }
+        .block-ctrl-btn.btn-delete {
+            color: #ffd7d7 !important;
+            background: rgba(255,70,70,0.24) !important;
+        }
+        .color-control { background: linear-gradient(135deg, #a23f00, #7c2e00) !important; }
+        .color-vars { background: linear-gradient(135deg, #77349a, #592073) !important; }
+        .color-motion { background: linear-gradient(135deg, #1e6f9f, #164e74) !important; }
+        .color-action { background: linear-gradient(135deg, #a93226, #7c211a) !important; }
+        @media (min-width: 901px) and (min-height: 851px) {
+            .palette-panel {
+                width: 230px !important;
+            }
+            .maker-block {
+                flex-wrap: wrap !important;
+                font-size: 12px !important;
+                padding-right: 10px !important;
+            }
+            .maker-block input[type="text"] {
+                width: 92px !important;
+            }
+        }
+        @media (max-width: 900px), (max-height: 850px) {
+            .palette-panel {
+                max-height: 190px !important;
+            }
+            .palette-btn {
+                width: calc(50% - 4px) !important;
+                font-size: 10px !important;
+            }
+            .maker-block {
+                font-size: 11px !important;
+            }
+            .block-controls {
+                width: 100% !important;
+                justify-content: flex-end !important;
+                padding-left: 0 !important;
+            }
+        }
+
     </style>
 </head>
 
