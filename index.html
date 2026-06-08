@@ -1870,6 +1870,7 @@
                         <option value="isBounced">壁接触フラグ (isBounced)</option>
                         <option value="isTouchWall">wall trigger (isTouchWall)</option>
                         <option value="touchingWall">wall touching (touchingWall)</option>
+                        <option value="color">弾の色 (color)</option>
                     </datalist>
                     <datalist id="val-suggestions">
                         <option value="angle">現在の角度 (angle)</option>
@@ -1880,6 +1881,8 @@
                         <option value="speed * 0.5">speed * 0.5</option>
                         <option value="speed * 2">speed * 2</option>
                         <option value="dist < 150">dist < 150</option>
+                        <option value="color == #33ffff">color == #33ffff</option>
+                        <option value="color != #33ffff">color != #33ffff</option>
                         <option value="touchingWall">touchingWall</option>
                         <option value="timer">生存タイマー (timer)</option>
                         <option value="second">秒数 (second)</option>
@@ -1941,6 +1944,11 @@
                             <button class="palette-btn color-action" id="palette-btn-spawn-ring" onclick="customCardMakerAddBlock('spawn_ring')">全方位円形弾を発射</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn-way" onclick="customCardMakerAddBlock('spawn_way')">Way弾を発射</button>
                             <button class="palette-btn color-motion" id="palette-btn-homing" onclick="customCardMakerAddBlock('homing')">相手を追尾する</button>
+                            <button class="palette-btn color-motion" id="palette-btn-speed-add" onclick="customCardMakerAddBlock('speed_add')">speed += value</button>
+                            <button class="palette-btn color-motion" id="palette-btn-speed-set" onclick="customCardMakerAddBlock('speed_set')">speed = value</button>
+                            <button class="palette-btn color-motion" id="palette-btn-angle-add" onclick="customCardMakerAddBlock('angle_add')">angle += value</button>
+                            <button class="palette-btn color-motion" id="palette-btn-angle-set" onclick="customCardMakerAddBlock('angle_set')">angle = value</button>
+                            <button class="palette-btn color-motion" id="palette-btn-color-set" onclick="customCardMakerAddBlock('color_set')">color = value</button>
                             <button class="palette-btn color-motion" id="palette-btn-slow" onclick="customCardMakerAddBlock('speed_scale_slow')">slow(e, f)</button>
                             <button class="palette-btn color-motion" id="palette-btn-fast" onclick="customCardMakerAddBlock('speed_scale_fast')">fast(e, f)</button>
                             <button class="palette-btn color-motion" id="palette-btn-bounce" onclick="customCardMakerAddBlock('bounce')">壁で反射する</button>
@@ -8380,6 +8388,7 @@
             if (s === '') return 0;
             if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.substring(1, s.length - 1);
             if (variables && variables[s] !== undefined) return variables[s];
+            if (isCssColorLiteral(s)) return s;
             return evalExpr(expr, variables || {});
         }
         function isCssColorLiteral(value) {
@@ -9689,6 +9698,28 @@
                 block.params.name = 'angle';
                 block.params.value = '10';
                 block.params.op = '+';
+            } else if (type === 'speed_add') {
+                block.type = 'change_var';
+                block.params.name = 'speed';
+                block.params.value = '10';
+                block.params.op = '+';
+            } else if (type === 'speed_set') {
+                block.type = 'set_var';
+                block.params.name = 'speed';
+                block.params.value = '200';
+            } else if (type === 'angle_add') {
+                block.type = 'change_var';
+                block.params.name = 'angle';
+                block.params.value = '10';
+                block.params.op = '+';
+            } else if (type === 'angle_set') {
+                block.type = 'set_var';
+                block.params.name = 'angle';
+                block.params.value = 'angle';
+            } else if (type === 'color_set') {
+                block.type = 'set_var';
+                block.params.name = 'color';
+                block.params.value = '#33ffff';
             } else if (type === 'spawn_bullet') {
                 block.params.bulletType = 'normal';
                 block.params.color = '#ff3333';
@@ -9811,6 +9842,11 @@
             document.getElementById('palette-btn-spawn-ring').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn-way').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-homing').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-speed-add').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-speed-set').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-angle-add').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-angle-set').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-color-set').style.display = (tab === 'bullet') ? 'block' : 'none';
             document.getElementById('palette-btn-slow').style.display = (tab === 'bullet') ? 'block' : 'none';
             document.getElementById('palette-btn-fast').style.display = (tab === 'bullet') ? 'block' : 'none';
             document.getElementById('palette-btn-bounce').style.display = (tab === 'bullet') ? 'block' : 'none';
@@ -9878,6 +9914,8 @@
                             else if (normalizedCond === 'y<10') selectVal = 'y < 10';
                             else if (normalizedCond === 'y>890') selectVal = 'y > 890';
                             else if (normalizedCond === 'dist<150') selectVal = 'dist < 150';
+                            else if (normalizedCond === 'color==#33ffff') selectVal = 'color == #33ffff';
+                            else if (normalizedCond === 'color!=#33ffff') selectVal = 'color != #33ffff';
                             
                             blockDiv.className = 'maker-block color-control';
                             html = `
@@ -9890,6 +9928,8 @@
                                     <option value="y < 10" ${selectVal === 'y < 10' ? 'selected' : ''}>画面上端に達したら (y < 10)</option>
                                     <option value="y > 890" ${selectVal === 'y > 890' ? 'selected' : ''}>画面下端に達したら (y > 890)</option>
                                     <option value="dist < 150" ${selectVal === 'dist < 150' ? 'selected' : ''}>相手に近づいたら (dist < 150)</option>
+                                    <option value="color == #33ffff" ${selectVal === 'color == #33ffff' ? 'selected' : ''}>色がシアンなら (color == #33ffff)</option>
+                                    <option value="color != #33ffff" ${selectVal === 'color != #33ffff' ? 'selected' : ''}>色がシアン以外なら (color != #33ffff)</option>
                                     <option value="custom" ${selectVal === 'custom' ? 'selected' : ''}>その他 (自由記述)</option>
                                 </select>
                                 <input type="text" id="if-cond-input-${idx}" list="val-suggestions" style="width:90px; display:${selectVal === 'custom' ? 'inline-block' : 'none'};" value="${cond}" onchange="customCardMakerUpdateParam(${idx}, 'cond', this.value)">
@@ -9914,7 +9954,7 @@
                                 <span>[変数]</span>
                                 <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
                                 <span>を</span>
-                                <input type="text" list="val-suggestions" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
+                                <input type="text" list="${b.params.name === 'color' ? 'color-suggestions' : 'val-suggestions'}" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
                                 <span>にする</span>
                                 ${renderBlockControls(idx)}
                             `;
