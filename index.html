@@ -8406,6 +8406,31 @@
             return String(cond || '').replace(/(^|[^!<>=])=([^=]|$)/g, '$1==$2');
         }
 
+        function readConditionValue(raw, variables) {
+            let s = String(raw || '').trim();
+            if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+                return s.substring(1, s.length - 1);
+            }
+            if (variables && variables[s] !== undefined) return variables[s];
+            return s;
+        }
+
+        function evalStringCondition(cond, variables) {
+            let m = String(cond || '').match(/^(.+?)\s*(==|!=)\s*(.+)$/);
+            if (!m) return null;
+
+            let left = readConditionValue(m[1], variables);
+            let right = readConditionValue(m[3], variables);
+            let hasQuotedSide = /^['"]/.test(m[1].trim()) || /^['"]/.test(m[3].trim());
+            let hasColorSide = isCssColorLiteral(left) || isCssColorLiteral(right) || /#(?:[0-9a-f]{3,8})\b/i.test(m[1] + m[3]);
+            let hasStringVar = (typeof left === 'string' && isNaN(Number(left))) || (typeof right === 'string' && isNaN(Number(right)));
+            if (!hasQuotedSide && !hasColorSide && !hasStringVar) return null;
+
+            left = String(left).trim().toLowerCase();
+            right = String(right).trim().toLowerCase();
+            return m[2] === '==' ? left === right : left !== right;
+        }
+
         function evalCondition(cond, variables) {
             let s = String(cond || '').trim();
             let normalized = s.replace(/\s+/g, '').toLowerCase();
@@ -8420,7 +8445,10 @@
                 if (mBefore) s = 'timer <= (' + mBefore[1] + ')';
                 if (mNear) s = 'dist <= (' + mNear[1] + ')';
             }
-            return !!evalExpr(normalizeConditionOperators(s), variables || {});
+            let normalizedCond = normalizeConditionOperators(s);
+            let stringResult = evalStringCondition(normalizedCond, variables || {});
+            if (stringResult !== null) return stringResult;
+            return !!evalExpr(normalizedCond, variables || {});
         }
         function setScriptVariable(state, name, value, isConst) {
             if (!name) return;
@@ -8710,6 +8738,7 @@
 
                         newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
                         newBullet.bulletState.isPlayerSide = isPlayerSide;
+                        newBullet.bulletState.variables.color = bColor;
                         newBullet.update = (b, bdt) => {
                             runCustomBulletScript(b, bdt, attacker, target);
                         };
@@ -8760,6 +8789,7 @@
 
                             newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
                             newBullet.bulletState.isPlayerSide = isPlayerSide;
+                            newBullet.bulletState.variables.color = bColor;
                             newBullet.update = (b, bdt) => {
                                 runCustomBulletScript(b, bdt, attacker, target);
                             };
@@ -8815,6 +8845,7 @@
 
                             newBullet.bulletState = initBulletState(c.bulletScript || [], speed, angle, attacker, target);
                             newBullet.bulletState.isPlayerSide = isPlayerSide;
+                            newBullet.bulletState.variables.color = bColor;
                             newBullet.update = (b, bdt) => {
                                 runCustomBulletScript(b, bdt, attacker, target);
                             };
