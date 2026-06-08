@@ -3809,21 +3809,20 @@
             const minX = radius + 10;
             const maxX = PLAY_WIDTH - radius - 10;
             const centerX = PLAY_WIDTH / 2;
-            const sign = owner === 'PLAYER' ? 1 : -1;
             const key = String(preset || 'center').trim().toLowerCase().replace(/[\s_-]/g, '');
             let x = centerX;
             let y = owner === 'PLAYER' ? canvas.height * 0.8 : canvas.height * 0.2;
 
-            if (key === 'right' || key === 'r') x = centerX + sign * PLAY_WIDTH * 0.18;
-            if (key === 'left' || key === 'l') x = centerX - sign * PLAY_WIDTH * 0.18;
-            if (key === 'farright' || key === 'maxright' || key === 'rightedge') x = sign > 0 ? maxX : minX;
-            if (key === 'farleft' || key === 'maxleft' || key === 'leftedge') x = sign > 0 ? minX : maxX;
+            if (key === 'right' || key === 'r') x = centerX + PLAY_WIDTH * 0.18;
+            if (key === 'left' || key === 'l') x = centerX - PLAY_WIDTH * 0.18;
+            if (key === 'farright' || key === 'maxright' || key === 'rightedge') x = maxX;
+            if (key === 'farleft' || key === 'maxleft' || key === 'leftedge') x = minX;
             if (key === 'enemyrightup' || key === 'rightup' || key === 'ru') {
-                x = centerX + sign * PLAY_WIDTH * 0.28;
+                x = centerX + PLAY_WIDTH * 0.28;
                 y = owner === 'PLAYER' ? canvas.height * 0.68 : canvas.height * 0.12;
             }
             if (key === 'enemyleftup' || key === 'leftup' || key === 'lu') {
-                x = centerX - sign * PLAY_WIDTH * 0.28;
+                x = centerX - PLAY_WIDTH * 0.28;
                 y = owner === 'PLAYER' ? canvas.height * 0.68 : canvas.height * 0.12;
             }
 
@@ -8556,6 +8555,16 @@
             if (isCssColorLiteral(s)) return s;
             return evalExpr(expr, variables || {});
         }
+
+        function resolveTextParam(textParam, variables) {
+            let raw = String(textParam || '').trim();
+            if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+                raw = raw.substring(1, raw.length - 1);
+            }
+            if (variables && variables[raw] !== undefined) return String(variables[raw]);
+            return raw;
+        }
+
         function isCssColorLiteral(value) {
             let s = String(value || '').trim();
             return /^#([0-9a-f]{3,8})$/i.test(s) ||
@@ -8874,7 +8883,7 @@
                     }
                     case 'move_owner': {
                         const owner = attacker === player ? 'PLAYER' : 'CPU';
-                        const preset = evalValue(block.params.preset || 'center', state.variables);
+                        const preset = resolveTextParam(block.params.preset || 'center', state.variables);
                         const duration = evalExpr(block.params.duration || '0', state.variables);
                         setCustomOwnerPosition(owner, preset, duration);
                         applyCustomOwnerPositionLock(owner, 0);
