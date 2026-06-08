@@ -1048,6 +1048,77 @@
             color: #00ffcc !important;
             font-weight: bold !important;
         }
+        .code-guide-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            box-sizing: border-box;
+        }
+        .code-guide-modal.hidden {
+            display: none !important;
+        }
+        .code-guide-panel {
+            width: min(980px, 96vw);
+            max-height: min(780px, 90vh);
+            display: flex;
+            flex-direction: column;
+            background: #090a12;
+            border: 1px solid rgba(0, 255, 204, 0.55);
+            border-radius: 8px;
+            box-shadow: 0 16px 44px rgba(0,0,0,0.65);
+            overflow: hidden;
+        }
+        .code-guide-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            background: rgba(0, 255, 204, 0.08);
+        }
+        .code-guide-header h4 {
+            margin: 0;
+            color: #00ffcc;
+            font-size: 16px;
+        }
+        .code-guide-body {
+            overflow: auto;
+            padding: 14px;
+            color: #dfefff;
+            font-size: 12px;
+            line-height: 1.65;
+        }
+        .code-guide-body h5 {
+            margin: 14px 0 6px;
+            color: #ffdd66;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 3px;
+        }
+        .code-guide-body code,
+        .code-guide-body pre {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-guide-body pre {
+            margin: 6px 0 10px;
+            padding: 10px;
+            color: #eaffff;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+        .code-guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
         .workspace-scroll {
             flex: 1;
             overflow-y: auto;
@@ -1964,6 +2035,7 @@
                                 <div style="flex-grow: 1;"></div>
                                 <button id="mode-btn-block" class="tab-btn active" onclick="customCardMakerSwitchMode('block')" style="font-size: 11px; padding: 4px 10px; margin-left: 2px;">ブロック</button>
                                 <button id="mode-btn-code" class="tab-btn" onclick="customCardMakerSwitchMode('code')" style="font-size: 11px; padding: 4px 10px; margin-left: 2px;">JSコード</button>
+                                <button id="code-guide-btn" class="tab-btn" onclick="toggleCustomCodeGuide(true)" style="font-size: 11px; padding: 4px 10px; margin-left: 2px;">コードヘルプ</button>
                             </div>
                             <div class="workspace-scroll" id="workspace-blocks-container">
                             </div>
@@ -1985,6 +2057,111 @@
                             一時保存から復元
                         </button>
                         <button class="menu-btn" onclick="customCardMakerCloseEditor()" style="width: 120px; background: #222;">キャンセル</button>
+                    </div>
+
+                    <div id="custom-code-guide-modal" class="code-guide-modal hidden" onclick="if(event.target === this) toggleCustomCodeGuide(false)">
+                        <div class="code-guide-panel">
+                            <div class="code-guide-header">
+                                <h4>自作弾幕コードヘルプ</h4>
+                                <button class="tab-btn active" onclick="toggleCustomCodeGuide(false)">閉じる</button>
+                            </div>
+                            <div class="code-guide-body">
+                                <div class="code-guide-grid">
+                                    <section>
+                                        <h5>基本形</h5>
+                                        <pre>repeat(10) {
+    // 10回実行
+}
+
+forever() {
+    // アクション中ずっと実行
+}
+
+if (条件) {
+    // 条件が true の時だけ実行
+}
+
+wait(0.5) // 0.5秒待つ</pre>
+                                        <p>一番上に複数の <code>forever()</code> や <code>repeat()</code> を置くと、同時に並行して動きます。</p>
+                                    </section>
+                                    <section>
+                                        <h5>エミッター側</h5>
+                                        <pre>aimAtTarget()
+spawnBullet("normal", "#ff3333", 200, angle)
+spawnRing("normal", "#33ffff", 180, 24)
+spawnWay("normal", "#ff3333", 250, angle, 5, 20)
+
+moveTo("center")
+moveTo("right")
+moveTo("left")
+moveTo("farRight")
+moveTo("farLeft")
+moveTo("rightUp")
+moveTo("leftUp")
+slideTo("farRight", 0.5)</pre>
+                                        <p><code>moveTo</code> は即移動、<code>slideTo</code> は指定秒数で滑らかに移動します。</p>
+                                    </section>
+                                </div>
+                                <div class="code-guide-grid">
+                                    <section>
+                                        <h5>弾側</h5>
+                                        <pre>speed += 10
+speed -= 5
+speed = 300
+angle += 2
+angle = angle + random(-5, 5)
+color = #33ffff
+
+aimAtTarget()
+homing(90)
+bounce()
+slow(0.5, 0)
+fast(2, 0)
+
+if (isBounced) {
+    color = #ffdd33
+}</pre>
+                                        <p>弾側コードは、発射された弾1つ1つの目線で毎フレーム動きます。</p>
+                                    </section>
+                                    <section>
+                                        <h5>変数と条件</h5>
+                                        <pre>angle      // 角度
+speed      // 速度
+x, y       // 現在位置
+tx, ty     // 相手の位置
+dist       // 相手との距離
+timer      // その弾の経過秒
+second     // 秒数
+frame      // フレーム数
+color      // 色
+isBounced  // bounceで跳ねたら1
+
+random()        // 0から1
+random(100)     // 0から100
+random(-5, 5)   // -5から5</pre>
+                                        <p>条件は <code>if (speed &gt; 300)</code> や <code>if (color == #33ffff)</code> のように書けます。</p>
+                                    </section>
+                                </div>
+                                <h5>例: 移動する発射台</h5>
+                                <pre>forever() {
+    slideTo("center", 0.5)
+    wait(2)
+    slideTo("farRight", 0.5)
+    wait(0.7)
+    slideTo("center", 0.5)
+    wait(2)
+    slideTo("farLeft", 0.5)
+    wait(0.7)
+}
+
+forever() {
+    aimAtTarget()
+    angle += random(-8, 8)
+    spawnWay("normal", "#33ffff", 360, angle, 5, 12)
+    wait(0.08)
+}</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -10549,6 +10726,18 @@
         }
 
         let customCardMakerMode = 'block';
+
+        function toggleCustomCodeGuide(show) {
+            const modal = document.getElementById('custom-code-guide-modal');
+            if (!modal) return;
+            modal.classList.toggle('hidden', !show);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                toggleCustomCodeGuide(false);
+            }
+        });
 
         function customCardMakerSwitchMode(mode) {
             if (customCardMakerMode === mode) return;
