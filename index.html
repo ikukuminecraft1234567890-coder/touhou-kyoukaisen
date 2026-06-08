@@ -1740,6 +1740,8 @@
                         <option value="ty">ターゲットのY座標 (ty)</option>
                         <option value="timer">弾のタイマー (timer)</option>
                         <option value="isBounced">壁接触フラグ (isBounced)</option>
+                        <option value="isTouchWall">wall trigger (isTouchWall)</option>
+                        <option value="touchingWall">wall touching (touchingWall)</option>
                     </datalist>
                     <datalist id="val-suggestions">
                         <option value="angle">現在の角度 (angle)</option>
@@ -1747,6 +1749,10 @@
                         <option value="angle - 30">角度 - 30度 (angle - 30)</option>
                         <option value="speed">現在の速度 (speed)</option>
                         <option value="speed + 50">速度 + 50 (speed + 50)</option>
+                        <option value="speed * 0.5">speed * 0.5</option>
+                        <option value="speed * 2">speed * 2</option>
+                        <option value="dist < 150">dist < 150</option>
+                        <option value="touchingWall">touchingWall</option>
                         <option value="timer">生存タイマー (timer)</option>
                         <option value="x">現在のX座標 (x)</option>
                         <option value="y">現在のY座標 (y)</option>
@@ -1756,7 +1762,7 @@
                     <div class="maker-header">
                         <h3 id="card-editor-title" style="margin: 0; font-size: 20px;">スペルカード編集</h3>
                         <div id="custom-card-cost-indicator" style="font-size: 14px; font-weight: bold; padding: 4px 10px; border-radius: 4px; background: rgba(0,255,200,0.1); border: 1px solid #00ffcc;">
-                            合計コスト: <span id="custom-card-cost">0</span> / 15
+                            合計コスト: <span id="custom-card-cost">0</span> / 30
                         </div>
                     </div>
                     
@@ -1782,7 +1788,9 @@
                             <button class="palette-btn color-control" id="palette-btn-once" onclick="customCardMakerAddBlock('once')">1度だけ実行する</button>
                             
                             <div class="palette-group-title" id="palette-title-vars">変数 (Variables)</div>
-                            <button class="palette-btn color-vars" id="palette-btn-setvar" onclick="customCardMakerAddBlock('set_var')">変数を [値] にする</button>
+                            <button class="palette-btn color-vars" id="palette-btn-setconst" onclick="customCardMakerAddBlock('const_var')">const name = value</button>
+
+                            <button class="palette-btn color-vars" id="palette-btn-setvar" onclick="customCardMakerAddBlock('set_var')">set variable</button>
                             <button class="palette-btn color-vars" id="palette-btn-changevar" onclick="customCardMakerAddBlock('change_var')">変数を [値] 増やす</button>
                             <button class="palette-btn color-vars" id="palette-btn-setlaser" onclick="customCardMakerAddBlock('set_laser')">設置レーザー設定</button>
                             
@@ -1792,6 +1800,8 @@
                             <button class="palette-btn color-action" id="palette-btn-spawn-ring" onclick="customCardMakerAddBlock('spawn_ring')">全方位円形弾を発射</button>
                             <button class="palette-btn color-action" id="palette-btn-spawn-way" onclick="customCardMakerAddBlock('spawn_way')">Way弾を発射</button>
                             <button class="palette-btn color-motion" id="palette-btn-homing" onclick="customCardMakerAddBlock('homing')">相手を追尾する</button>
+                            <button class="palette-btn color-motion" id="palette-btn-slow" onclick="customCardMakerAddBlock('speed_scale_slow')">slow(e, f)</button>
+                            <button class="palette-btn color-motion" id="palette-btn-fast" onclick="customCardMakerAddBlock('speed_scale_fast')">fast(e, f)</button>
                             <button class="palette-btn color-motion" id="palette-btn-bounce" onclick="customCardMakerAddBlock('bounce')">壁で反射する</button>
                         </div>
 
@@ -2520,6 +2530,9 @@
         };
 
         // --- CUSTOM SPELL CARD SYSTEM ---
+        const CUSTOM_CARD_COST_LIMIT = 30;
+        const CUSTOM_SPAWN_WAY_MAX_COUNT = 60;
+        const CUSTOM_SPAWN_RING_MAX_COUNT = 72;
         let customCards = [];
         let isCustomCardTesting = false;
         let customCardTestEmitterDone = false; // エミッター停止後、弾が消えるまで待つフラグ
@@ -8144,6 +8157,9 @@
                 if (block.type === 'once') {
                     b.onceId = 'once_' + (onceCounter++);
                 }
+                if (block.type === 'speed_scale') {
+                    b.speedScaleId = 'speed_scale_' + (onceCounter++);
+                }
                 
                 // Find parent in stack
                 while (stack.length > 1 && stack[stack.length - 1].indent >= block.indent) {
@@ -8158,6 +8174,53 @@
                 }
             }
             return root;
+        }
+        function evalValue(expr, variables) {
+            if (typeof expr === 'number') return expr;
+            let s = String(expr).trim();
+            if (s === '') return 0;
+            if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.substring(1, s.length - 1);
+            if (variables && variables[s] !== undefined) return variables[s];
+            return evalExpr(expr, variables || {});
+        }
+        function resolveColorParam(colorParam, variables) {
+            let resolved = evalValue(colorParam || '#ff3333', variables || {});
+            if (resolved === 0 || resolved === undefined || resolved === null || resolved === '') return '#ff3333';
+            return String(resolved);
+        }
+        function evalCondition(cond, variables) {
+            let s = String(cond || '').trim();
+            let normalized = s.replace(/\s+/g, '').toLowerCase();
+            if (normalized === 'bounced') s = 'isBounced';
+            else if (normalized === 'wall' || normalized === 'touchwall') s = 'isTouchWall';
+            else if (normalized === 'touchingwall') s = 'touchingWall';
+            else {
+                let mAfter = s.match(/^after\((.*?)\)$/i);
+                let mBefore = s.match(/^before\((.*?)\)$/i);
+                let mNear = s.match(/^near\((.*?)\)$/i);
+                if (mAfter) s = 'timer >= (' + mAfter[1] + ')';
+                if (mBefore) s = 'timer <= (' + mBefore[1] + ')';
+                if (mNear) s = 'dist <= (' + mNear[1] + ')';
+            }
+            return !!evalExpr(s, variables || {});
+        }
+        function setScriptVariable(state, name, value, isConst) {
+            if (!name) return;
+            if (!state.constVars || typeof state.constVars.has !== 'function') state.constVars = new Set();
+            if (state.constVars.has(name) && !isConst) return;
+            state.variables[name] = value;
+            if (isConst) state.constVars.add(name);
+        }
+        function applySpeedScaleBlock(block, state) {
+            if (!state.speedScaleApplied || typeof state.speedScaleApplied.has !== 'function') state.speedScaleApplied = new Set();
+            const id = block.speedScaleId || ((block.params.mode || 'scale') + ':' + (block.params.delay || '0') + ':' + (block.params.effect || '1'));
+            if (state.speedScaleApplied.has(id)) return true;
+            const delay = evalExpr(block.params.delay || '0', state.variables);
+            if ((state.variables.timer || 0) < delay) return false;
+            const effect = evalExpr(block.params.effect || '1', state.variables);
+            state.variables.speed = (Number(state.variables.speed) || 0) * effect;
+            state.speedScaleApplied.add(id);
+            return true;
         }
 
         function evalExpr(expr, variables) {
@@ -8209,7 +8272,9 @@
                 variables: variables,
                 finished: false,
                 isPlayerSide: isPlayerSide,
-                lifetimeOnce: new Set()
+                lifetimeOnce: new Set(),
+                constVars: new Set(),
+                speedScaleApplied: new Set()
             };
         }
 
@@ -8308,7 +8373,7 @@
                     }
                     case 'if': {
                         let condStr = block.params.cond || 'x < 10';
-                        let isTrue = !!evalExpr(condStr, state.variables);
+                        let isTrue = evalCondition(condStr, state.variables);
                         if (isTrue && block.children && block.children.length > 0) {
                             state.stack.push({
                                 type: 'if',
@@ -8325,16 +8390,18 @@
                         advancePC = executeOnceBlock(block, state);
                         break;
                     }
+                    case 'const_var':
                     case 'set_var': {
                         let varName = block.params.name;
-                        let val = evalExpr(block.params.value, state.variables);
-                        state.variables[varName] = val;
+                        let val = evalValue(block.params.value, state.variables);
+                        setScriptVariable(state, varName, val, block.type === 'const_var');
                         break;
                     }
                     case 'change_var': {
                         let varName = block.params.name;
                         let val = evalExpr(block.params.value, state.variables);
-                        state.variables[varName] = (state.variables[varName] || 0) + val;
+                        if (!state.constVars || typeof state.constVars.has !== 'function') state.constVars = new Set();
+                            if (!state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + val;
                         break;
                     }
                     case 'aim_at_target': {
@@ -8351,7 +8418,7 @@
                     case 'spawn_bullet': {
                         let speed = evalExpr(block.params.speed, state.variables);
                         let angle = evalExpr(block.params.angle, state.variables);
-                        let bColor = block.params.color || '#ff3333';
+                        let bColor = resolveColorParam(block.params.color, state.variables);
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
                         let spawnY = attacker.y + (state.variables.y_offset || 0);
@@ -8397,8 +8464,8 @@
                     }
                     case 'spawn_ring': {
                         let speed = evalExpr(block.params.speed, state.variables);
-                        let bColor = block.params.color || '#ff3333';
-                        let count = Math.max(3, Math.min(36, parseInt(evalExpr(block.params.count || '12', state.variables))));
+                        let bColor = resolveColorParam(block.params.color, state.variables);
+                        let count = Math.max(3, Math.min(CUSTOM_SPAWN_RING_MAX_COUNT, parseInt(evalExpr(block.params.count || '12', state.variables))));
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
                         let spawnY = attacker.y + (state.variables.y_offset || 0);
@@ -8449,8 +8516,8 @@
                     case 'spawn_way': {
                         let speed = evalExpr(block.params.speed, state.variables);
                         let centerAngle = evalExpr(block.params.angle || 'angle', state.variables);
-                        let bColor = block.params.color || '#ff3333';
-                        let count = Math.max(1, Math.min(15, parseInt(evalExpr(block.params.count || '3', state.variables))));
+                        let bColor = resolveColorParam(block.params.color, state.variables);
+                        let count = Math.max(1, Math.min(CUSTOM_SPAWN_WAY_MAX_COUNT, parseInt(evalExpr(block.params.count || '3', state.variables))));
                         let spread = evalExpr(block.params.spread || '15', state.variables);
                         
                         let spawnX = attacker.x + (state.variables.x_offset || 0);
@@ -8536,6 +8603,8 @@
                 stack: [],
                 variables: variables,
                 lifetimeOnce: new Set(),
+                constVars: new Set(),
+                speedScaleApplied: new Set(),
                 finished: false
             };
         }
@@ -8572,14 +8641,20 @@
             // 毎フレーム壁との接触を判定（左・右・上端のみ。下端は除外）
             // isPlayerSide の場合は、上端ではなく下端との接触を判定
             let currentlyTouching;
-            if (isPlayerSide) {
-                currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y > canvas.height - 10);
-            } else {
-                currentlyTouching = (b.x < 10 || b.x > PLAY_WIDTH - 10 || b.y < 10);
-            }
+            let hitLeftWall = b.x < 10;
+            let hitRightWall = b.x > PLAY_WIDTH - 10;
+            let hitTopWall = b.y < 10;
+            let hitBottomWall = b.y > canvas.height - 10;
+            if (isPlayerSide) { currentlyTouching = (hitLeftWall || hitRightWall || hitBottomWall); }
+            else { currentlyTouching = (hitLeftWall || hitRightWall || hitTopWall); }
             let wallTouchTrigger = (currentlyTouching && !b.wasTouchingWall) ? 1 : 0;
             state.variables.isBounced = wallTouchTrigger;
             state.variables.isTouchWall = wallTouchTrigger;
+            state.variables.touchingWall = currentlyTouching ? 1 : 0;
+            state.variables.leftWall = hitLeftWall ? 1 : 0;
+            state.variables.rightWall = hitRightWall ? 1 : 0;
+            state.variables.topWall = hitTopWall ? 1 : 0;
+            state.variables.bottomWall = hitBottomWall ? 1 : 0;
             b.wasTouchingWall = currentlyTouching;
             
             // 初回フレームのみの初期化処理
@@ -8684,7 +8759,7 @@
                             }
                             case 'if': {
                                 let condStr = block.params.cond || 'x < 10';
-                                let isTrue = !!evalExpr(condStr, state.variables);
+                                let isTrue = evalCondition(condStr, state.variables);
                                 
                                 if (isTrue && block.children && block.children.length > 0) {
                                     state.stack.push({
@@ -8707,22 +8782,27 @@
                                 state.variables.activeTime = evalExpr(block.params.activeTime || '1.5', state.variables);
                                 break;
                             }
-                            case 'set_var': {
+                            case 'const_var':
+                    case 'set_var': {
                                 let varName = block.params.name;
-                                let val = evalExpr(block.params.value, state.variables);
-                                state.variables[varName] = val;
+                                let val = evalValue(block.params.value, state.variables);
+                        setScriptVariable(state, varName, val, block.type === 'const_var');
                                 break;
                             }
                             case 'change_var': {
                                 let varName = block.params.name;
                                 let val = evalExpr(block.params.value, state.variables);
-                                state.variables[varName] = (state.variables[varName] || 0) + val;
+                                if (!state.constVars || !state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + val;
                                 break;
                             }
                             case 'aim_at_target': {
                                 let dx = target.x - b.x;
                                 let dy = isPlayerSide ? (b.y - target.y) : (target.y - b.y);
                                 state.variables.angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                                break;
+                            }
+                            case 'speed_scale': {
+                                advancePC = applySpeedScaleBlock(block, state);
                                 break;
                             }
                             case 'homing': {
@@ -8854,10 +8934,13 @@
                 case 'set_var':
                 case 'change_var':
                 case 'if':
+                case 'const_var':
                 case 'aim_at_target':
                     return 0;
                 case 'spawn_bullet':
                 case 'bounce':
+                    return 1;
+                case 'speed_scale':
                     return 1;
                 case 'homing':
                     return 2;
@@ -9297,6 +9380,9 @@
                 block.params.count = '10';
             } else if (type === 'if') {
                 block.params.cond = 'x < 10';
+            } else if (type === 'const_var') {
+                block.params.name = 'baseSpeed';
+                block.params.value = '250';
             } else if (type === 'set_var') {
                 block.params.name = 'speed';
                 block.params.value = '250';
@@ -9322,6 +9408,10 @@
                 block.params.spread = '30';
             } else if (type === 'homing') {
                 block.params.turnSpeed = '90';
+            } else if (type === 'speed_scale_slow') {
+                block.type = 'speed_scale'; block.params.mode = 'slow'; block.params.effect = '0.5'; block.params.delay = '0';
+            } else if (type === 'speed_scale_fast') {
+                block.type = 'speed_scale'; block.params.mode = 'fast'; block.params.effect = '2'; block.params.delay = '0';
             } else if (type === 'set_laser') {
                 block.params.warningTime = '1.0';
                 block.params.activeTime = '1.5';
@@ -9410,6 +9500,7 @@
             
             // 変数グループ
             document.getElementById('palette-title-vars').style.display = 'block';
+            document.getElementById('palette-btn-setconst').style.display = 'block';
             document.getElementById('palette-btn-setvar').style.display = 'block';
             document.getElementById('palette-btn-changevar').style.display = 'block';
             document.getElementById('palette-btn-setlaser').style.display = (tab === 'bullet') ? 'block' : 'none';
@@ -9420,6 +9511,8 @@
             document.getElementById('palette-btn-spawn-ring').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-spawn-way').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-homing').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-slow').style.display = (tab === 'bullet') ? 'block' : 'none';
+            document.getElementById('palette-btn-fast').style.display = (tab === 'bullet') ? 'block' : 'none';
             document.getElementById('palette-btn-bounce').style.display = (tab === 'bullet') ? 'block' : 'none';
             
             let container = document.getElementById('workspace-blocks-container');
@@ -9505,6 +9598,16 @@
                             `;
                             break;
                         }
+                        case 'const_var':
+                            blockDiv.className = 'maker-block color-vars';
+                            html = `
+                                <span>[const]</span>
+                                <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
+                                <span>=</span>
+                                <input type="text" list="val-suggestions" style="width:70px;" value="${b.params.value}" onchange="customCardMakerUpdateParam(${idx}, 'value', this.value)">
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
                         case 'set_var':
                             blockDiv.className = 'maker-block color-vars';
                             html = `
@@ -9543,16 +9646,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
-                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
-                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
-                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
-                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
-                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
-                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
-                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
-                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
-                                </select>
+                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>角度:</span>
@@ -9569,16 +9663,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
-                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
-                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
-                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
-                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
-                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
-                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
-                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
-                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
-                                </select>
+                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>弾数:</span>
@@ -9595,16 +9680,7 @@
                                     <option value="laser" ${b.params.bulletType === 'laser' ? 'selected' : ''}>レーザー</option>
                                 </select>
                                 <span>色:</span>
-                                <select onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
-                                    <option value="#ff3333" ${b.params.color === '#ff3333' ? 'selected' : ''} style="color:#ff3333;">赤</option>
-                                    <option value="#ffdd33" ${b.params.color === '#ffdd33' ? 'selected' : ''} style="color:#ffdd33;">黄</option>
-                                    <option value="#3388ff" ${b.params.color === '#3388ff' ? 'selected' : ''} style="color:#3388ff;">青</option>
-                                    <option value="#33ff88" ${b.params.color === '#33ff88' ? 'selected' : ''} style="color:#33ff88;">緑</option>
-                                    <option value="#ff33aa" ${b.params.color === '#ff33aa' ? 'selected' : ''} style="color:#ff33aa;">桃</option>
-                                    <option value="#33ffff" ${b.params.color === '#33ffff' ? 'selected' : ''} style="color:#33ffff;">水</option>
-                                    <option value="#ffffff" ${b.params.color === '#ffffff' ? 'selected' : ''} style="color:#ffffff;">白</option>
-                                    <option value="#ffaa33" ${b.params.color === '#ffaa33' ? 'selected' : ''} style="color:#ffaa33;">橙</option>
-                                </select>
+                                <input type="text" list="val-suggestions" style="width:76px;" value="${b.params.color || '#ff3333'}" onchange="customCardMakerUpdateParam(${idx}, 'color', this.value)">
                                 <span>速度:</span>
                                 <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.speed}" onchange="customCardMakerUpdateParam(${idx}, 'speed', this.value)">
                                 <span>中心角:</span>
@@ -9613,6 +9689,16 @@
                                 <input type="text" list="val-suggestions" style="width:40px;" value="${b.params.count}" onchange="customCardMakerUpdateParam(${idx}, 'count', this.value)">
                                 <span>分散角:</span>
                                 <input type="text" list="val-suggestions" style="width:40px;" value="${b.params.spread}" onchange="customCardMakerUpdateParam(${idx}, 'spread', this.value)">
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        case 'speed_scale':
+                            blockDiv.className = 'maker-block color-motion';
+                            html = `
+                                <span>[speed] ${b.params.mode === 'fast' ? 'fast' : 'slow'} e:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.effect || '1'}" onchange="customCardMakerUpdateParam(${idx}, 'effect', this.value)">
+                                <span>f:</span>
+                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.delay || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'delay', this.value)">
                                 ${renderBlockControls(idx)}
                             `;
                             break;
@@ -9658,7 +9744,7 @@
             
             costVal.textContent = cost;
             
-            let isCostValid = cost <= 15;
+            let isCostValid = cost <= CUSTOM_CARD_COST_LIMIT;
             if (isCostValid) {
                 costIndicator.style.borderColor = '#00ffcc';
                 costIndicator.style.color = '#00ffcc';
@@ -9699,7 +9785,7 @@
             }
 
             let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
-            if (cost > 15) {
+            if (cost > CUSTOM_CARD_COST_LIMIT) {
                 alert("コストの上限（15）を超えています！");
                 return;
             }
@@ -9816,7 +9902,7 @@
             }
 
             let cost = calculateCustomCardCost(customCardMaker.emitterScript, customCardMaker.bulletScript);
-            if (cost > 15) {
+            if (cost > CUSTOM_CARD_COST_LIMIT) {
                 alert("コストの上限（15）を超えています！");
                 return;
             }
@@ -9960,7 +10046,7 @@
             
             if (costVal) costVal.textContent = cost;
             
-            let isCostValid = cost <= 15;
+            let isCostValid = cost <= CUSTOM_CARD_COST_LIMIT;
             if (costIndicator) {
                 if (isCostValid) {
                     costIndicator.style.borderColor = '#00ffcc';
@@ -10007,6 +10093,9 @@
                     case 'forever':
                         line = `forever()`;
                         break;
+                    case 'const_var':
+                        line = `const ${b.params.name || 'angle'} = ${b.params.value || '0'}`;
+                        break;
                     case 'set_var':
                         line = `${b.params.name || 'angle'} = ${b.params.value || '0'}`;
                         break;
@@ -10042,6 +10131,9 @@
                         line = `spawnWay("${btWay}", "${colWay}", ${spdWay}, ${angWay}, ${cntWay}, ${sprWay})`;
                         break;
                     }
+                    case 'speed_scale':
+                        line = `${b.params.mode === 'fast' ? 'fast' : 'slow'}(${b.params.effect || '1'}, ${b.params.delay || '0'})`;
+                        break;
                     case 'homing':
                         line = `homing(${b.params.turnSpeed || '90'})`;
                         break;
@@ -10116,6 +10208,10 @@
                     if (mOnce) block = { type: 'once', params: {}, indent };
                     let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
                     if (mHoming) block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent };
+                    let mSlow = trimmed.match(/^slow\((.*?)\)$/i);
+                    if (mSlow) { let args = mSlow[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'slow', effect: args[0] || '0.5', delay: args[1] || '0' }, indent }; }
+                    let mFast = trimmed.match(/^fast\((.*?)\)$/i);
+                    if (mFast) { let args = mFast[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'fast', effect: args[0] || '2', delay: args[1] || '0' }, indent }; }
                     let mSpawn = trimmed.match(/^spawnBullet\((.*?)\)$/i);
                     if (mSpawn) {
                         let args = mSpawn[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
@@ -10138,8 +10234,9 @@
                         let mChange = trimmed.match(/^(\w+)\s*\+=\s*(.+)$/);
                         if (mChange) block = { type: 'change_var', params: { name: mChange[1], value: mChange[2] }, indent };
                         else {
-                            let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/);
-                            if (mSet) block = { type: 'set_var', params: { name: mSet[1], value: mSet[2] }, indent };
+                            let mConst = trimmed.match(/^const\s+(\w+)\s*=\s*(.+)$/);
+                            if (mConst) block = { type: 'const_var', params: { name: mConst[1], value: mConst[2] }, indent };
+                            else { let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/); if (mSet) block = { type: 'set_var', params: { name: mSet[1], value: mSet[2] }, indent }; }
                         }
                     }
                     return block;
@@ -10250,6 +10347,10 @@
                 if (mHoming) {
                     block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent: indent };
                 }
+                let mSlow = trimmed.match(/^slow\((.*?)\)$/i);
+                if (mSlow) { let args = mSlow[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'slow', effect: args[0] || '0.5', delay: args[1] || '0' }, indent: indent }; }
+                let mFast = trimmed.match(/^fast\((.*?)\)$/i);
+                if (mFast) { let args = mFast[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'fast', effect: args[0] || '2', delay: args[1] || '0' }, indent: indent }; }
                 let mSpawn = trimmed.match(/^spawnBullet\((.*?)\)$/i);
                 if (mSpawn) {
                     let args = mSpawn[1].split(",").map(s => {
@@ -10325,14 +10426,9 @@
                             indent: indent
                         };
                     } else {
-                        let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/);
-                        if (mSet) {
-                            block = {
-                                type: 'set_var',
-                                params: { name: mSet[1].trim(), value: mSet[2].trim() },
-                                indent: indent
-                            };
-                        }
+                        let mConst = trimmed.match(/^const\s+(\w+)\s*=\s*(.+)$/);
+                            if (mConst) { block = { type: 'const_var', params: { name: mConst[1].trim(), value: mConst[2].trim() }, indent: indent }; }
+                            else { let mSet = trimmed.match(/^(\w+)\s*=\s*(.+)$/); if (mSet) { block = { type: 'set_var', params: { name: mSet[1].trim(), value: mSet[2].trim() }, indent: indent }; } }
                     }
                 }
                 
