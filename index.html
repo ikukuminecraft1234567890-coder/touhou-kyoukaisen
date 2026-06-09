@@ -2282,11 +2282,11 @@
                     <div class="maker-metadata">
                         <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px;">
                             <label style="font-size: 11px; color: #aaa;">スペル名 (Name)</label>
-                            <input type="text" id="custom-card-name" class="metadata-input" placeholder="例: 「スターブレイカー」" oninput="saveCustomCardDraft(false)">
+                            <input type="text" id="custom-card-name" class="metadata-input" placeholder="例: 「スターブレイカー」" oninput="saveCustomCardDraft(false, false, true)">
                         </div>
                         <div style="flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 4px;">
                             <label style="font-size: 11px; color: #aaa;">説明文 (Description)</label>
-                            <input type="text" id="custom-card-desc" class="metadata-input" placeholder="カードの効果やフレーバーテキスト" oninput="saveCustomCardDraft(false)">
+                            <input type="text" id="custom-card-desc" class="metadata-input" placeholder="カードの効果やフレーバーテキスト" oninput="saveCustomCardDraft(false, false, true)">
                         </div>
                     </div>
 
@@ -3935,7 +3935,7 @@ while (true) {
             isGameRunning = true;
             initBattle();
             lastTime = performance.now(); // デルタタイムのリセット
-            requestAnimationFrame(update);
+            startGameLoop();
         }
 
         function createNewDeck() {
@@ -4809,7 +4809,7 @@ while (true) {
             }
 
             lastTime = performance.now();
-            requestAnimationFrame(update);
+            startGameLoop();
         }
 
         function initBattle() {
@@ -6744,7 +6744,15 @@ while (true) {
         };
 
         let lastTime = 0;
+        let gameLoopFrameId = null;
+
+        function startGameLoop() {
+            if (gameLoopFrameId !== null) return;
+            gameLoopFrameId = requestAnimationFrame(update);
+        }
+
         function update(timestamp) {
+            gameLoopFrameId = null;
             // 霊撃ボタンの表示・非表示動的制御 (戦闘の回避アクション中のみ自動表示)
             const bombBtn = document.getElementById('mobileBombBtn');
             if (bombBtn) {
@@ -7958,7 +7966,7 @@ while (true) {
             }
 
             draw();
-            requestAnimationFrame(update);
+            startGameLoop();
         }
 
         function checkDeath() {
@@ -9309,11 +9317,13 @@ while (true) {
                         let loopState = state.stack[state.stack.length - 1];
                         if (loopState.forever) {
                             loopState.pc = 0;
-                            continue;
+                            state.waitTimer = Math.max(state.waitTimer || 0, 0.001);
+                            break;
                         } else if (loopState.type === 'while') {
                             if (evalCondition(loopState.cond || 'false', state.variables)) {
                                 loopState.pc = 0;
-                                continue;
+                                state.waitTimer = Math.max(state.waitTimer || 0, 0.001);
+                                break;
                             }
                             state.stack.pop();
                             if (state.stack.length > 0) {
@@ -9751,11 +9761,13 @@ while (true) {
                                 let loopState = state.stack[state.stack.length - 1];
                                 if (loopState.forever) {
                                     loopState.pc = 0;
-                                    continue;
+                                    state.waitTimer = Math.max(state.waitTimer || 0, 0.001);
+                                    break;
                                 } else if (loopState.type === 'while') {
                                     if (evalCondition(loopState.cond || 'false', state.variables)) {
                                         loopState.pc = 0;
-                                        continue;
+                                        state.waitTimer = Math.max(state.waitTimer || 0, 0.001);
+                                        break;
                                     }
                                     state.stack.pop();
                                     if (state.stack.length > 0) {
@@ -10329,7 +10341,25 @@ while (true) {
             });
         }
 
-        function saveCustomCardDraft(showNotification = false, skipCodeParse = false) {
+        let customCardDraftSaveTimer = null;
+
+        function saveCustomCardDraft(showNotification = false, skipCodeParse = false, defer = false) {
+            if (defer && !showNotification) {
+                if (customCardDraftSaveTimer) clearTimeout(customCardDraftSaveTimer);
+                customCardDraftSaveTimer = setTimeout(() => {
+                    customCardDraftSaveTimer = null;
+                    saveCustomCardDraft(false, skipCodeParse, false);
+                }, 1200);
+                const restoreBtn = document.getElementById('custom-card-draft-load-btn');
+                if (restoreBtn) restoreBtn.style.display = 'inline-block';
+                return;
+            }
+
+            if (customCardDraftSaveTimer) {
+                clearTimeout(customCardDraftSaveTimer);
+                customCardDraftSaveTimer = null;
+            }
+
             let nameVal = document.getElementById('custom-card-name').value;
             let descVal = document.getElementById('custom-card-desc').value;
             
@@ -11064,7 +11094,7 @@ while (true) {
             normalShotTimer = 0;
             
             lastTime = performance.now();
-            requestAnimationFrame(update);
+            startGameLoop();
         }
 
         function endCustomCardTest(success) {
