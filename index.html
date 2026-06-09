@@ -8074,7 +8074,7 @@ while (true) {
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            const simpleBulletDraw = bullets.length > 300;
+            const blurScale = bullets.length > 300 ? 0.35 : 1;
             bullets.forEach(b => {
                 if (b.isBombPiece) {
                     ctx.save();
@@ -8172,7 +8172,7 @@ while (true) {
                     let lineAlpha = (0.15 + 0.25 * progress) * (0.6 + 0.4 * pulse);
                     
                     // 弾の色のグロー
-                    ctx.shadowBlur = 6 + 4 * pulse;
+                    ctx.shadowBlur = (6 + 4 * pulse) * blurScale;
                     ctx.shadowColor = b.color || '#ff3333';
                     ctx.strokeStyle = `rgba(255, 255, 255, ${lineAlpha})`;
                     ctx.lineWidth = 1.5;
@@ -8219,7 +8219,7 @@ while (true) {
                         }
                         
                         // 外側：弾の色で発光する広めのグロー
-                        ctx.shadowBlur = 18;
+                        ctx.shadowBlur = 18 * blurScale;
                         ctx.shadowColor = b.color || '#ff3333';
                         ctx.strokeStyle = b.color || '#ff3333';
                         ctx.lineWidth = Math.max(0.1, 6 * widthFactor);
@@ -8231,7 +8231,7 @@ while (true) {
                         ctx.stroke();
                         
                         // 内側：細い白いコア
-                        ctx.shadowBlur = 8;
+                        ctx.shadowBlur = 8 * blurScale;
                         ctx.shadowColor = '#ffffff';
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = Math.max(0.1, 2.5 * widthFactor);
@@ -8250,7 +8250,7 @@ while (true) {
                         let dy = b.vy / (speed || 1);
                         let len = 80;
                         
-                        ctx.shadowBlur = 12;
+                        ctx.shadowBlur = 12 * blurScale;
                         ctx.shadowColor = b.color || '#00ffff';
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = 6; // 移動レーザーは少し細めの 6px
@@ -8344,7 +8344,7 @@ while (true) {
                     ctx.rotate(rotAngle);
                     let drawRadius = b.radius * 1.6;
                     let color = b.color || (b.team === 'PLAYER' ? '#55aaff' : '#ff4444');
-                    ctx.shadowBlur = 6;
+                    ctx.shadowBlur = 6 * blurScale;
                     ctx.shadowColor = color;
                     ctx.fillStyle = color;
                     ctx.beginPath();
@@ -8371,13 +8371,11 @@ while (true) {
                 } else {
                     let color = b.color || (b.team === 'PLAYER' ? '#55aaff' : '#ff4444');
 
-                    let drawRadius = b.radius * (simpleBulletDraw ? 1.15 : 1.5); // 当たり判定より少し大きく描画
+                    let drawRadius = b.radius * 1.5; // 当たり判定より少し大きく描画
                     ctx.fillStyle = color;
                     ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius, 0, Math.PI * 2); ctx.fill();
-                    if (!simpleBulletDraw) {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius * 0.6, 0, Math.PI * 2); ctx.fill();
-                    }
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius * 0.6, 0, Math.PI * 2); ctx.fill();
                 }
             });
 
