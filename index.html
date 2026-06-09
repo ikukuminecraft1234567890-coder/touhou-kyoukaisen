@@ -8999,14 +8999,14 @@ while (true) {
                 let parent = stack[stack.length - 1];
                 parent.children.push(b);
                 
-                if (block.type === 'repeat' || block.type === 'forever' || block.type === 'if' || block.type === 'once') {
+                if (block.type === 'repeat' || block.type === 'forever' || block.type === 'while' || block.type === 'if' || block.type === 'once') {
                     stack.push({ indent: block.indent, children: b.children });
                 }
             }
             return root;
         }
         function isParallelRootBlock(block) {
-            return block && ['repeat', 'forever', 'if', 'once'].includes(block.type);
+            return block && ['repeat', 'forever', 'while', 'if', 'once'].includes(block.type);
         }
 
         function createParallelThreadsForState(state) {
@@ -9281,6 +9281,18 @@ while (true) {
                         if (loopState.forever) {
                             loopState.pc = 0;
                             continue;
+                        } else if (loopState.type === 'while') {
+                            if (evalCondition(loopState.cond || 'false', state.variables)) {
+                                loopState.pc = 0;
+                                continue;
+                            }
+                            state.stack.pop();
+                            if (state.stack.length > 0) {
+                                state.stack[state.stack.length - 1].pc++;
+                            } else {
+                                state.pc++;
+                            }
+                            continue;
                         } else {
                             loopState.iterationsLeft--;
                             if (loopState.iterationsLeft > 0) {
@@ -9346,6 +9358,21 @@ while (true) {
                             blocks: block.children || []
                         });
                         advancePC = false;
+                        break;
+                    }
+                    case 'while': {
+                        let condStr = block.params.cond || 'false';
+                        if (evalCondition(condStr, state.variables) && block.children && block.children.length > 0) {
+                            state.stack.push({
+                                type: 'while',
+                                pc: 0,
+                                iterationsLeft: 999999,
+                                forever: false,
+                                cond: condStr,
+                                blocks: block.children || []
+                            });
+                            advancePC = false;
+                        }
                         break;
                     }
                     case 'if': {
@@ -9696,6 +9723,18 @@ while (true) {
                                 if (loopState.forever) {
                                     loopState.pc = 0;
                                     continue;
+                                } else if (loopState.type === 'while') {
+                                    if (evalCondition(loopState.cond || 'false', state.variables)) {
+                                        loopState.pc = 0;
+                                        continue;
+                                    }
+                                    state.stack.pop();
+                                    if (state.stack.length > 0) {
+                                        state.stack[state.stack.length - 1].pc++;
+                                    } else {
+                                        state.pc++;
+                                    }
+                                    continue;
                                 } else {
                                     loopState.iterationsLeft--;
                                     if (loopState.iterationsLeft > 0) {
@@ -9764,6 +9803,21 @@ while (true) {
                                     blocks: block.children || []
                                 });
                                 advancePC = false;
+                                break;
+                            }
+                            case 'while': {
+                                let condStr = block.params.cond || 'false';
+                                if (evalCondition(condStr, state.variables) && block.children && block.children.length > 0) {
+                                    state.stack.push({
+                                        type: 'while',
+                                        pc: 0,
+                                        iterationsLeft: 999999,
+                                        forever: false,
+                                        cond: condStr,
+                                        blocks: block.children || []
+                                    });
+                                    advancePC = false;
+                                }
                                 break;
                             }
                             case 'if': {
@@ -9949,6 +10003,7 @@ while (true) {
             switch (block.type) {
                 case 'repeat':
                 case 'forever':
+                case 'while':
                 case 'wait':
                 case 'set_var':
                 case 'change_var':
@@ -10665,6 +10720,15 @@ while (true) {
                                 ${renderBlockControls(idx)}
                             `;
                             break;
+                        case 'while':
+                            blockDiv.className = 'maker-block color-control';
+                            html = `
+                                <span>[制御] while</span>
+                                <input type="text" list="val-suggestions" style="width:110px;" value="${b.params.cond || 'second < 14'}" onchange="customCardMakerUpdateParam(${idx}, 'cond', this.value)">
+                                <span>の間</span>
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
                         case 'once':
                             blockDiv.className = 'maker-block color-control';
                             html = `
@@ -11207,6 +11271,9 @@ while (true) {
                     case 'forever':
                         line = `while (true)`;
                         break;
+                    case 'while':
+                        line = `while (${b.params.cond || 'true'})`;
+                        break;
                     case 'const_var':
                         line = `const ${b.params.name || 'angle'} = ${b.params.value || '0'}`;
                         break;
@@ -11276,7 +11343,7 @@ while (true) {
                 }
                 
                 if (line) {
-                    let isContainer = ['repeat', 'forever', 'if', 'once'].includes(b.type);
+                    let isContainer = ['repeat', 'forever', 'while', 'if', 'once'].includes(b.type);
                     if (isContainer) {
                         lines.push(indentStr + line + " {");
                         activeIndent = indent + 1;
@@ -11324,6 +11391,8 @@ while (true) {
                     if (mForever) block = { type: 'forever', params: {}, indent };
                     let mWhileTrue = trimmed.match(/^while\s*\(\s*true\s*\)$/i);
                     if (mWhileTrue) block = { type: 'forever', params: {}, indent };
+                    let mWhile = trimmed.match(/^while\s*\((.*?)\)$/i);
+                    if (mWhile && !mWhileTrue) block = { type: 'while', params: { cond: mWhile[1].trim() }, indent };
                     let mForRepeat = trimmed.match(/^for\s*\(\s*(?:let|var)?\s*(\w+)\s*=\s*0\s*;\s*\1\s*<\s*(.*?)\s*;\s*\1\+\+\s*\)$/i);
                     if (mForRepeat) block = { type: 'repeat', params: { count: mForRepeat[2].trim(), indexVar: mForRepeat[1].trim() }, indent };
                     let mIf = trimmed.match(/^if\s*\((.*?)\)$/i);
@@ -11498,6 +11567,10 @@ while (true) {
                 let mWhileTrue = trimmed.match(/^while\s*\(\s*true\s*\)$/i);
                 if (mWhileTrue) {
                     block = { type: 'forever', params: {}, indent: indent };
+                }
+                let mWhile = trimmed.match(/^while\s*\((.*?)\)$/i);
+                if (mWhile && !mWhileTrue) {
+                    block = { type: 'while', params: { cond: mWhile[1].trim() }, indent: indent };
                 }
                 let mForRepeat = trimmed.match(/^for\s*\(\s*(?:let|var)?\s*(\w+)\s*=\s*0\s*;\s*\1\s*<\s*(.*?)\s*;\s*\1\+\+\s*\)$/i);
                 if (mForRepeat) {
