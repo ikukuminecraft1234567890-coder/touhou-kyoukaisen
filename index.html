@@ -1635,6 +1635,104 @@
             }
         }
 
+        /* Final editor layout override: use the screen instead of a cramped menu card. */
+        #screen-card-maker.selection-group {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            padding: 18px 24px !important;
+            align-items: stretch !important;
+            overflow: hidden !important;
+            background: #070711 !important;
+            border-radius: 0 !important;
+        }
+        #card-maker-editor-view {
+            width: min(1280px, 100%) !important;
+            max-width: none !important;
+            height: 100% !important;
+            margin: 0 auto !important;
+            overflow: hidden !important;
+        }
+        #card-maker-list-view {
+            width: min(880px, 100%) !important;
+            margin: 0 auto !important;
+        }
+        #card-maker-editor-view .maker-metadata {
+            display: grid !important;
+            grid-template-columns: minmax(220px, 0.9fr) minmax(320px, 1.4fr);
+            gap: 12px !important;
+            flex: 0 0 auto !important;
+        }
+        #card-maker-editor-view .maker-layout {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: auto !important;
+            display: grid !important;
+            grid-template-columns: minmax(220px, 280px) minmax(560px, 1fr) !important;
+            gap: 14px !important;
+            overflow: hidden !important;
+        }
+        #card-maker-editor-view .palette-panel {
+            width: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+        }
+        #card-maker-editor-view .workspace-panel {
+            min-width: 0 !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+        #card-maker-editor-view .workspace-scroll {
+            overflow: auto !important;
+        }
+        @media (max-width: 940px), (max-height: 760px) {
+            #screen-card-maker.selection-group {
+                padding: 10px 12px !important;
+            }
+            #card-maker-editor-view .maker-header {
+                margin-bottom: 8px !important;
+                padding-bottom: 8px !important;
+            }
+            #card-maker-editor-view .maker-metadata {
+                grid-template-columns: 1fr 1fr;
+                margin-bottom: 8px !important;
+            }
+            #card-maker-editor-view .maker-layout {
+                grid-template-columns: 1fr !important;
+                grid-template-rows: minmax(92px, 150px) minmax(0, 1fr);
+                gap: 10px !important;
+            }
+            #card-maker-editor-view .palette-panel {
+                max-height: none !important;
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(120px, 1fr));
+                align-content: start;
+                overflow-y: auto !important;
+            }
+            #card-maker-editor-view .palette-group-title {
+                grid-column: 1 / -1;
+            }
+            #card-maker-editor-view .palette-btn {
+                width: 100% !important;
+                min-height: 30px !important;
+            }
+            #card-maker-editor-view .maker-block {
+                min-height: 42px !important;
+            }
+        }
+        @media (max-width: 700px) {
+            #card-maker-editor-view .maker-metadata {
+                grid-template-columns: 1fr;
+            }
+            #card-maker-editor-view .palette-panel {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
+        }
+
     </style>
 </head>
 
@@ -10476,8 +10574,8 @@ while (true) {
                         case 'move_owner':
                             blockDiv.className = 'maker-block color-motion';
                             html = `
-                                <span>[位置] 使用者を</span>
-                                <select onchange="customCardMakerUpdateParam(${idx}, 'preset', this.value)">
+                                <span>[位置]</span>
+                                <select style="min-width:180px;" onchange="customCardMakerUpdateParam(${idx}, 'preset', this.value)">
                                     <option value="center" ${(b.params.preset || 'center') === 'center' ? 'selected' : ''}>中央</option>
                                     <option value="right" ${b.params.preset === 'right' ? 'selected' : ''}>右</option>
                                     <option value="left" ${b.params.preset === 'left' ? 'selected' : ''}>左</option>
@@ -10486,9 +10584,9 @@ while (true) {
                                     <option value="rightUp" ${(b.params.preset === 'rightUp' || b.params.preset === 'enemyRightUp') ? 'selected' : ''}>右上（敵使用時、こっちから見て右上）</option>
                                     <option value="leftUp" ${(b.params.preset === 'leftUp' || b.params.preset === 'enemyLeftUp') ? 'selected' : ''}>左上（敵使用時、こっちから見て左上）</option>
                                 </select>
-                                <span>へ</span>
-                                <input type="text" list="val-suggestions" style="width:50px;" value="${b.params.duration || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'duration', this.value)">
-                                <span>秒で移動</span>
+                                <span>へ</span><span>時間</span>
+                                <input type="text" list="val-suggestions" style="width:70px; min-width:70px;" value="${b.params.duration || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'duration', this.value)">
+                                <span>秒</span>
                                 ${renderBlockControls(idx)}
                             `;
                             break;
