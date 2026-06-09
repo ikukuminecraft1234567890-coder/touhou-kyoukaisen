@@ -9012,8 +9012,37 @@ while (true) {
         function createParallelThreadsForState(state) {
             const rootBlocks = state.blocks || [];
             if (rootBlocks.filter(isParallelRootBlock).length < 2) return;
-            state.parallelThreads = rootBlocks.map(block => ({
-                blocks: [block],
+
+            const setupBlocks = [];
+            const threadGroups = [];
+            let currentGroup = null;
+
+            rootBlocks.forEach(block => {
+                if (isParallelRootBlock(block)) {
+                    currentGroup = [block];
+                    threadGroups.push(currentGroup);
+                } else if (currentGroup) {
+                    currentGroup.push(block);
+                } else {
+                    setupBlocks.push(block);
+                }
+            });
+
+            setupBlocks.forEach(block => {
+                if (!block || !block.params) return;
+                if (block.type === 'const_var' || block.type === 'set_var') {
+                    setScriptVariable(state, block.params.name, evalValue(block.params.value, state.variables), block.type === 'const_var');
+                } else if (block.type === 'change_var') {
+                    const varName = block.params.name;
+                    const val = evalExpr(block.params.value, state.variables);
+                    const delta = block.params.op === '-' ? -val : val;
+                    if (!state.constVars || typeof state.constVars.has !== 'function') state.constVars = new Set();
+                    if (!state.constVars.has(varName)) state.variables[varName] = (Number(state.variables[varName]) || 0) + delta;
+                }
+            });
+
+            state.parallelThreads = threadGroups.map(group => ({
+                blocks: group,
                 pc: 0,
                 waitTimer: 0,
                 stack: [],
