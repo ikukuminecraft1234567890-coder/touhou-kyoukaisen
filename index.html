@@ -7271,6 +7271,7 @@ while (true) {
                                 }
                                 return copy;
                             });
+                            const heavyAiBulletSim = opponentBullets.length > 180;
 
                             let maxTime = T_steps[T_steps.length - 1];
                             let simDt = 0.02; // 20ms刻み
@@ -7284,7 +7285,7 @@ while (true) {
                             try {
                                 while (currentSimTime < maxTime) {
                                     for (let b of clonedBullets) {
-                                        if (b.update) {
+                                        if (b.update && !(heavyAiBulletSim && b.bulletState)) {
                                             b.update(b, simDt);
                                         }
                                         if (b.vx !== undefined && b.vy !== undefined) {
@@ -8073,6 +8074,7 @@ while (true) {
             ctx.lineWidth = 2;
             ctx.stroke();
 
+            const simpleBulletDraw = bullets.length > 300;
             bullets.forEach(b => {
                 if (b.isBombPiece) {
                     ctx.save();
@@ -8369,11 +8371,13 @@ while (true) {
                 } else {
                     let color = b.color || (b.team === 'PLAYER' ? '#55aaff' : '#ff4444');
 
-                    let drawRadius = b.radius * 1.5; // 当たり判定より少し大きく描画
+                    let drawRadius = b.radius * (simpleBulletDraw ? 1.15 : 1.5); // 当たり判定より少し大きく描画
                     ctx.fillStyle = color;
                     ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius * 0.6, 0, Math.PI * 2); ctx.fill();
+                    if (!simpleBulletDraw) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath(); ctx.arc(b.x, b.y, drawRadius * 0.6, 0, Math.PI * 2); ctx.fill();
+                    }
                 }
             });
 
@@ -9243,12 +9247,60 @@ while (true) {
             });
         }
 
+        const numericExprCache = new Map();
+
+        function compileNumericExpr(expr) {
+            if (numericExprCache.has(expr)) return numericExprCache.get(expr);
+            if (numericExprCache.size > 600) numericExprCache.clear();
+            if (!/^[A-Za-z0-9_$\s.+\-*/()<>!=&|,%]+$/.test(expr)) {
+                numericExprCache.set(expr, null);
+                return null;
+            }
+
+            try {
+                const jsExpr = expr.replace(/\b[A-Za-z_$][A-Za-z0-9_$]*\b/g, function(name) {
+                    const lower = name.toLowerCase();
+                    if (lower === 'random' || lower === 'rand') return '__rand';
+                    if (lower === 'true' || lower === 'false') return lower;
+                    if (name === 'Infinity' || name === 'NaN') return name;
+                    return '(__v[' + JSON.stringify(name) + '] ?? 0)';
+                });
+                const fn = Function('__v', '__random',
+                    '"use strict"; const __rand = (a, b) => {' +
+                    'if (b !== undefined) return Number(a || 0) + __random() * (Number(b || 0) - Number(a || 0));' +
+                    'if (a !== undefined) return __random() * Number(a || 0);' +
+                    'return __random();' +
+                    '}; return (' + jsExpr + ');'
+                );
+                numericExprCache.set(expr, fn);
+                return fn;
+            } catch(e) {
+                numericExprCache.set(expr, null);
+                return null;
+            }
+        }
+
+        function evalNumericExprFast(expr, variables) {
+            const fn = compileNumericExpr(expr);
+            if (!fn) return null;
+            try {
+                const value = fn(variables || {}, Math.random);
+                return Number.isNaN(value) ? 0 : value;
+            } catch(e) {
+                return null;
+            }
+        }
+
         function evalExpr(expr, variables) {
             if (typeof expr === 'number') return expr;
+            variables = variables || {};
             let s = String(expr).trim();
             if (s === '') return 0;
             
             if (variables[s] !== undefined) return variables[s];
+
+            const fastValue = evalNumericExprFast(s, variables);
+            if (fastValue !== null) return fastValue;
             
             let resolved = s;
             for (let varName in variables) {
