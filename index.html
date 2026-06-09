@@ -1531,6 +1531,79 @@
         .color-vars { background: linear-gradient(135deg, #77349a, #592073) !important; }
         .color-motion { background: linear-gradient(135deg, #1e6f9f, #164e74) !important; }
         .color-action { background: linear-gradient(135deg, #a93226, #7c211a) !important; }
+
+        /* Custom card editor compact readability */
+        #card-maker-editor-view {
+            max-width: min(1180px, calc(100vw - 32px));
+            margin: 0 auto;
+        }
+        .maker-layout {
+            gap: 14px !important;
+        }
+        .palette-panel {
+            background: rgba(5, 7, 16, 0.86) !important;
+            border-color: rgba(255,255,255,0.18) !important;
+        }
+        .workspace-panel {
+            min-width: min(560px, 100%) !important;
+            background: rgba(6, 8, 18, 0.9) !important;
+            border-color: rgba(0,255,204,0.22) !important;
+        }
+        .tabs-header {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            align-items: center !important;
+            scrollbar-width: thin;
+        }
+        .tabs-header .tab-btn {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            min-width: max-content !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            writing-mode: horizontal-tb !important;
+            text-orientation: mixed !important;
+            line-height: 1.2 !important;
+        }
+        .workspace-scroll {
+            background: rgba(0,0,0,0.18) !important;
+            border-radius: 6px;
+        }
+        .maker-block {
+            background-image: none !important;
+            border-left: 4px solid rgba(255,255,255,0.48) !important;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.32) !important;
+        }
+        .maker-block.color-control { background-color: #7d3509 !important; border-left-color: #ffb15c !important; }
+        .maker-block.color-vars { background-color: #563071 !important; border-left-color: #d990ff !important; }
+        .maker-block.color-motion { background-color: #145f87 !important; border-left-color: #69d8ff !important; }
+        .maker-block.color-action { background-color: #83281f !important; border-left-color: #ff8d7e !important; }
+        .maker-block select,
+        .maker-block input[type="text"] {
+            min-height: 28px !important;
+        }
+        .maker-block select {
+            width: auto !important;
+            min-width: 150px !important;
+        }
+        .block-controls {
+            margin-left: auto !important;
+            background: rgba(0,0,0,0.18);
+            border-radius: 6px;
+            padding: 3px !important;
+        }
+        @media (min-width: 760px) {
+            .maker-layout {
+                display: grid !important;
+                grid-template-columns: minmax(210px, 250px) minmax(520px, 1fr);
+                overflow: hidden !important;
+            }
+            .palette-panel {
+                width: auto !important;
+                max-height: none !important;
+            }
+        }
         @media (min-width: 901px) and (min-height: 851px) {
             .palette-panel {
                 width: 230px !important;
@@ -2069,11 +2142,11 @@
                                 <div class="code-guide-grid">
                                     <section>
                                         <h5>基本形</h5>
-                                        <pre>repeat(10) {
+                                        <pre>for (let i = 0; i < 10; i++) {
     // 10回実行
 }
 
-forever() {
+while (true) {
     // アクション中ずっと実行
 }
 
@@ -2082,7 +2155,7 @@ if (条件) {
 }
 
 wait(0.5) // 0.5秒待つ</pre>
-                                        <p>一番上に複数の <code>forever()</code> や <code>repeat()</code> を置くと、同時に並行して動きます。</p>
+                                        <p>一番上に複数の <code>while (true)</code> や <code>for</code> を置くと、同時に並行して動きます。古い <code>forever()</code> / <code>repeat()</code> もそのまま使えます。</p>
                                     </section>
                                     <section>
                                         <h5>エミッター側</h5>
@@ -2143,7 +2216,7 @@ random(-5, 5)   // -5から5</pre>
                                     </section>
                                 </div>
                                 <h5>例: 移動する発射台</h5>
-                                <pre>forever() {
+                                <pre>while (true) {
     slideTo("center", 0.5)
     wait(2)
     slideTo("farRight", 0.5)
@@ -2154,7 +2227,7 @@ random(-5, 5)   // -5から5</pre>
     wait(0.7)
 }
 
-forever() {
+while (true) {
     aimAtTarget()
     angle += random(-8, 8)
     spawnWay("normal", "#33ffff", 360, angle, 5, 12)
@@ -10849,10 +10922,10 @@ forever() {
                         line = `wait(${b.params.duration || '0.2'})`;
                         break;
                     case 'repeat':
-                        line = `repeat(${b.params.count || '10'})`;
+                        line = `for (let i = 0; i < ${b.params.count || '10'}; i++)`;
                         break;
                     case 'forever':
-                        line = `forever()`;
+                        line = `while (true)`;
                         break;
                     case 'const_var':
                         line = `const ${b.params.name || 'angle'} = ${b.params.value || '0'}`;
@@ -10969,6 +11042,10 @@ forever() {
                     if (mRepeat) block = { type: 'repeat', params: { count: mRepeat[1].trim() }, indent };
                     let mForever = trimmed.match(/^forever\(\)$/i);
                     if (mForever) block = { type: 'forever', params: {}, indent };
+                    let mWhileTrue = trimmed.match(/^while\s*\(\s*true\s*\)$/i);
+                    if (mWhileTrue) block = { type: 'forever', params: {}, indent };
+                    let mForRepeat = trimmed.match(/^for\s*\(\s*(?:let|var)?\s*(\w+)\s*=\s*0\s*;\s*\1\s*<\s*(.*?)\s*;\s*\1\+\+\s*\)$/i);
+                    if (mForRepeat) block = { type: 'repeat', params: { count: mForRepeat[2].trim() }, indent };
                     let mIf = trimmed.match(/^if\s*\((.*?)\)$/i);
                     if (mIf) block = { type: 'if', params: { cond: mIf[1].trim() }, indent };
                     let mAim = trimmed.match(/^aimAtTarget\(\)$/i);
@@ -11107,6 +11184,14 @@ forever() {
                 let mForever = trimmed.match(/^forever\(\)$/i);
                 if (mForever) {
                     block = { type: 'forever', params: {}, indent: indent };
+                }
+                let mWhileTrue = trimmed.match(/^while\s*\(\s*true\s*\)$/i);
+                if (mWhileTrue) {
+                    block = { type: 'forever', params: {}, indent: indent };
+                }
+                let mForRepeat = trimmed.match(/^for\s*\(\s*(?:let|var)?\s*(\w+)\s*=\s*0\s*;\s*\1\s*<\s*(.*?)\s*;\s*\1\+\+\s*\)$/i);
+                if (mForRepeat) {
+                    block = { type: 'repeat', params: { count: mForRepeat[2].trim() }, indent: indent };
                 }
                 let mIf = trimmed.match(/^if\s*\((.*?)\)$/i);
                 if (mIf) {
