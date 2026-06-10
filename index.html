@@ -10323,6 +10323,7 @@ while (true) {
             let totalFired = 0;
             let totalWeightedThreat = 0;
             let closeToPlayerScore = 0;
+            let activeBulletLoadScore = 0;
             let spawnsThisSecond = 0;
             let lastSimSecond = -1;
 
@@ -10411,6 +10412,8 @@ while (true) {
                     let actT = b.bulletState ? (parseFloat(b.bulletState.variables.activeTime) || 0) : 0;
                     let isBeamThreat = b.isLaser || (warnT > 0 && actT > 0);
                     let threatW = b.threatWeight !== undefined ? b.threatWeight : 0.5;
+                    let currentSpeed = Math.hypot(b.vx || 0, b.vy || 0);
+                    activeBulletLoadScore += threatW * Math.min(2.5, 0.35 + currentSpeed / 220);
                     if (!b.gotClose && distToPlayer < 150) {
                         b.gotClose = true;
                         closeToPlayerScore += isBeamThreat ? (1.5 * threatW) : threatW;
@@ -10435,10 +10438,14 @@ while (true) {
             // 指標の計算（物理弾数は60発/秒、脅威度は60/秒で上限）
             let threatPerSecond = Math.min(MAX_THREAT_PER_SECOND, totalWeightedThreat / simDuration);
             let closeScorePerSecond = closeToPlayerScore / simDuration;
+            let fireRatePerSecond = totalFired / simDuration;
+            let activeLoadPerFrame = activeBulletLoadScore / Math.max(1, totalFrames);
 
             // コスト計算式（脅威度＋近接脅威＋弾速）
             let simCost = Math.sqrt(Math.max(0, threatPerSecond)) * 0.95
-                        + Math.sqrt(Math.max(0, closeScorePerSecond)) * 0.75;
+                        + Math.sqrt(Math.max(0, closeScorePerSecond)) * 0.75
+                        + Math.sqrt(Math.max(0, fireRatePerSecond)) * 0.35
+                        + Math.sqrt(Math.max(0, activeLoadPerFrame)) * 0.45;
             let totalCost = simCost + getStaticComplexityCost(baseBlockCost);
 
             // コストは四捨五入して整数（最低1）
