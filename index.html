@@ -10200,7 +10200,7 @@ while (true) {
         function getStaticComplexityCost(rawBlockCost) {
             // Static syntax is only a small complexity modifier. Real density/danger is measured by simulation.
             let raw = Math.max(0, Number(rawBlockCost) || 0);
-            return Math.min(6, Math.sqrt(raw) * 0.75);
+            return Math.min(4, Math.sqrt(raw) * 0.55);
         }
 
         let customCardCostCalcTimer = null;
@@ -10413,7 +10413,7 @@ while (true) {
                     let threatW = b.threatWeight !== undefined ? b.threatWeight : 0.5;
                     if (!b.gotClose && distToPlayer < 150) {
                         b.gotClose = true;
-                        closeToPlayerScore += isBeamThreat ? (3 * threatW) : threatW;
+                        closeToPlayerScore += isBeamThreat ? (1.5 * threatW) : threatW;
                     }
 
                     // 画面外判定
@@ -10437,7 +10437,8 @@ while (true) {
             let closeScorePerSecond = closeToPlayerScore / simDuration;
 
             // コスト計算式（脅威度＋近接脅威＋弾速）
-            let simCost = (threatPerSecond * 0.35) + (closeScorePerSecond * 0.25);
+            let simCost = Math.sqrt(Math.max(0, threatPerSecond)) * 0.95
+                        + Math.sqrt(Math.max(0, closeScorePerSecond)) * 0.75;
             let totalCost = simCost + getStaticComplexityCost(baseBlockCost);
 
             // コストは四捨五入して整数（最低1）
