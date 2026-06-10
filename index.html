@@ -2292,6 +2292,10 @@
                             <label style="font-size: 11px; color: #aaa;">説明文 (Description)</label>
                             <input type="text" id="custom-card-desc" class="metadata-input" placeholder="カードの効果やフレーバーテキスト" oninput="saveCustomCardDraft(false, false, true)">
                         </div>
+                        <div style="flex: 0 0 110px; min-width: 100px; display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 11px; color: #aaa;">制限時間 (sec)</label>
+                            <input type="number" id="custom-card-duration" class="metadata-input" min="1" max="120" step="0.1" value="15" oninput="customCardMakerOnDurationInput()">
+                        </div>
                     </div>
 
                     <div class="maker-layout">
@@ -3201,6 +3205,7 @@ while (true) {
             editingId: null,
             name: 'カスタムスペル',
             desc: 'オリジナルの弾幕パターン。',
+            duration: 15,
             activeTab: 'emitter', // 'emitter' or 'bullet' or 'bounce'
             emitterScript: [
                 { type: 'repeat', params: { count: '12' }, indent: 0 },
@@ -3217,6 +3222,12 @@ while (true) {
             return Math.max(1, Math.ceil((Number(rawCost) || 1) / CUSTOM_CARD_PLAY_COST_DIVISOR));
         }
 
+        function getCustomCardDuration(value) {
+            let duration = Number(value);
+            if (!Number.isFinite(duration) || duration <= 0) duration = 15;
+            return Math.max(1, Math.min(120, duration));
+        }
+
         function applyCustomCardCosts(cc, recalc = false) {
             let rawCost = Number(cc.rawCost);
             if (recalc) {
@@ -3226,6 +3237,7 @@ while (true) {
             }
             cc.rawCost = rawCost;
             cc.cost = getCustomCardPlayCost(rawCost);
+            cc.duration = getCustomCardDuration(cc.duration);
             return cc;
         }
 
@@ -3302,7 +3314,7 @@ while (true) {
             defaultCards.active.push({
                 id: migrated.id,
                 name: migrated.name,
-                duration: migrated.duration || 15,
+                duration: getCustomCardDuration(migrated.duration),
                 pattern: migrated.id,
                 interval: 0.1,
                 cost: migrated.cost,
@@ -3323,7 +3335,7 @@ while (true) {
                     return {
                         id: migrated.id,
                         name: migrated.name,
-                        duration: migrated.duration || 15,
+                        duration: getCustomCardDuration(migrated.duration),
                         rawCost: migrated.rawCost || migrated.cost,
                         cost: migrated.cost,
                         desc: migrated.desc,
@@ -10448,7 +10460,7 @@ while (true) {
                         <span class="custom-card-title">${card.name.replace('【A】', '')}</span>
                         <span class="custom-card-desc">${descText}</span>
                     </div>
-                    <span class="custom-card-cost-badge">コスト: ${card.cost} <span style="opacity:.7;">(評価:${card.rawCost || card.cost})</span></span>
+                    <span class="custom-card-cost-badge">時間: ${getCustomCardDuration(card.duration)}s / コスト: ${card.cost} <span style="opacity:.7;">(評価:${card.rawCost || card.cost})</span></span>
                     <div class="custom-card-actions">
                         <button class="custom-card-act-btn btn-edit" onclick="customCardMakerOpenEditor('${card.id}')">編集</button>
                         <button class="custom-card-act-btn btn-delete" onclick="customCardMakerDeleteCard('${card.id}')">削除</button>
@@ -10479,6 +10491,8 @@ while (true) {
 
             let nameVal = document.getElementById('custom-card-name').value;
             let descVal = document.getElementById('custom-card-desc').value;
+            let durationVal = document.getElementById('custom-card-duration') ? document.getElementById('custom-card-duration').value : customCardMaker.duration;
+            customCardMaker.duration = getCustomCardDuration(durationVal);
             
             if (customCardMakerMode === 'code' && !skipCodeParse) {
                 let code = document.getElementById('workspace-code-textarea').value;
@@ -10494,6 +10508,7 @@ while (true) {
                 editingId: customCardMaker.editingId,
                 name: nameVal,
                 desc: descVal,
+                duration: durationVal,
                 activeTab: customCardMaker.activeTab,
                 customCardMakerMode: customCardMakerMode,
                 emitterScript: customCardMaker.emitterScript,
@@ -10524,6 +10539,7 @@ while (true) {
                 customCardMaker.editingId = draftData.editingId;
                 customCardMaker.name = draftData.name || 'カスタムスペル';
                 customCardMaker.desc = draftData.desc || 'オリジナルの弾幕パターン。';
+                customCardMaker.duration = getCustomCardDuration(draftData.duration);
                 customCardMaker.activeTab = draftData.activeTab || 'emitter';
                 customCardMaker.emitterScript = draftData.emitterScript || [];
                 customCardMaker.bulletScript = draftData.bulletScript || [];
@@ -10533,6 +10549,7 @@ while (true) {
                 
                 document.getElementById('custom-card-name').value = customCardMaker.name;
                 document.getElementById('custom-card-desc').value = customCardMaker.desc;
+                if (document.getElementById('custom-card-duration')) document.getElementById('custom-card-duration').value = customCardMaker.duration;
                 
                 document.getElementById('tab-btn-emitter').className = customCardMaker.activeTab === 'emitter' ? 'tab-btn active' : 'tab-btn';
                 document.getElementById('tab-btn-bullet').className = customCardMaker.activeTab === 'bullet' ? 'tab-btn active' : 'tab-btn';
@@ -10605,6 +10622,7 @@ while (true) {
                 customCardMaker.editingId = migratedCard.id;
                 customCardMaker.name = migratedCard.name.replace('【A】', '');
                 customCardMaker.desc = migratedCard.desc;
+                customCardMaker.duration = getCustomCardDuration(migratedCard.duration);
                 customCardMaker.emitterScript = JSON.parse(JSON.stringify(migratedCard.emitterScript || []));
                 customCardMaker.bulletScript = JSON.parse(JSON.stringify(migratedCard.bulletScript || []));
                 customCardMaker.testPassed = true;
@@ -10613,6 +10631,7 @@ while (true) {
                 customCardMaker.editingId = null;
                 customCardMaker.name = 'カスタムスペル';
                 customCardMaker.desc = 'オリジナルの弾幕パターン。';
+                customCardMaker.duration = 15;
                 customCardMaker.emitterScript = [
                     { type: 'repeat', params: { count: '12' }, indent: 0 },
                     { type: 'spawn_bullet', params: { bulletType: 'normal', color: '#ff3333', radius: '6', speed: '200', angle: 'angle' }, indent: 1 },
@@ -10628,6 +10647,7 @@ while (true) {
             
             document.getElementById('custom-card-name').value = customCardMaker.name;
             document.getElementById('custom-card-desc').value = customCardMaker.desc;
+            if (document.getElementById('custom-card-duration')) document.getElementById('custom-card-duration').value = customCardMaker.duration;
             
             renderCardMaker();
         }
@@ -11139,11 +11159,13 @@ while (true) {
                 alert('cost limit exceeded: ' + cost + ' / ' + CUSTOM_CARD_COST_LIMIT);
                 return;
             }
+            let cardDuration = getCustomCardDuration(document.getElementById('custom-card-duration') ? document.getElementById('custom-card-duration').value : customCardMaker.duration);
+            customCardMaker.duration = cardDuration;
             
             let tempCustomCard = {
                 id: 'custom_test',
                 name: '【A】' + (document.getElementById('custom-card-name').value.trim() || 'テスト弾幕'),
-                duration: 15,
+                duration: cardDuration,
                 pattern: 'custom_test',
                 interval: 0.1,
                 rawCost: cost,
@@ -11208,7 +11230,7 @@ while (true) {
             
             activeCards = [ tempCustomCard ];
             activeCards[0].emitterState = initEmitterState(tempCustomCard.emitterScript, cpu, player);
-            actionTimer = 15.0;
+            actionTimer = tempCustomCard.duration;
             customCardTestEmitterDone = false;
             normalShotTimer = 0;
             
@@ -11265,6 +11287,8 @@ while (true) {
 
             let nameInput = document.getElementById('custom-card-name').value.trim() || 'カスタムスペル';
             let descInput = document.getElementById('custom-card-desc').value.trim() || 'オリジナルの弾幕パターン。';
+            let cardDuration = getCustomCardDuration(document.getElementById('custom-card-duration') ? document.getElementById('custom-card-duration').value : customCardMaker.duration);
+            customCardMaker.duration = cardDuration;
 
             if (!nameInput.startsWith('【A】')) {
                 nameInput = '【A】' + nameInput;
@@ -11278,7 +11302,7 @@ while (true) {
                 id: cardId,
                 name: nameInput,
                 desc: descInput,
-                duration: 15,
+                duration: cardDuration,
                 rawCost: cost,
                 cost: getCustomCardPlayCost(cost),
                 isCustom: true,
@@ -11411,6 +11435,14 @@ while (true) {
             customCardMaker.testPassed = false;
             scheduleCustomCardCostCalculation();
             saveCustomCardDraft(false, true);
+        }
+
+        function customCardMakerOnDurationInput() {
+            const input = document.getElementById('custom-card-duration');
+            customCardMaker.duration = getCustomCardDuration(input ? input.value : customCardMaker.duration);
+            customCardMaker.testPassed = false;
+            scheduleCustomCardCostCalculation();
+            saveCustomCardDraft(false, false, true);
         }
 
         function formatCodeColorArg(color) {
