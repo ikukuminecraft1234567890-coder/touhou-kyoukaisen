@@ -10197,6 +10197,12 @@ while (true) {
             }
         }
 
+        function getStaticComplexityCost(rawBlockCost) {
+            // Static syntax is only a small complexity modifier. Real density/danger is measured by simulation.
+            let raw = Math.max(0, Number(rawBlockCost) || 0);
+            return Math.min(6, Math.sqrt(raw) * 0.75);
+        }
+
         let customCardCostCalcTimer = null;
         let customCardCostCalcSeq = 0;
 
@@ -10204,7 +10210,7 @@ while (true) {
             let baseBlockCost = 0;
             (emitterScript || []).forEach(b => baseBlockCost += getBlockCost(b));
             (bulletScript || []).forEach(b => baseBlockCost += getBlockCost(b));
-            return Math.max(1, Math.round(baseBlockCost));
+            return Math.max(1, Math.round(getStaticComplexityCost(baseBlockCost)));
         }
 
         function setCustomCardCostIndicator(cost, pending = false) {
@@ -10432,7 +10438,7 @@ while (true) {
 
             // コスト計算式（脅威度＋近接脅威＋弾速）
             let simCost = (threatPerSecond * 0.35) + (closeScorePerSecond * 0.25);
-            let totalCost = baseBlockCost + simCost;
+            let totalCost = simCost + getStaticComplexityCost(baseBlockCost);
 
             // コストは四捨五入して整数（最低1）
             return Math.max(1, Math.round(totalCost));
