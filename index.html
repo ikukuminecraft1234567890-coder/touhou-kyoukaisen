@@ -9916,6 +9916,12 @@ while (true) {
             
             let isPlayerSide = state.isPlayerSide;
             
+            // 開始時の座標と角度、速度を記録
+            let initX = b.x;
+            let initY = isPlayerSide ? (canvas.height - b.y) : b.y;
+            let initAngle = Number(state.variables.angle) || 0;
+            let initSpeed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+            
             // 毎フレーム壁との接触を判定（左・右・上端のみ。下端は除外）
             // isPlayerSide の場合は、上端ではなく下端との接触を判定
             let currentlyTouching;
@@ -10215,9 +10221,38 @@ while (true) {
             b.vy = Math.sin(finalAngleRad) * state.variables.speed;
             
             // Sync mutated coordinates
-            if (state.variables.x !== undefined) b.x = state.variables.x;
+            let xChanged = false;
+            let yChanged = false;
+            let speedChanged = false;
+            let angleChanged = false;
+
+            if (state.variables.x !== undefined) {
+                if (Math.abs(state.variables.x - initX) > 0.001) {
+                    b.x = state.variables.x;
+                    xChanged = true;
+                }
+            }
             if (state.variables.y !== undefined) {
-                b.y = isPlayerSide ? (canvas.height - state.variables.y) : state.variables.y;
+                let targetY = isPlayerSide ? (canvas.height - state.variables.y) : state.variables.y;
+                if (Math.abs(targetY - b.y) > 0.001) {
+                    b.y = targetY;
+                    yChanged = true;
+                }
+            }
+            let currentSpeed = Number(state.variables.speed) || 0;
+            if (Math.abs(currentSpeed - initSpeed) > 0.001) {
+                speedChanged = true;
+            }
+            let currentAngle = Number(state.variables.angle) || 0;
+            if (Math.abs(currentAngle - initAngle) > 0.001) {
+                angleChanged = true;
+            }
+            if (state.variables.isBounced) {
+                angleChanged = true;
+            }
+
+            if (xChanged || yChanged || speedChanged || angleChanged || b.laserMoved) {
+                b.laserMoved = true;
             }
             
             // Sync custom variables to bullet physics properties
@@ -10244,13 +10279,32 @@ while (true) {
                     b.laserStartX = b.x;
                     b.laserStartY = b.y;
                 }
-                b.x = b.laserStartX;
-                b.y = b.laserStartY;
-                state.variables.x = b.x;
-                state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
-                b.vx = 0;
-                b.vy = 0;
-                state.variables.speed = 0;
+                
+                if (b.laserMoved) {
+                    // 通常の物理演算に基づく移動量を laserStartX / Y に加算
+                    b.laserStartX += b.vx * dt;
+                    b.laserStartY += b.vy * dt;
+                    
+                    if (xChanged) b.laserStartX = b.x;
+                    if (yChanged) b.laserStartY = b.y;
+                    
+                    b.x = b.laserStartX;
+                    b.y = b.laserStartY;
+                    state.variables.x = b.x;
+                    state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
+                    
+                    // 二重移動を防ぐために vx, vy はリセットするが、次回のために speed や angle は維持
+                    b.vx = 0;
+                    b.vy = 0;
+                } else {
+                    b.x = b.laserStartX;
+                    b.y = b.laserStartY;
+                    state.variables.x = b.x;
+                    state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
+                    b.vx = 0;
+                    b.vy = 0;
+                    state.variables.speed = 0;
+                }
                 
                 let elapsed = state.variables.timer - state.variables.laserStartTime;
                 if (elapsed < warnT) {
