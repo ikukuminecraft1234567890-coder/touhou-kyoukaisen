@@ -9209,6 +9209,15 @@ while (true) {
         function normalizeConditionOperators(cond) {
             return String(cond || '').replace(/(^|[^!<>=])=([^=]|$)/g, '$1==$2');
         }
+        function replaceRangeConditions(s) {
+            return String(s || '').replace(/(.+?)\s*(==|!=)\s*([^=!<>\s]+?)\.\.([^=!<>\s]+)/g, function(match, left, op, min, max) {
+                if (op === '==') {
+                    return '((' + left + ') >= (' + min + ') && (' + left + ') <= (' + max + '))';
+                } else {
+                    return '((' + left + ') < (' + min + ') || (' + left + ') > (' + max + '))';
+                }
+            });
+        }
 
         function readConditionValue(raw, variables) {
             let s = String(raw || '').trim();
@@ -9252,6 +9261,7 @@ while (true) {
                 if (mNear) s = 'dist <= (' + mNear[1] + ')';
             }
             let normalizedCond = normalizeConditionOperators(s);
+            normalizedCond = replaceRangeConditions(normalizedCond);
             let stringResult = evalStringCondition(normalizedCond, variables || {});
             if (stringResult !== null) return stringResult;
             return !!evalExpr(normalizedCond, variables || {});
@@ -9337,6 +9347,7 @@ while (true) {
             if (typeof expr === 'number') return expr;
             variables = variables || {};
             let s = String(expr).trim();
+            s = replaceRangeConditions(s);
             if (s === '') return 0;
             
             if (variables[s] !== undefined) return variables[s];
