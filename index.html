@@ -567,6 +567,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
             cursor: pointer;
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .deck-card:hover {
@@ -1305,6 +1306,7 @@
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .custom-card-item:hover {
             border-color: rgba(0, 255, 200, 0.4);
@@ -1731,6 +1733,7 @@
             gap: 12px !important;
             align-items: center !important;
             overflow: hidden !important;
+            flex-shrink: 0 !important;
         }
         #screen-card-maker .custom-card-info {
             min-width: 0 !important;
@@ -9872,22 +9875,29 @@ while (true) {
         function updateBulletTouchStates() {
             if (!Array.isArray(bullets)) return;
             const candidates = [];
-            for (let b of bullets) {
+            for (let i = 0; i < bullets.length; i++) {
+                const b = bullets[i];
                 if (!b) continue;
                 b.pendingTouchBullet = null;
-                if (canTouchOtherBullet(b)) candidates.push(b);
+                if (canTouchOtherBullet(b)) {
+                    b._cachedRadius = getBulletTouchRadius(b);
+                    candidates.push(b);
+                }
             }
 
-            for (let i = 0; i < candidates.length; i++) {
+            const len = candidates.length;
+            for (let i = 0; i < len; i++) {
                 const a = candidates[i];
-                const ar = getBulletTouchRadius(a);
-                for (let j = i + 1; j < candidates.length; j++) {
+                const ax = a.x;
+                const ay = a.y;
+                const ar = a._cachedRadius;
+                const aTeam = a.team;
+                for (let j = i + 1; j < len; j++) {
                     const b = candidates[j];
-                    if (a.team !== b.team) continue;
-                    const br = getBulletTouchRadius(b);
-                    const rr = ar + br;
-                    const dx = a.x - b.x;
-                    const dy = a.y - b.y;
+                    if (aTeam !== b.team) continue;
+                    const rr = ar + b._cachedRadius;
+                    const dx = ax - b.x;
+                    const dy = ay - b.y;
                     if (dx * dx + dy * dy <= rr * rr) {
                         if (!a.pendingTouchBullet) a.pendingTouchBullet = b;
                         if (!b.pendingTouchBullet) b.pendingTouchBullet = a;
