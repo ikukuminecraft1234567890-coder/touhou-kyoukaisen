@@ -2240,6 +2240,8 @@
                         <option value="y">弾のY座標 (y)</option>
                         <option value="tx">ターゲットのX座標 (tx)</option>
                         <option value="ty">ターゲットのY座標 (ty)</option>
+                        <option value="player_x">プレイヤーのX座標 (player_x)</option>
+                        <option value="player_y">プレイヤーのY座標 (player_y)</option>
                         <option value="timer">弾のタイマー (timer)</option>
                         <option value="second">秒数 (second)</option>
                         <option value="frame">フレーム数 (frame)</option>
@@ -9439,6 +9441,9 @@ while (true) {
             state.variables.y = isPlayerSide ? (canvas.height - attacker.y) : attacker.y;
             state.variables.tx = target.x;
             state.variables.ty = isPlayerSide ? (canvas.height - target.y) : target.y;
+            // プレイヤーの絶対座標（常にプレイヤー側、Y軸は画面下が0の論理座標）
+            state.variables.player_x = player.x;
+            state.variables.player_y = canvas.height - player.y;
             if (!state.isParallelThread) {
                 state.variables.second = (Number(state.variables.second) || 0) + dt;
                 state.variables.frame = (Number(state.variables.frame) || 0) + 1;
