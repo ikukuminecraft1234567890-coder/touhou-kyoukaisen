@@ -7799,12 +7799,28 @@ while (true) {
                     }
                     b.x += b.vx * dt; b.y += b.vy * dt;
 
-                    let minY = -30;
-                    let maxY = canvas.height + 30;
-                    if (b.isBombPiece) {
-                        maxY = canvas.height + 60;
+                    let isOff = (b.x < 0 || b.x > PLAY_WIDTH || b.y < 0 || b.y > canvas.height);
+                    if (isOff) {
+                        b.offscreenTime = (b.offscreenTime || 0) + dt;
+                    } else {
+                        b.offscreenTime = 0;
                     }
-                    if (b.y > maxY || b.y < minY || b.x < -30 || b.x > PLAY_WIDTH + 30) {
+
+                    let shouldDespawn = false;
+                    if (b.isBombPiece) {
+                        let maxY = canvas.height + 60;
+                        if (b.y > maxY || b.y < -30 || b.x < -30 || b.x > PLAY_WIDTH + 30) {
+                            shouldDespawn = true;
+                        }
+                    } else {
+                        if (b.x < -PLAY_WIDTH || b.x > PLAY_WIDTH * 2 || b.y < -canvas.height || b.y > canvas.height * 2) {
+                            shouldDespawn = true;
+                        } else if (b.offscreenTime >= 10.0) {
+                            shouldDespawn = true;
+                        }
+                    }
+
+                    if (shouldDespawn) {
                         bullets.splice(i, 1); continue;
                     }
 
@@ -10681,7 +10697,13 @@ while (true) {
 
                     // 画面外判定
                     let currentHeight = canvas ? canvas.height : 900;
-                    if (b.x < -100 || b.x > PLAY_WIDTH + 100 || b.y < -100 || b.y > currentHeight + 100) {
+                    let isOff = (b.x < 0 || b.x > PLAY_WIDTH || b.y < 0 || b.y > currentHeight);
+                    if (isOff) {
+                        b.offscreenTime = (b.offscreenTime || 0) + dt;
+                    } else {
+                        b.offscreenTime = 0;
+                    }
+                    if (b.x < -PLAY_WIDTH || b.x > PLAY_WIDTH * 2 || b.y < -currentHeight || b.y > currentHeight * 2 || b.offscreenTime >= 10.0) {
                         b.offScreen = true;
                     }
                 }
