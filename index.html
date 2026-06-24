@@ -2332,6 +2332,7 @@
 
                             <button class="palette-btn color-vars" id="palette-btn-setvar" onclick="customCardMakerAddBlock('set_var')">set variable</button>
                             <button class="palette-btn color-vars" id="palette-btn-changevar" onclick="customCardMakerAddBlock('change_var')">変数を [値] 増やす</button>
+                            <button class="palette-btn color-vars" id="palette-btn-tweenvar" onclick="customCardMakerAddBlock('tween_var')">変数をスムーズに移行する</button>
                             <button class="palette-btn color-vars" id="palette-btn-setlaser" onclick="customCardMakerAddBlock('set_laser')">設置レーザー設定</button>
                             
                             <div class="palette-group-title" id="palette-title-motion">動作 (Motion / Actions)</div>
@@ -9435,6 +9436,32 @@ while (true) {
             if (!state) return;
             
             let isPlayerSide = state.isPlayerSide;
+
+            // --- tween処理（スムーズ移行）を毎フレーム先に適用 ---
+            if (state.tweens && state.tweens.length > 0) {
+                state.tweens = state.tweens.filter(tw => {
+                    if (tw.mode === 'step') {
+                        // 毎フレーム固定量加算
+                        let cur = Number(state.variables[tw.name]) || 0;
+                        let step = tw.stepVal;
+                        let next = cur + step;
+                        if ((step > 0 && next >= tw.to) || (step < 0 && next <= tw.to)) {
+                            state.variables[tw.name] = tw.to;
+                            return false; // done
+                        }
+                        state.variables[tw.name] = next;
+                        return true;
+                    } else {
+                        // 時間 / フレーム制御の線形補間
+                        tw.elapsed += (tw.mode === 'seconds') ? dt : 1;
+                        let t = Math.min(1, tw.elapsed / tw.total);
+                        state.variables[tw.name] = tw.from + (tw.to - tw.from) * t;
+                        return t < 1; // done if t==1
+                    }
+                });
+            }
+
+
             
             // コアの現在位置、ターゲットの現在位置、および距離情報を毎フレーム同期
             state.variables.x = attacker.x;
@@ -9794,6 +9821,28 @@ while (true) {
                             };
                             
                             bullets.push(newBullet);
+                        }
+                        break;
+                    }
+                    case 'tween_var': {
+                        let varName = block.params.name || 'angle';
+                        let fromVal = evalExpr(block.params.from, state.variables);
+                        let toVal   = evalExpr(block.params.to,   state.variables);
+                        let mode    = block.params.mode || 'seconds'; // 'seconds' | 'frames' | 'step'
+                        if (!state.tweens) state.tweens = [];
+                        // 同じ変数の既存tweenを上書き
+                        state.tweens = state.tweens.filter(t => t.name !== varName);
+                        if (mode === 'step') {
+                            let stepVal = evalExpr(block.params.stepVal || '5', state.variables);
+                            if (fromVal > toVal && stepVal > 0) stepVal = -stepVal;
+                            state.variables[varName] = fromVal;
+                            state.tweens.push({ name: varName, to: toVal, mode: 'step', stepVal });
+                        } else {
+                            let total = evalExpr(block.params.duration || '1', state.variables);
+                            if (mode === 'frames') total = Math.max(1, total);
+                            else total = Math.max(0.001, total);
+                            state.variables[varName] = fromVal;
+                            state.tweens.push({ name: varName, from: fromVal, to: toVal, mode, total, elapsed: 0 });
                         }
                         break;
                     }
@@ -10965,6 +11014,13 @@ while (true) {
                 block.params.warningTime = '1.0';
                 block.params.activeTime = '1.5';
                 block.params.laserWidth = '12';
+            } else if (type === 'tween_var') {
+                block.params.name = 'angle';
+                block.params.from = '0';
+                block.params.to = '360';
+                block.params.mode = 'seconds';
+                block.params.duration = '1';
+                block.params.stepVal = '5';
             } else if (type === 'once') {
                 block.params = {};
             }
@@ -11323,6 +11379,27 @@ while (true) {
                                 ${renderBlockControls(idx)}
                             `;
                             break;
+                        case 'tween_var': {
+                            let mode = b.params.mode || 'seconds';
+                            blockDiv.className = 'maker-block color-vars';
+                            html = `
+                                <span>[変数] スムーズ移行</span>
+                                <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name || 'angle'}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
+                                <span>を</span>
+                                <input type="text" list="val-suggestions" style="width:55px;" value="${b.params.from || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'from', this.value)">
+                                <span>から</span>
+                                <input type="text" list="val-suggestions" style="width:55px;" value="${b.params.to || '360'}" onchange="customCardMakerUpdateParam(${idx}, 'to', this.value)">
+                                <span>へ</span>
+                                <select onchange="customCardMakerUpdateParam(${idx}, 'mode', this.value)">
+                                    <option value="seconds" ${mode === 'seconds' ? 'selected' : ''}>秒で</option>
+                                    <option value="frames"  ${mode === 'frames'  ? 'selected' : ''}>フレームで</option>
+                                    <option value="step"    ${mode === 'step'    ? 'selected' : ''}>ずつ（毎フレーム）</option>
+                                </select>
+                                ${mode !== 'step' ? `<input type="text" list="val-suggestions" style="width:50px;" value="${b.params.duration || '1'}" onchange="customCardMakerUpdateParam(${idx}, 'duration', this.value)">` : `<input type="text" list="val-suggestions" style="width:50px;" value="${b.params.stepVal || '5'}" onchange="customCardMakerUpdateParam(${idx}, 'stepVal', this.value)">`}
+                                ${renderBlockControls(idx)}
+                            `;
+                            break;
+                        }
                         case 'bounce':
                             blockDiv.className = 'maker-block color-motion';
                             html = `
