@@ -11935,6 +11935,28 @@ while (true) {
             return lines.join("\n");
         }
 
+        function stripComments(line) {
+            if (!line) return '';
+            let inQuote = null;
+            let result = '';
+            for (let i = 0; i < line.length; i++) {
+                let ch = line[i];
+                let prev = line[i - 1];
+                if (inQuote) {
+                    result += ch;
+                    if (ch === inQuote && prev !== '\\') inQuote = null;
+                } else if (ch === '"' || ch === "'") {
+                    inQuote = ch;
+                    result += ch;
+                } else if (ch === '/' && line[i + 1] === '/') {
+                    break;
+                } else {
+                    result += ch;
+                }
+            }
+            return result;
+        }
+
         // 波括弧スタイルのコードをブロックリストに変換するヘルパー
         // repeat(20){ spawnRing(...); } のようなスタイルに対応
         function _codeToBlocksBrace(code) {
@@ -12092,12 +12114,11 @@ while (true) {
             let depth = 0;
 
             rawLines.forEach(rawLine => {
-                const t = rawLine.trim();
+                let cleanLine = stripComments(rawLine);
+                const t = cleanLine.trim();
                 if (!t) return;
                 if (t === '{') { depth++; return; }
                 if (t === '}') { depth = Math.max(0, depth - 1); return; }
-                // コメントは除外
-                if (t.startsWith('//')) return;
                 // 行末 { が残っていたら深さを増やして除去
                 let line = t;
                 let hasBraceAtEnd = /\{\s*$/.test(line);
@@ -12138,12 +12159,13 @@ while (true) {
                 let indent = Math.floor(spaceCount / 4);
                 indent = Math.max(0, Math.min(3, indent));
                 
-                let trimmed = line.trim();
+                let cleanLine = stripComments(line);
+                let trimmed = cleanLine.trim();
                 // セミコロン、行末の波括弧を除去
                 trimmed = trimmed.replace(/;+$/, "").trim();
                 trimmed = trimmed.replace(/\{\s*$/, "").trim();
                 
-                if (trimmed === "" || trimmed === "{" || trimmed === "}" || trimmed.startsWith("//")) return;
+                if (trimmed === "" || trimmed === "{" || trimmed === "}") return;
                 
                 let block = null;
                 
