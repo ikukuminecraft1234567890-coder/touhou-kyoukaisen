@@ -2445,8 +2445,13 @@ moveTo("farRight")
 moveTo("farLeft")
 moveTo("rightUp")
 moveTo("leftUp")
-slideTo("farRight", 0.5)</pre>
-                                        <p><code>moveTo</code> は即移動、<code>slideTo</code> は指定秒数で滑らかに移動します。</p>
+slideTo("farRight", 0.5)
+
+// 変数のスムーズ移行 (非同期で移行します)
+tween("angle", 0, 360, "seconds", 1)  // 秒で移行
+tween("speed", 100, 300, "frames", 60) // フレームで移行
+tween("angle", 0, 180, "step", 5)      // 毎フレーム加算移行</pre>
+                                        <p><code>moveTo</code> は即移動、<code>slideTo</code> は指定秒数で滑らかに移動します。<code>tween</code> は変数を指定の秒・フレーム・ステップで滑らかに移行します。</p>
                                     </section>
                                 </div>
                                 <div class="code-guide-grid">
@@ -2481,6 +2486,8 @@ if (touchingBullet) {
 speed      // 速度
 x, y       // 現在位置
 tx, ty     // 相手の位置
+player_x   // プレイヤーのX位置
+player_y   // プレイヤーのY位置
 dist       // 相手との距離
 timer      // その弾の経過秒
 second     // 秒数
@@ -10427,6 +10434,7 @@ while (true) {
                     return 2;
                 case 'spawn_ring':
                 case 'spawn_way':
+                case 'tween_var':
                     return 2;
                 default:
                     return 0;
@@ -11823,6 +11831,18 @@ while (true) {
                     case 'homing':
                         line = `homing(${b.params.turnSpeed || '90'})`;
                         break;
+                    case 'tween_var': {
+                        let mode = b.params.mode || 'seconds';
+                        let nameStr = JSON.stringify(b.params.name || 'angle');
+                        let fromVal = b.params.from || '0';
+                        let toVal = b.params.to || '360';
+                        if (mode === 'step') {
+                            line = `tween(${nameStr}, ${fromVal}, ${toVal}, "step", ${b.params.stepVal || '5'})`;
+                        } else {
+                            line = `tween(${nameStr}, ${fromVal}, ${toVal}, "${mode}", ${b.params.duration || '1'})`;
+                        }
+                        break;
+                    }
                     case 'bounce':
                         line = `bounce()`;
                         break;
@@ -11910,6 +11930,27 @@ while (true) {
                     if (mOnce) block = { type: 'once', params: {}, indent };
                     let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
                     if (mHoming) block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent };
+                    let mTween = trimmed.match(/^tween\((.*?)\)$/i);
+                    if (mTween) {
+                        let args = mTween[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        let varName = args[0] || 'angle';
+                        let fromVal = args[1] || '0';
+                        let toVal = args[2] || '360';
+                        let mode = args[3] || 'seconds';
+                        let modeVal = args[4] || '1';
+                        block = {
+                            type: 'tween_var',
+                            params: {
+                                name: varName,
+                                from: fromVal,
+                                to: toVal,
+                                mode: mode,
+                                duration: mode !== 'step' ? modeVal : '1',
+                                stepVal: mode === 'step' ? modeVal : '5'
+                            },
+                            indent
+                        };
+                    }
                     let mSlow = trimmed.match(/^slow\((.*?)\)$/i);
                     if (mSlow) { let args = mSlow[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'slow', effect: args[0] || '0.5', delay: args[1] || '0' }, indent }; }
                     let mFast = trimmed.match(/^fast\((.*?)\)$/i);
@@ -12100,6 +12141,33 @@ while (true) {
                 let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
                 if (mHoming) {
                     block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent: indent };
+                }
+                let mTween = trimmed.match(/^tween\((.*?)\)$/i);
+                if (mTween) {
+                    let args = mTween[1].split(",").map(s => {
+                        let sTrim = s.trim();
+                        if ((sTrim.startsWith('"') && sTrim.endsWith('"')) || (sTrim.startsWith("'") && sTrim.endsWith("'"))) {
+                            return sTrim.substring(1, sTrim.length - 1);
+                        }
+                        return sTrim;
+                    });
+                    let varName = args[0] || 'angle';
+                    let fromVal = args[1] || '0';
+                    let toVal = args[2] || '360';
+                    let mode = args[3] || 'seconds';
+                    let modeVal = args[4] || '1';
+                    block = {
+                        type: 'tween_var',
+                        params: {
+                            name: varName,
+                            from: fromVal,
+                            to: toVal,
+                            mode: mode,
+                            duration: mode !== 'step' ? modeVal : '1',
+                            stepVal: mode === 'step' ? modeVal : '5'
+                        },
+                        indent: indent
+                    };
                 }
                 let mSlow = trimmed.match(/^slow\((.*?)\)$/i);
                 if (mSlow) { let args = mSlow[1].split(',').map(s => s.trim()); block = { type: 'speed_scale', params: { mode: 'slow', effect: args[0] || '0.5', delay: args[1] || '0' }, indent: indent }; }
