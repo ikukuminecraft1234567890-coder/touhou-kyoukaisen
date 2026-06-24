@@ -2333,6 +2333,7 @@
                             <button class="palette-btn color-vars" id="palette-btn-setvar" onclick="customCardMakerAddBlock('set_var')">set variable</button>
                             <button class="palette-btn color-vars" id="palette-btn-changevar" onclick="customCardMakerAddBlock('change_var')">変数を [値] 増やす</button>
                             <button class="palette-btn color-vars" id="palette-btn-tweenvar" onclick="customCardMakerAddBlock('tween_var')">変数をスムーズに移行する</button>
+                            <button class="palette-btn color-vars" id="palette-btn-tweenvarwait" onclick="customCardMakerAddBlock('tween_var_wait')">変数をスムーズに移行して待つ</button>
                             <button class="palette-btn color-vars" id="palette-btn-setlaser" onclick="customCardMakerAddBlock('set_laser')">設置レーザー設定</button>
                             
                             <div class="palette-group-title" id="palette-title-motion">動作 (Motion / Actions)</div>
@@ -2450,8 +2451,11 @@ slideTo("farRight", 0.5)
 // 変数のスムーズ移行 (非同期で移行します)
 tween("angle", 0, 360, "seconds", 1)  // 秒で移行
 tween("speed", 100, 300, "frames", 60) // フレームで移行
-tween("angle", 0, 180, "step", 5)      // 毎フレーム加算移行</pre>
-                                        <p><code>moveTo</code> は即移動、<code>slideTo</code> は指定秒数で滑らかに移動します。<code>tween</code> は変数を指定の秒・フレーム・ステップで滑らかに移行します。</p>
+tween("angle", 0, 180, "step", 5)      // 毎フレーム加算移行
+
+// 変数のスムーズ移行完了を待つ (移行が終わるまで一時停止します)
+tweenWait("angle", 0, 360, "seconds", 1)</pre>
+                                        <p><code>moveTo</code> は即移動、<code>slideTo</code> は指定秒数で滑らかに移動します。<code>tween</code> は非同期に変数を移行し、<code>tweenWait</code> は移行完了を待ってから次の行に進みます。</p>
                                     </section>
                                 </div>
                                 <div class="code-guide-grid">
@@ -9506,6 +9510,12 @@ while (true) {
                 state.waitTimer -= dt;
                 if (state.waitTimer > 0) return;
             }
+            if (state.waitingTweenName) {
+                if (state.tweens && state.tweens.some(t => t.name === state.waitingTweenName)) {
+                    return;
+                }
+                state.waitingTweenName = null;
+            }
             
             let safetyCounter = 0;
             while (safetyCounter < 1000) {
@@ -9831,7 +9841,8 @@ while (true) {
                         }
                         break;
                     }
-                    case 'tween_var': {
+                    case 'tween_var':
+                    case 'tween_var_wait': {
                         let varName = block.params.name || 'angle';
                         let fromVal = evalExpr(block.params.from, state.variables);
                         let toVal   = evalExpr(block.params.to,   state.variables);
@@ -9851,6 +9862,9 @@ while (true) {
                             state.variables[varName] = fromVal;
                             state.tweens.push({ name: varName, from: fromVal, to: toVal, mode, total, elapsed: 0 });
                         }
+                        if (block.type === 'tween_var_wait') {
+                            state.waitingTweenName = varName;
+                        }
                         break;
                     }
                 }
@@ -9863,7 +9877,7 @@ while (true) {
                     }
                 }
                 
-                if (state.waitTimer > 0) {
+                if (state.waitTimer > 0 || state.waitingTweenName) {
                     break;
                 }
             }
@@ -10435,6 +10449,7 @@ while (true) {
                 case 'spawn_ring':
                 case 'spawn_way':
                 case 'tween_var':
+                case 'tween_var_wait':
                     return 2;
                 default:
                     return 0;
@@ -11022,7 +11037,7 @@ while (true) {
                 block.params.warningTime = '1.0';
                 block.params.activeTime = '1.5';
                 block.params.laserWidth = '12';
-            } else if (type === 'tween_var') {
+            } else if (type === 'tween_var' || type === 'tween_var_wait') {
                 block.params.name = 'angle';
                 block.params.from = '0';
                 block.params.to = '360';
@@ -11117,6 +11132,8 @@ while (true) {
             document.getElementById('palette-btn-setconst').style.display = 'block';
             document.getElementById('palette-btn-setvar').style.display = 'block';
             document.getElementById('palette-btn-changevar').style.display = 'block';
+            document.getElementById('palette-btn-tweenvar').style.display = (tab === 'emitter') ? 'block' : 'none';
+            document.getElementById('palette-btn-tweenvarwait').style.display = (tab === 'emitter') ? 'block' : 'none';
             document.getElementById('palette-btn-setlaser').style.display = (tab === 'bullet') ? 'block' : 'none';
             
             // 動作グループ
@@ -11387,11 +11404,13 @@ while (true) {
                                 ${renderBlockControls(idx)}
                             `;
                             break;
-                        case 'tween_var': {
+                        case 'tween_var':
+                        case 'tween_var_wait': {
                             let mode = b.params.mode || 'seconds';
+                            let isWait = b.type === 'tween_var_wait';
                             blockDiv.className = 'maker-block color-vars';
                             html = `
-                                <span>[変数] スムーズ移行</span>
+                                <span>[変数] ${isWait ? 'スムーズ移行して待つ' : 'スムーズ移行'}</span>
                                 <input type="text" list="var-suggestions" style="width:75px;" value="${b.params.name || 'angle'}" onchange="customCardMakerUpdateParam(${idx}, 'name', this.value)">
                                 <span>を</span>
                                 <input type="text" list="val-suggestions" style="width:55px;" value="${b.params.from || '0'}" onchange="customCardMakerUpdateParam(${idx}, 'from', this.value)">
@@ -11831,15 +11850,18 @@ while (true) {
                     case 'homing':
                         line = `homing(${b.params.turnSpeed || '90'})`;
                         break;
-                    case 'tween_var': {
+                    case 'tween_var':
+                    case 'tween_var_wait': {
                         let mode = b.params.mode || 'seconds';
+                        let isWait = b.type === 'tween_var_wait';
+                        let fnName = isWait ? 'tweenWait' : 'tween';
                         let nameStr = JSON.stringify(b.params.name || 'angle');
                         let fromVal = b.params.from || '0';
                         let toVal = b.params.to || '360';
                         if (mode === 'step') {
-                            line = `tween(${nameStr}, ${fromVal}, ${toVal}, "step", ${b.params.stepVal || '5'})`;
+                            line = `${fnName}(${nameStr}, ${fromVal}, ${toVal}, "step", ${b.params.stepVal || '5'})`;
                         } else {
-                            line = `tween(${nameStr}, ${fromVal}, ${toVal}, "${mode}", ${b.params.duration || '1'})`;
+                            line = `${fnName}(${nameStr}, ${fromVal}, ${toVal}, "${mode}", ${b.params.duration || '1'})`;
                         }
                         break;
                     }
@@ -11930,16 +11952,17 @@ while (true) {
                     if (mOnce) block = { type: 'once', params: {}, indent };
                     let mHoming = trimmed.match(/^homing\((.*?)\)$/i);
                     if (mHoming) block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent };
-                    let mTween = trimmed.match(/^tween\((.*?)\)$/i);
+                    let mTween = trimmed.match(/^(tween|tweenWait)\((.*?)\)$/i);
                     if (mTween) {
-                        let args = mTween[1].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                        let isWait = mTween[1].toLowerCase() === 'tweenwait';
+                        let args = mTween[2].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ''));
                         let varName = args[0] || 'angle';
                         let fromVal = args[1] || '0';
                         let toVal = args[2] || '360';
                         let mode = args[3] || 'seconds';
                         let modeVal = args[4] || '1';
                         block = {
-                            type: 'tween_var',
+                            type: isWait ? 'tween_var_wait' : 'tween_var',
                             params: {
                                 name: varName,
                                 from: fromVal,
@@ -12142,9 +12165,10 @@ while (true) {
                 if (mHoming) {
                     block = { type: 'homing', params: { turnSpeed: mHoming[1].trim() }, indent: indent };
                 }
-                let mTween = trimmed.match(/^tween\((.*?)\)$/i);
+                let mTween = trimmed.match(/^(tween|tweenWait)\((.*?)\)$/i);
                 if (mTween) {
-                    let args = mTween[1].split(",").map(s => {
+                    let isWait = mTween[1].toLowerCase() === 'tweenwait';
+                    let args = mTween[2].split(",").map(s => {
                         let sTrim = s.trim();
                         if ((sTrim.startsWith('"') && sTrim.endsWith('"')) || (sTrim.startsWith("'") && sTrim.endsWith("'"))) {
                             return sTrim.substring(1, sTrim.length - 1);
@@ -12157,7 +12181,7 @@ while (true) {
                     let mode = args[3] || 'seconds';
                     let modeVal = args[4] || '1';
                     block = {
-                        type: 'tween_var',
+                        type: isWait ? 'tween_var_wait' : 'tween_var',
                         params: {
                             name: varName,
                             from: fromVal,
