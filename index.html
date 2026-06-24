@@ -2489,6 +2489,8 @@ if (touchingBullet) {
                                         <pre>angle      // 角度
 speed      // 速度
 x, y       // 現在位置
+ex, ey     // 送信機（エミッター）の位置
+e_変数名   // 送信機のカスタム変数のリアルタイム値 (例: e_xspa)
 tx, ty     // 相手の位置
 player_x   // プレイヤーのX位置
 player_y   // プレイヤーのY位置
@@ -9322,6 +9324,7 @@ while (true) {
             if (!emitterState || !bulletState || !emitterState.variables || !bulletState.variables) return;
             const reserved = new Set([
                 'speed', 'angle', 'timer', 'second', 'frame', 'cardSecond', 'cardFrame', 'x', 'y', 'tx', 'ty', 'dist',
+                'ex', 'ey', 'emitter_x', 'emitter_y',
                 'x_offset', 'y_offset', 'isBounced', 'isTouchWall', 'touchingWall',
                 'isTouchBullet', 'touchingBullet', 'touchColor', 'touchX', 'touchY',
                 'warningTime', 'activeTime', 'laserStartTime', 'laserWidth', 'color', 'bulletType'
@@ -10080,17 +10083,28 @@ while (true) {
             if (b.sharedEmitterState && b.sharedEmitterState.variables) {
                 state.variables.cardSecond = Number(b.sharedEmitterState.variables.cardSecond || b.sharedEmitterState.variables.second || 0);
                 state.variables.cardFrame = Number(b.sharedEmitterState.variables.cardFrame || b.sharedEmitterState.variables.frame || 0);
+                
+                // コア（エミッター）の全変数をリアルタイムでe_ / emitter_接頭辞を付与して同期
+                Object.keys(b.sharedEmitterState.variables).forEach(key => {
+                    state.variables['e_' + key] = b.sharedEmitterState.variables[key];
+                    state.variables['emitter_' + key] = b.sharedEmitterState.variables[key];
+                });
             } else {
                 state.variables.cardSecond = state.variables.second;
                 state.variables.cardFrame = state.variables.frame;
             }
             
-            // Expose physics & environment variables in real-time
             state.variables.x = b.x;
             state.variables.y = isPlayerSide ? (canvas.height - b.y) : b.y;
             state.variables.speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
             state.variables.tx = target.x;
             state.variables.ty = isPlayerSide ? (canvas.height - target.y) : target.y;
+            
+            // 送信機（エミッター）の現在位置
+            state.variables.ex = attacker.x;
+            state.variables.ey = isPlayerSide ? (canvas.height - attacker.y) : attacker.y;
+            state.variables.emitter_x = state.variables.ex;
+            state.variables.emitter_y = state.variables.ey;
             
             let dx = target.x - b.x;
             let dy = isPlayerSide ? (b.y - target.y) : (target.y - b.y);
