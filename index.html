@@ -1767,11 +1767,11 @@
             flex: 0 0 auto !important;
         }
         #card-maker-editor-view .maker-layout {
-            flex: 1 1 auto !important;
+            flex: 1 1 0% !important;
             min-height: 0 !important;
-            height: auto !important;
             display: grid !important;
             grid-template-columns: minmax(220px, 280px) minmax(560px, 1fr) !important;
+            grid-template-rows: minmax(0, 1fr) !important;
             gap: 14px !important;
             overflow: hidden !important;
         }
@@ -1781,8 +1781,10 @@
             grid-template-rows: minmax(0, 1fr) !important;
             gap: 0 !important;
             overflow: hidden !important;
+            flex: 1 1 0% !important;
         }
         #card-maker-editor-view .maker-layout.code-mode .workspace-panel {
+            grid-column: 1 / -1 !important;
             width: 100% !important;
             min-width: 0 !important;
             height: 100% !important;
