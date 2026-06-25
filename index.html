@@ -7309,6 +7309,24 @@ while (true) {
                                 if (b.placedBullets) {
                                     copy.placedBullets = [...b.placedBullets];
                                 }
+                                if (b.bulletState) {
+                                    copy.bulletState = JSON.parse(JSON.stringify(b.bulletState));
+                                    if (b.bulletState.lifetimeOnce instanceof Set) {
+                                        copy.bulletState.lifetimeOnce = new Set(b.bulletState.lifetimeOnce);
+                                    } else if (b.bulletState.lifetimeOnce) {
+                                        copy.bulletState.lifetimeOnce = new Set(Object.keys(b.bulletState.lifetimeOnce));
+                                    }
+                                    if (b.bulletState.constVars instanceof Set) {
+                                        copy.bulletState.constVars = new Set(b.bulletState.constVars);
+                                    } else if (b.bulletState.constVars) {
+                                        copy.bulletState.constVars = new Set(Object.keys(b.bulletState.constVars));
+                                    }
+                                    if (b.bulletState.speedScaleApplied instanceof Set) {
+                                        copy.bulletState.speedScaleApplied = new Set(b.bulletState.speedScaleApplied);
+                                    } else if (b.bulletState.speedScaleApplied) {
+                                        copy.bulletState.speedScaleApplied = new Set(Object.keys(b.bulletState.speedScaleApplied));
+                                    }
+                                }
                                 return copy;
                             });
                             const heavyAiBulletSim = opponentBullets.length > 180;
