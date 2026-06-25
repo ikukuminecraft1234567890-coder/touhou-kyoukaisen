@@ -9928,11 +9928,9 @@ while (true) {
             if (!Number.isFinite(b.x) || !Number.isFinite(b.y)) return true;
             if (b.bulletState) {
                 let warnT = parseFloat(b.bulletState.variables.warningTime) || 0;
+                warnT = Math.max(0, warnT);
                 let actT = parseFloat(b.bulletState.variables.activeTime) || 0;
                 if (actT > 0 && b.bulletState.variables.warningTime !== undefined) {
-                    if (warnT > 0 && warnT < 0.5) {
-                        warnT = 0.5;
-                    }
                     let laserStart = b.bulletState.variables.laserStartTime;
                     if (laserStart === null || laserStart === undefined) return false;
                     let laserElapsed = (b.bulletState.variables.timer || 0) - laserStart;
@@ -10003,7 +10001,7 @@ while (true) {
             let width = b && b.bulletState ? parseFloat(b.bulletState.variables.laserWidth) : NaN;
             if (!Number.isFinite(width) || width <= 0) width = b && b.laserWidth ? parseFloat(b.laserWidth) : NaN;
             if (!Number.isFinite(width) || width <= 0) width = 12;
-            return Math.max(1, Math.min(width, 160));
+            return Math.max(0, width);
         }
 
         function runCustomBulletScript(b, dt, attacker, target) {
@@ -10382,12 +10380,10 @@ while (true) {
             
             // 設置レーザー（警告線付きビーム）の制御
             let warnT = parseFloat(state.variables.warningTime) || 0;
+            warnT = Math.max(0, warnT);
             let actT = parseFloat(state.variables.activeTime) || 0;
             if (actT > 0 && state.variables.warningTime !== undefined) {
-                if (warnT > 0 && warnT < 0.5) {
-                    warnT = 0.5; // 予告時間は0より大きい場合は最低0.5秒（ただし0秒の場合は即発射として許容）
-                    state.variables.warningTime = warnT; // スクリプト側にも反映
-                }
+                state.variables.warningTime = warnT; // スクリプト側にも反映
                 if (state.variables.laserStartTime === null || state.variables.laserStartTime === undefined) {
                     state.variables.laserStartTime = state.variables.timer;
                 }
