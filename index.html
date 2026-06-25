@@ -3285,16 +3285,17 @@ while (true) {
         function migrateOldCustomCard(cc) {
             let changed = false;
             
-            // cc.bulletScript 内の bounce は現在のインタプリタで直接サポートされているため、
-            // if文に展開する古いマイグレーションを廃止し、そのまま保持する
+            // bounceブロックをif文4つに分解する処理は、PLAY_WIDTH(600)/canvas.height(480)とのズレや下端反射バグの原因となるため削除。
+            // 現在はネイティブの bounce() アクションが正しく動作するため、ブロックのまま維持します。
             
             if (cc.bounceScript && cc.bounceScript.length > 0) {
                 changed = true;
-                const conds = ['x < 10', 'x > 590', 'y < 10', 'y > 470'];
-                const angles = ['180 - angle', '180 - angle', '-angle', '-angle'];
+                // 右端は790から590（PLAY_WIDTH-10）に修正。下端（y > 890）は反射除外のため削除（3辺反射へ）。
+                const conds = ['x < 10', 'x > 590', 'y < 10'];
+                const angles = ['180 - angle', '180 - angle', '-angle'];
                 
                 let combinedList = [];
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 3; i++) {
                     combinedList.push({ type: 'if', params: { cond: conds[i] }, indent: 0 });
                     combinedList.push({ type: 'set_var', params: { name: 'angle', value: angles[i] }, indent: 1 });
                     cc.bounceScript.forEach(b => {
@@ -3307,7 +3308,9 @@ while (true) {
                 cc.bulletScript.push(...combinedList);
                 cc.bounceScript = [];
             }
-            applyCustomCardCosts(cc);
+            if (changed) {
+                applyCustomCardCosts(cc);
+            }
             return cc;
         }
 
@@ -11244,7 +11247,7 @@ while (true) {
                             else if (normalizedCond === 'x<10') selectVal = 'x < 10';
                             else if (normalizedCond === 'x>590' || normalizedCond === 'x>790') selectVal = 'x > 590';
                             else if (normalizedCond === 'y<10') selectVal = 'y < 10';
-                            else if (normalizedCond === 'y>470' || normalizedCond === 'y>890') selectVal = 'y > 470';
+                            else if (normalizedCond === 'y>890') selectVal = 'y > 890';
                             else if (normalizedCond === 'dist<150') selectVal = 'dist < 150';
                             else if (normalizedCond === 'color==#33ffff') selectVal = 'color == #33ffff';
                             else if (normalizedCond === 'color!=#33ffff') selectVal = 'color != #33ffff';
@@ -11261,7 +11264,7 @@ while (true) {
                                     <option value="x < 10" ${selectVal === 'x < 10' ? 'selected' : ''}>画面左端に達したら (x < 10)</option>
                                     <option value="x > 590" ${selectVal === 'x > 590' ? 'selected' : ''}>画面右端に達したら (x > 590)</option>
                                     <option value="y < 10" ${selectVal === 'y < 10' ? 'selected' : ''}>画面上端に達したら (y < 10)</option>
-                                    <option value="y > 470" ${selectVal === 'y > 470' ? 'selected' : ''}>画面下端に達したら (y > 470)</option>
+                                    <option value="y > 890" ${selectVal === 'y > 890' ? 'selected' : ''}>画面下端に達したら (y > 890)</option>
                                     <option value="dist < 150" ${selectVal === 'dist < 150' ? 'selected' : ''}>相手に近づいたら (dist < 150)</option>
                                     <option value="color == #33ffff" ${selectVal === 'color == #33ffff' ? 'selected' : ''}>色がシアンなら (color == #33ffff)</option>
                                     <option value="color != #33ffff" ${selectVal === 'color != #33ffff' ? 'selected' : ''}>色がシアン以外なら (color != #33ffff)</option>
