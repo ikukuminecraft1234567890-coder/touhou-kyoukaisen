@@ -9082,7 +9082,7 @@ while (true) {
         // 自作カード用ブロックコンパイラ＆インタプリタ
         // ==========================================
         function executeOnceBlock(block, state) {
-            if (!state.lifetimeOnce) state.lifetimeOnce = new Set();
+            if (!state.lifetimeOnce || typeof state.lifetimeOnce.has !== 'function') state.lifetimeOnce = new Set();
             let onceId = block.onceId || 'once_default';
             if (state.lifetimeOnce.has(onceId)) {
                 return true;
