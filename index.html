@@ -9526,19 +9526,28 @@ while (true) {
             
             if (state.finished) return;
             
-            if (state.waitTimer > 0) {
-                state.waitTimer -= dt;
-                if (state.waitTimer > 0) return;
-            }
-            if (state.waitingTweenName) {
-                if (state.tweens && state.tweens.some(t => t.name === state.waitingTweenName)) {
-                    return;
+            let dtRemaining = dt;
+            while (dtRemaining > 0 && !state.finished) {
+                if (state.waitTimer > 0) {
+                    if (dtRemaining >= state.waitTimer) {
+                        dtRemaining -= state.waitTimer;
+                        state.waitTimer = 0;
+                    } else {
+                        state.waitTimer -= dtRemaining;
+                        dtRemaining = 0;
+                        break;
+                    }
                 }
-                state.waitingTweenName = null;
-            }
-            
-            let safetyCounter = 0;
-            while (safetyCounter < 1000) {
+                if (state.waitingTweenName) {
+                    if (state.tweens && state.tweens.some(t => t.name === state.waitingTweenName)) {
+                        break;
+                    }
+                    state.waitingTweenName = null;
+                }
+                
+                let safetyCounter = 0;
+                let brokeToWait = false;
+                while (safetyCounter < 1000) {
                 safetyCounter++;
                 
                 let currentBlocks = state.stack.length > 0 ? state.stack[state.stack.length - 1].blocks : state.blocks;
@@ -9585,14 +9594,14 @@ while (true) {
                         }
                     } else {
                         state.finished = true;
-                        return;
+                        break;
                     }
                 }
                 
                 let block = currentBlocks[currentPC];
                 if (!block) {
                     state.finished = true;
-                    return;
+                    break;
                 }
                 
                 let advancePC = true;
@@ -9600,7 +9609,8 @@ while (true) {
                 switch (block.type) {
                     case 'wait': {
                         let dur = evalExpr(block.params.duration, state.variables);
-                        state.waitTimer = Math.max(0.01, dur);
+                        state.waitTimer = Math.max(0.001, dur);
+                        brokeToWait = true;
                         break;
                     }
                     case 'repeat': {
@@ -9900,8 +9910,15 @@ while (true) {
                 if (state.waitTimer > 0 || state.waitingTweenName) {
                     break;
                 }
+            } // 内側ループ
+            
+            if (brokeToWait || state.waitingTweenName) {
+                // 次のループで waitTimer が消費される
+            } else if (!state.finished) {
+                break;
             }
-        }
+        } // 外側ループ
+    }
 
         function initBulletState(script, initialSpeed, initialAngle, attacker, target) {
             let variables = {
@@ -10112,12 +10129,21 @@ while (true) {
             state.variables.dist = Math.sqrt(dx * dx + dy * dy);
             
             if (!state.finished) {
-                if (state.waitTimer > 0) {
-                    state.waitTimer -= dt;
-                }
-                
-                if (state.waitTimer <= 0) {
+                let dtRemaining = dt;
+                while (dtRemaining > 0 && !state.finished) {
+                    if (state.waitTimer > 0) {
+                        if (dtRemaining >= state.waitTimer) {
+                            dtRemaining -= state.waitTimer;
+                            state.waitTimer = 0;
+                        } else {
+                            state.waitTimer -= dtRemaining;
+                            dtRemaining = 0;
+                            break;
+                        }
+                    }
+                    
                     let safetyCounter = 0;
+                    let brokeToWait = false;
                     while (safetyCounter < 1000) {
                         safetyCounter++;
                         let currentBlocks = state.stack.length > 0 ? state.stack[state.stack.length - 1].blocks : state.blocks;
@@ -10167,6 +10193,7 @@ while (true) {
                                 // once は弾生（この弾が存在する間）で一度きり — ループしてもリセットしない
                                 state.pc = 0;
                                 state.waitTimer = 0.01; // 1フレーム待機
+                                brokeToWait = true;
                                 break;
                             }
                         }
@@ -10175,6 +10202,7 @@ while (true) {
                         if (!block) {
                             state.pc = 0;
                             state.waitTimer = 0.01;
+                            brokeToWait = true;
                             break;
                         }
                         
@@ -10182,7 +10210,8 @@ while (true) {
                         switch (block.type) {
                             case 'wait': {
                                 let dur = evalExpr(block.params.duration, state.variables);
-                                state.waitTimer = Math.max(0.01, dur);
+                                state.waitTimer = Math.max(0.001, dur);
+                                brokeToWait = true;
                                 break;
                             }
                             case 'repeat': {
@@ -10338,8 +10367,14 @@ while (true) {
                         if (state.waitTimer > 0) {
                             break;
                         }
+                    } // 内側ループ
+                    
+                    if (brokeToWait) {
+                        // 次のループで waitTimer が消費される
+                    } else if (!state.finished) {
+                        break;
                     }
-                }
+                } // 外側ループ
             }
             
             // Physics update
