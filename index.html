@@ -3996,6 +3996,7 @@ while (true) {
             isGameRunning = true;
             initBattle();
             lastTime = performance.now(); // デルタタイムのリセット
+            timeAccumulator = 0;
             startGameLoop();
         }
 
@@ -4870,6 +4871,7 @@ while (true) {
             }
 
             lastTime = performance.now();
+            timeAccumulator = 0;
             startGameLoop();
         }
 
@@ -6835,6 +6837,7 @@ while (true) {
         };
 
         let lastTime = 0;
+        let timeAccumulator = 0;
         let gameLoopFrameId = null;
 
         function startGameLoop() {
@@ -6860,6 +6863,31 @@ while (true) {
             lastTime = timestamp;
             if (dt > 0.1) dt = 0.1;
 
+            timeAccumulator += dt;
+            const FIXED_DT = 1 / 60;
+
+            // 毎フレーム入力を更新（ゲームパッド ＆ キーコンフィグ）
+            updateInputState();
+
+            let stepCount = 0;
+            let ended = false;
+            while (timeAccumulator >= FIXED_DT && stepCount < 6) {
+                let res = tickSimulation(FIXED_DT);
+                timeAccumulator -= FIXED_DT;
+                stepCount++;
+                if (res === 'ended') {
+                    ended = true;
+                    break;
+                }
+            }
+
+            if (ended) return;
+
+            draw();
+            startGameLoop();
+        }
+
+        function tickSimulation(dt) {
             // バトルエフェクトのタイマー更新
             for (let i = activeEffects.length - 1; i >= 0; i--) {
                 activeEffects[i].timer -= dt;
@@ -7815,10 +7843,16 @@ while (true) {
                         if (b.y > maxY || b.y < -30 || b.x < -30 || b.x > PLAY_WIDTH + 30) {
                             shouldDespawn = true;
                         }
-                    } else {
+                    } else if (b.isCustom) {
+                        // Custom spells: can go offscreen, keep active up to 10 seconds
                         if (b.x < -PLAY_WIDTH || b.x > PLAY_WIDTH * 2 || b.y < -canvas.height || b.y > canvas.height * 2) {
                             shouldDespawn = true;
                         } else if (b.offscreenTime >= 10.0) {
+                            shouldDespawn = true;
+                        }
+                    } else {
+                        // Default spells and normal shots: despawn immediately when offscreen (with a small 30px visual margin)
+                        if (b.x < -30 || b.x > PLAY_WIDTH + 30 || b.y < -30 || b.y > canvas.height + 30) {
                             shouldDespawn = true;
                         }
                     }
@@ -8079,7 +8113,7 @@ while (true) {
             if (isCustomCardTesting) {
                 if (player.pendingDamage > 0) {
                     endCustomCardTest(false);
-                    return;
+                    return 'ended';
                 }
                 // actionTimer が切れたらエミッター終了フェーズへ移行
                 if (actionTimer <= 0 && !customCardTestEmitterDone) {
@@ -8088,12 +8122,9 @@ while (true) {
                 // エミッター終了後、全弾が消えたらテスト成功
                 if (customCardTestEmitterDone && bullets.length === 0) {
                     endCustomCardTest(true);
-                    return;
+                    return 'ended';
                 }
             }
-
-            draw();
-            startGameLoop();
         }
 
         function checkDeath() {
@@ -11619,6 +11650,7 @@ while (true) {
             normalShotTimer = 0;
             
             lastTime = performance.now();
+            timeAccumulator = 0;
             startGameLoop();
         }
 
