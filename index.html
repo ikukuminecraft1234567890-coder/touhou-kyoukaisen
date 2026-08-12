@@ -2879,6 +2879,7 @@ while (true) {
                 });
 
                 peer.on('disconnected', () => {
+                    if (!peer || peer.destroyed) return; // 手動での解散・切断時は無視
                     statusEl.textContent = 'シグナリングサーバーから切断されました。部屋を作り直してください。';
                     alert('通信が一時的に切断されたため、部屋を自動解散しました。');
                     cancelHosting();
