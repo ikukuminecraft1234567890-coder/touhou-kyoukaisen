@@ -1896,7 +1896,6 @@
                 <button class="menu-btn" onclick="showScreen('screen-deck-list'); renderDeckList();">デッキ構築</button>
                 <button class="menu-btn"
                     onclick="showScreen('screen-key-config'); renderKeyConfig(); renderGamepadConfig();">キー＆パッド設定</button>
-                <button class="menu-btn" onclick="showScreen('screen-card-maker'); renderCardMakerList();">自作カード作成</button>
             </div>
 
             <!-- 4. 対戦準備画面 -->
@@ -2880,8 +2879,9 @@ while (true) {
                 });
 
                 peer.on('disconnected', () => {
-                    statusEl.textContent = 'シグナリングサーバーから切断されました。再接続を試みます...';
-                    peer.reconnect();
+                    statusEl.textContent = 'シグナリングサーバーから切断されました。部屋を作り直してください。';
+                    alert('通信が一時的に切断されたため、部屋を自動解散しました。');
+                    cancelHosting();
                 });
 
             } catch (e) {
@@ -2974,6 +2974,7 @@ while (true) {
                             conn.close();
                             conn = null;
                             statusEl.textContent = `接続タイムアウト。部屋「${roomCode}」のホストが見つからないか、満員、あるいは通信環境（モバイル回線等）の影響でブロックされた可能性があります。`;
+                            try { fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${roomCode}`, { method: 'DELETE' }); } catch(e){}
                         }
                     }, 15000);
                 });
@@ -2982,6 +2983,7 @@ while (true) {
                     console.error('PeerJS Error:', err);
                     if (err.type === 'peer-unavailable') {
                         statusEl.textContent = `部屋「${roomCode}」のホストへの接続に失敗しました。ホストが解散した可能性があります。`;
+                        try { fetch(`https://kvdb.io/4nDUBtPnEXy9sX2BLEubnE/room_${roomCode}`, { method: 'DELETE' }); } catch(e){}
                     } else {
                         statusEl.textContent = 'エラー: ' + err.type;
                     }
@@ -3063,6 +3065,23 @@ while (true) {
 
             if (data.type === 'bomb') {
                 receivedBomb = true;
+            }
+
+            if (data.type === 'liveDamageSync') {
+                let delta = data.damage - cpu.pendingDamage;
+                if (delta > 0 && cpu.provisionalQueue) {
+                    let remaining = delta;
+                    while (remaining > 0 && cpu.provisionalQueue.length > 0) {
+                        if (cpu.provisionalQueue[0].dmg <= remaining) {
+                            remaining -= cpu.provisionalQueue[0].dmg;
+                            cpu.provisionalQueue.shift();
+                        } else {
+                            cpu.provisionalQueue[0].dmg -= remaining;
+                            remaining = 0;
+                        }
+                    }
+                }
+                cpu.pendingDamage = data.damage;
             }
 
             if (data.type === 'damageSync') {
@@ -4811,7 +4830,7 @@ while (true) {
             }
 
             // プレイヤー初期化
-            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0; player.recentHits = []; player.recentHits = [];
+            player.grazeCount = 0; player.pendingDamage = 0; player.provisionalQueue = []; player.displayDamage = 0; player.pendingHeal = 0; player.recentHits = [];
             player.x = PLAY_WIDTH / 2; player.y = canvas.height * 0.8;
             player.isInvincible = false;
             player.invincibleTimer = 0;
@@ -4851,7 +4870,7 @@ while (true) {
                 cpu.hp = 1000;
             }
 
-            cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.recentHits = []; cpu.recentHits = [];
+            cpu.grazeCount = 0; cpu.pendingDamage = 0; cpu.provisionalQueue = []; cpu.displayDamage = 0; cpu.pendingHeal = 0; cpu.recentHits = [];
             cpu.maxBombs = cpu.passives.includes('p4') ? 4 : 3;
             cpu.bombs = cpu.maxBombs;
             cpu.bombCooldown = 0;
@@ -4927,7 +4946,7 @@ while (true) {
                 cpu.hp = 1000;
             }
 
-            player.grazeCount = 0; player.pendingDamage = 0; player.pendingHeal = 0; player.recentHits = []; player.recentHits = [];
+            player.grazeCount = 0; player.pendingDamage = 0; player.provisionalQueue = []; player.displayDamage = 0; player.pendingHeal = 0; player.recentHits = [];
 
             // パッシブ効果の適用
             if (player.passives.includes('p4')) {
@@ -4952,7 +4971,7 @@ while (true) {
             activeEffects = []; // エフェクト配列のクリア
             player.p7Triggered = false; // HP25%以下自動回復フラグ
             cpu.p7Triggered = false;
-            cpu.hp = 1000; cpu.pendingDamage = 0; cpu.pendingHeal = 0; cpu.grazeCount = 0; cpu.recentHits = []; cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
+            cpu.hp = 1000; cpu.pendingDamage = 0; cpu.provisionalQueue = []; cpu.displayDamage = 0; cpu.pendingHeal = 0; cpu.grazeCount = 0; cpu.recentHits = []; cpu.x = PLAY_WIDTH / 2; cpu.y = canvas.height * 0.2;
             cpu.targetX = cpu.x; cpu.targetY = cpu.y;
             bullets = [];
             gameState = 'BATTLE';
@@ -5332,7 +5351,7 @@ while (true) {
 
                 player.hp = Math.min(player.maxHp || 1000, player.hp + playerHeal);
                 cpu.hp = Math.min(cpu.maxHp || 1000, cpu.hp + cpuHeal);
-                player.pendingDamage = 0; cpu.pendingDamage = 0; player.pendingHeal = 0; cpu.pendingHeal = 0;
+                player.pendingDamage = 0; cpu.pendingDamage = 0; player.provisionalQueue = []; cpu.provisionalQueue = []; player.displayDamage = 0; cpu.displayDamage = 0; player.pendingHeal = 0; cpu.pendingHeal = 0;
                 player.recentHits = []; cpu.recentHits = [];
 
                 let html = `<span style="font-family:'Noto Serif JP',serif; font-size:24px; color:#ffcc00; letter-spacing:2px;">精算フェーズ</span><br>`;
@@ -6888,6 +6907,44 @@ while (true) {
         }
 
         function tickSimulation(dt) {
+            let now = Date.now();
+            if (cpu.provisionalQueue) {
+                cpu.provisionalQueue = cpu.provisionalQueue.filter(hit => now - hit.time < 500);
+            }
+            if (player.provisionalQueue) {
+                player.provisionalQueue = player.provisionalQueue.filter(hit => now - hit.time < 500);
+            }
+            let sumCpu = cpu.provisionalQueue ? cpu.provisionalQueue.reduce((sum, hit) => sum + hit.dmg, 0) : 0;
+            let targetCpuDisplay = cpu.pendingDamage + sumCpu;
+            if (cpu.displayDamage === undefined) cpu.displayDamage = 0;
+            if (cpu.displayDamage < targetCpuDisplay) cpu.displayDamage = targetCpuDisplay;
+            else if (cpu.displayDamage > targetCpuDisplay) {
+                cpu.displayDamage -= 500 * dt;
+                if (cpu.displayDamage < targetCpuDisplay) cpu.displayDamage = targetCpuDisplay;
+            }
+
+            let sumPlayer = player.provisionalQueue ? player.provisionalQueue.reduce((sum, hit) => sum + hit.dmg, 0) : 0;
+            let targetPlayerDisplay = player.pendingDamage + sumPlayer;
+            if (player.displayDamage === undefined) player.displayDamage = 0;
+            if (player.displayDamage < targetPlayerDisplay) player.displayDamage = targetPlayerDisplay;
+            else if (player.displayDamage > targetPlayerDisplay) {
+                player.displayDamage -= 500 * dt;
+                if (player.displayDamage < targetPlayerDisplay) player.displayDamage = targetPlayerDisplay;
+            }
+
+            if (isOnlineMode && conn && onlineConnected) {
+                if (player.lastSentDamage === undefined) player.lastSentDamage = -1;
+                if (player.lastSyncTime === undefined) player.lastSyncTime = 0;
+                if (player.pendingDamage !== player.lastSentDamage && now - player.lastSyncTime > 100) {
+                    player.lastSentDamage = player.pendingDamage;
+                    player.lastSyncTime = now;
+                    conn.send({
+                        type: 'liveDamageSync',
+                        damage: player.pendingDamage
+                    });
+                }
+            }
+
             // バトルエフェクトのタイマー更新
             for (let i = activeEffects.length - 1; i >= 0; i--) {
                 activeEffects[i].timer -= dt;
@@ -7189,7 +7246,12 @@ while (true) {
                         // 敵(CPU)に持続ダメージ
                         let distCpuSq = (cpu.x - r.x) ** 2 + (cpu.y - r.y) ** 2;
                         if (distCpuSq < (r.radius + cpu.hitboxRadius) ** 2) {
-                            cpu.pendingDamage += 120 * dt;
+                            if (isOnlineMode) {
+                                if (!cpu.provisionalQueue) cpu.provisionalQueue = [];
+                                cpu.provisionalQueue.push({dmg: 120 * dt, time: Date.now()});
+                            } else {
+                                cpu.pendingDamage += 120 * dt;
+                            }
                         }
                     } else if (r.team === 'CPU') {
                         r.x = cpu.x;
@@ -7994,6 +8056,7 @@ while (true) {
                             }
                         }
                     } else if (b.team === 'PLAYER') {
+                        if (isOnlineMode) continue;
                         if (cpu.isInvincible || b.isWarningLaser) {
                             continue;
                         }
@@ -8071,7 +8134,12 @@ while (true) {
                                 dmg = Math.floor(dmg * 0.80); // 金剛結界 (-20%)
                             }
 
-                            cpu.pendingDamage += dmg;
+                            if (isOnlineMode) {
+                                if (!cpu.provisionalQueue) cpu.provisionalQueue = [];
+                                cpu.provisionalQueue.push({dmg: dmg, time: Date.now()});
+                            } else {
+                                cpu.pendingDamage += dmg;
+                            }
                             if (!cpu.recentHits) cpu.recentHits = [];
                             cpu.recentHits.push({ damage: dmg, timestamp: performance.now() });
                             cpu.hitLastTurn = true; // 被弾履歴
@@ -8804,12 +8872,12 @@ while (true) {
             ctx.fillStyle = cpu.hp < 300 ? '#ff5555' : '#55ff55';
             ctx.font = 'bold 24px sans-serif';
             ctx.fillText('HP: ' + Math.floor(Math.max(0, cpu.hp)), UI_X, 110);
-            if (cpu.pendingDamage > 0) {
+            if (cpu.displayDamage > 0) {
                 let t = turnCount - 1;
                 let dmgMult = Math.pow(2, (t * t + 15 * t) / 450);
                 ctx.fillStyle = '#ff5555';
                 ctx.font = '18px sans-serif';
-                ctx.fillText(`(-${Math.floor(cpu.pendingDamage * dmgMult)})`, UI_X + 120, 110);
+                ctx.fillText(`(-${Math.floor(cpu.displayDamage * dmgMult)})`, UI_X + 120, 110);
             }
 
             ctx.fillStyle = '#aaffaa';
@@ -8842,12 +8910,12 @@ while (true) {
             ctx.fillStyle = player.hp < 300 ? '#ff5555' : '#55ff55';
             ctx.font = 'bold 24px sans-serif';
             ctx.fillText('HP: ' + Math.floor(Math.max(0, player.hp)), UI_X, 800);
-            if (player.pendingDamage > 0) {
+            if (player.displayDamage > 0) {
                 let t = turnCount - 1;
                 let dmgMult = Math.pow(2, (t * t + 15 * t) / 450);
                 ctx.fillStyle = '#ff5555';
                 ctx.font = '18px sans-serif';
-                ctx.fillText(`(-${Math.floor(player.pendingDamage * dmgMult)})`, UI_X + 120, 800);
+                ctx.fillText(`(-${Math.floor(player.displayDamage * dmgMult)})`, UI_X + 120, 800);
             }
 
             // プレイヤーのボム表示 - 表示位置は 835 (HPがあった位置)
@@ -11619,7 +11687,7 @@ while (true) {
             player.invincibleTimer = 0;
             player.hp = 1000;
             player.maxHp = 1000;
-            player.pendingDamage = 0;
+            player.pendingDamage = 0; player.provisionalQueue = []; player.displayDamage = 0;
             player.pendingHeal = 0;
             player.grazeCount = 0;
             player.bombs = 0;
@@ -11630,7 +11698,7 @@ while (true) {
             cpu.x = PLAY_WIDTH / 2;
             cpu.y = canvas.height * 0.2;
             cpu.hp = 1000;
-            cpu.pendingDamage = 0;
+            cpu.pendingDamage = 0; cpu.provisionalQueue = []; cpu.displayDamage = 0;
             cpu.pendingHeal = 0;
             cpu.grazeCount = 0;
             cpu.bombs = 0;
