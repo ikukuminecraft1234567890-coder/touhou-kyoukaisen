@@ -2219,9 +2219,9 @@
                         Scratch風のエディットでオリジナルのスペルカードを作成できます。<br>
                         作ったカードはノー被弾クリア（ボム禁止）することで実戦で使用可能になります。
                     </p>
-                    <button class="menu-btn" onclick="customCardMakerOpenEditor(null)" style="background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6); font-weight: bold; width: 260px;">
+                    <!-- <button class="menu-btn" onclick="customCardMakerOpenEditor(null)" style="background: linear-gradient(135deg, #005544 0%, #002211 100%); border-color: #00ffcc; text-shadow: 0 0 8px rgba(0, 255, 200, 0.6); font-weight: bold; width: 260px;">
                         新しいスペルカードを作成
-                    </button>
+                    </button> -->
                     <div id="custom-cards-list-container" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 260px; overflow-y: auto; margin-top: 10px; padding: 5px; background: rgba(0,0,0,0.3); border-radius: 8px;">
                     </div>
                     <button class="menu-btn" onclick="showScreen('screen-menu')" style="margin-top: 15px; background: #222;">メインメニューに戻る</button>
@@ -3397,7 +3397,8 @@ while (true) {
         function integrateCustomCards() {
             // Remove existing custom cards in defaultCards.active first
             defaultCards.active = defaultCards.active.filter(c => !c.isCustom);
-            customCards.forEach(cc => pushIntegratedCustomCard(cc));
+            // デッキ構築画面での自作カード選択を無効化
+            // customCards.forEach(cc => pushIntegratedCustomCard(cc));
             onlineCustomCards.forEach(cc => pushIntegratedCustomCard(cc));
         }
         integrateCustomCards();
